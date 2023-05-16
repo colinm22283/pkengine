@@ -52,6 +52,7 @@ namespace PKEngine {
     namespace Exceptions {
         PK_EXCEPTION(VulkanNotSupported,  "Vulkan is not supported on current system",      1);
         PK_EXCEPTION(SuitableGPUNotFound, "Unable to locate a GPU with necessary features", 2);
+        PK_EXCEPTION(UnableToOpenFile,        "Unable to open file",                        3)
 
         PK_GLFW_EXCEPTION(UnableToCreateGLFWWindow, "Unable to create glfw window handle", 1);
         PK_GLFW_EXCEPTION(GLFWInitError,            "Unable to initialize glfw",           2);
