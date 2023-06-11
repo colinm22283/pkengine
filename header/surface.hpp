@@ -12,22 +12,26 @@
 namespace PKEngine {
     class Surface {
     protected:
+        static constexpr auto logger = FileLogger<Util::ANSI::CyanFg, "SURFACE", "pkengine.log">();
+
         VkSurfaceKHR _handle = VK_NULL_HANDLE;
         VkInstance_T * const _instance;
 
     public:
         inline Surface(VkInstance instance, GLFWwindow * window):
           _instance(instance) {
-            Log::info() << "Surface Created";
+            logger.log<"Creating surface...">();
 
             if (glfwCreateWindowSurface(_instance, window, nullptr, &_handle) != VK_SUCCESS) {
                 throw Exceptions::UnableToCreateWindowSurface();
             }
+
+            logger.success().log<"Done!">();
         }
         inline ~Surface() {
-            Log::info() << "Surface Destroyed";
-
             if (_handle != VK_NULL_HANDLE) vkDestroySurfaceKHR(_instance, _handle, nullptr);
+
+            logger.log<"Surface Destroyed">();
         }
 
         inline Surface(Surface && other) noexcept:

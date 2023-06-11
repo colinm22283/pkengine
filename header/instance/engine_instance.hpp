@@ -8,6 +8,9 @@
 #include <instance/logical_device_instance.hpp>
 #include <instance/swap_chain_instance.hpp>
 #include <instance/image_views_instance.hpp>
+#include <instance/pipeline_instance.hpp>
+
+#include <frame_buffers.hpp>
 
 #include <types/engine_config.hpp>
 
@@ -24,6 +27,9 @@ namespace PKEngine {
         QueueInstance graphics_queue, present_queue;
         SwapChainInstance swap_chain;
         ImageViewsInstance image_views;
+        PipelineInstance pipeline;
+
+        FrameBuffers frame_buffers;
 
         inline explicit EngineInstance(VkInstance instance, instance_config_t & config):
             window(config),
@@ -34,7 +40,9 @@ namespace PKEngine {
             graphics_queue(logical_device, indices.graphics_family.value()),
             present_queue(logical_device, indices.present_family.value()),
             swap_chain(physical_device, logical_device, surface, window),
-            image_views(logical_device, swap_chain) { }
+            image_views(logical_device, swap_chain),
+            pipeline(logical_device, swap_chain),
+            frame_buffers(logical_device, swap_chain, image_views, pipeline.render_pass()) { }
 
         EngineInstance(EngineInstance &) = delete;
         EngineInstance(EngineInstance &&) = delete;

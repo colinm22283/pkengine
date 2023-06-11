@@ -15,11 +15,13 @@
 namespace PKEngine {
     class VulkanInstance {
     protected:
+        static constexpr auto logger = FileLogger<Util::ANSI::CyanFg, "VK INST", "pkengine.log">();
+
         VkInstance _instance;
 
     public:
         inline explicit VulkanInstance(engine_config_t & config) {
-            Log::info() << "VK Instance Created";
+            logger.log<"Creating VK instance...">();
 
             VkApplicationInfo appInfo{};
             appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -50,15 +52,17 @@ namespace PKEngine {
             std::vector<VkExtensionProperties> extensions(extensionCount);
             vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
 
-            Log::info() << "Available Extensions:";
+            logger.success().log<"Done!">();
+
+            logger.log<"Available Extensions:">();
             for (const auto& extension : extensions) {
-                Log::info() << '\t' << extension.extensionName;
+                logger.log<"\t">() << extension.extensionName;
             }
         }
         inline ~VulkanInstance() {
-            Log::info() << "VK Instance Destroyed";
-
             vkDestroyInstance(_instance, nullptr);
+
+            logger.log<"VK Instance Destroyed">();
         }
 
         inline VkInstance & instance() { return _instance; }

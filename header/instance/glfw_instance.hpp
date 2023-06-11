@@ -13,11 +13,13 @@ namespace PKEngine {
 
     class GLFWInstance {
     protected:
+        static constexpr auto logger = FileLogger<Util::ANSI::CyanFg, "GLFW INST", "pkengine.log">();
+
         static void error_callback(int, const char * str) { PKEngine::glfw_error_string = str; }
 
     public:
         inline explicit GLFWInstance(engine_config_t & config) {
-            Log::info() << "GLFW Instance Created";
+            logger.log<"Creating GLFW instance...">();
 
             glfwSetErrorCallback(error_callback);
 
@@ -27,11 +29,13 @@ namespace PKEngine {
             glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
             if (glfwVulkanSupported() == GLFW_FALSE) throw Exceptions::VulkanNotSupported();
+
+            logger.success().log<"Done!">();
         }
         inline ~GLFWInstance() {
-            Log::info() << "GLFW Instance Destroyed";
-
             glfwTerminate();
+
+            logger.log<"GLFW Instance Destroyed">();
         }
     };
 }

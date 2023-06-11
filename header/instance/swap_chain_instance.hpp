@@ -14,6 +14,8 @@
 namespace PKEngine {
     class SwapChainInstance {
     protected:
+        static constexpr auto logger = FileLogger<Util::ANSI::CyanFg, "SC INST", "pkengine.log">();
+
         VkSwapchainKHR _handle;
         VkDevice device;
 
@@ -24,7 +26,7 @@ namespace PKEngine {
 
         inline SwapChainInstance(VkPhysicalDevice physical_device, VkDevice _device, VkSurfaceKHR surface, GLFWwindow * window):
           device(_device) {
-            Log::info() << "Swap Chain Created";
+            logger.log<"Creating swap chain...">();
 
             swap_chain_support_info_t swapChainSupport = query_swap_chain_support(physical_device, surface);
 
@@ -77,11 +79,13 @@ namespace PKEngine {
 
             image_format = surfaceFormat.format;
             extent = _extent;
+
+            logger.success().log<"Done!">();
         }
         inline ~SwapChainInstance() {
-            Log::info() << "Swap Chain Destroyed";
-
             if (_handle) vkDestroySwapchainKHR(device, _handle, nullptr);
+
+            logger.log<"Swap Chain Destroyed">();
         }
 
         inline VkSwapchainKHR handle() { return _handle; }

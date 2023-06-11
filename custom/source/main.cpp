@@ -4,10 +4,21 @@
 #include <util/engine_exception.hpp>
 #include <logger/logger.hpp>
 
-int main() {
-    Log::open_logfile("pkengine.log");
+#include <util/const_string.hpp>
+#include <util/ansi.hpp>
 
-    Log::info() << "Starting PKEngine...";
+#include <logger/logfile.hpp>
+
+using namespace PKEngine;
+
+PKEngine::FileLogger<
+    Util::ANSI::BlueFg,
+    "MAIN",
+    "pkengine.log"
+> logger;
+
+int main() {
+    logger.log<"Starting PKEngine...">();
 
     try {
         PKEngine::Engine engine({
@@ -25,13 +36,15 @@ int main() {
             },
         });
 
-        Log::info() << "\nEVERYTHING BE DONE\n";
+        logger.success().log<"EVERYTHING BE DONE!">();
+
+//        while (!glfwWindowShouldClose(instance.window.handle()));
     } catch (PKEngine::Exception & e) {
-        Log::error() << "EXCEPTION: \"" << e.what() << "\"";
-        if (e.is_glfw_error()) Log::error() << "GLFW: \"" << PKEngine::glfw_error_string << "\"\n";
+        logger.error().log<"EXCEPTION: \"">().log(e.what()).log<"\"">();
+        if (e.is_glfw_error()) logger.error().log<"GLFW: \"">().log(PKEngine::glfw_error_string).log<"\"\n">();
 
         exit(e.code());
     }
 
-    Log::info() << "Exiting PKEngine...";
+    logger.log<"Exiting PKEngine...">();
 }

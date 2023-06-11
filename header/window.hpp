@@ -14,17 +14,13 @@
 namespace PKEngine {
     class Window {
     protected:
+        static constexpr auto logger = FileLogger<Util::ANSI::CyanFg, "WINDOW", "pkengine.log">();
+
         GLFWwindow * _handle;
-
-        const char * glfw_error = "";
-
-        void error_callback(int, const char * error_string) {
-            glfw_error = error_string;
-        }
 
     public:
         inline explicit Window(instance_config_t & config) {
-            Log::info() << "Window Created";
+            logger.log<"Creating window...">();
 
             _handle = glfwCreateWindow(
                 config.window.width, config.window.height,
@@ -34,19 +30,19 @@ namespace PKEngine {
             );
 
             if (_handle == nullptr) throw Exceptions::UnableToCreateGLFWWindow();
+
+            logger.success().log<"Done!">();
         }
         Window(Window &) = delete;
         Window(Window &&) = delete;
 
         inline ~Window() {
-            Log::info() << "Window Destroyed";
-
             glfwDestroyWindow(_handle);
+
+            logger.log<"Window Destroyed">();
         }
 
         inline GLFWwindow * handle() { return _handle; }
         inline operator GLFWwindow *() { return handle(); }
-
-        inline const char * get_error() { return glfw_error; }
     };
 }

@@ -46,5 +46,8 @@ namespace PKEngine {
                 vkDestroyImageView(device, view, nullptr);
             }
         }
+
+        inline auto & operator[](std::size_t i) const noexcept { return views[i]; }
+        inline std::size_t size() const noexcept { return views.size(); }
     };
 }
