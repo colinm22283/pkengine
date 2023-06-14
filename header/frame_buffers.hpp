@@ -18,15 +18,9 @@ namespace PKEngine {
             ImageViewsInstance & image_views,
             RenderPassInstance & render_pass
         ): instances(swap_chain.images.size()) {
-            std::cout << "Creating buffers\n";
-
             for (std::size_t i = 0; i < image_views.size(); i++) {
-                std::cout << "Size: " << image_views.size() << "\n";
-
                 instances[i] = new FrameBufferInstance(device, image_views[i], swap_chain.extent, render_pass);
             }
-
-            std::cout << "Done\n";
         }
 
         inline ~FrameBuffers() {
