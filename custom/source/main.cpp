@@ -19,42 +19,32 @@ constexpr PKEngine::FileLogger<
     "pkengine.log"
 > logger;
 
-void int_handler_1(auto & control, int test) {
-    logger.log<"Int handler 1: ">() << test;
+int update_count = 0;
 
-    if (test == 20) throw Exceptions::UnableToCreatePipeline();
+void on_start(auto & control) {
+    logger.log<"Engine started!">();
 }
-void int_handler_2(auto & control, int test) {
-    logger.log<"Int handler 2: ">() << test;
+
+void update(auto & control) {
+    logger.log<"Iteration #">() << ++update_count;
+
+    if (update_count == 50) {
+        logger.log<"I'm gonna throw an exception!!! >:)">();
+        throw std::runtime_error("This is an exception");
+    }
+
+    if (update_count == 100) {
+        logger.log<"Removing update handler">();
+        control.remove();
+    }
 }
-void float_handler_1(auto & control, float test) {
-    logger.log<"Float Handler 1: ">() << test;
-}
-void float_handler_2(auto & control, float test) {
-    logger.log<"Float handler 2: ">() << test;
+
+void on_close(auto & control) {
+    logger.log<"Engine closing!">();
 }
 
 int main() {
     logger.log<"Starting PKEngine...">();
-
-    EventGroup<"Int Handler", void(int)> int_group;
-    EventGroup<"Float Handler", void(float)> float_group;
-
-    int_group.add(int_handler_1);
-    int_group.add(int_handler_2);
-    float_group.add(float_handler_1);
-    float_group.add(float_handler_2);
-
-    for (int i = 0; i < 100; i++) {
-        int_group(10);
-        float_group(1.5);
-        int_group(20);
-        float_group(2.25);
-        int_group(30);
-        float_group(3.0);
-    }
-
-    return 0;
 
     try {
         PKEngine::Engine engine({
@@ -72,10 +62,13 @@ int main() {
             },
         });
 
-        logger.success().log<"EVERYTHING BE DONE!">();
+        instance.start_group.add(on_start);
+        instance.update_group.add(update);
+        instance.close_group.add(on_close);
 
-//        while (!glfwWindowShouldClose(instance.window.handle()));
-    } catch (PKEngine::Exception & e) {
+        instance.start();
+    }
+    catch (PKEngine::Exception & e) {
         logger.error().log<"EXCEPTION: \"">().log(e.what()).log<"\"">();
         if (e.is_glfw_error()) logger.error().log<"GLFW: \"">().log(PKEngine::glfw_error_string).log<"\"\n">();
 

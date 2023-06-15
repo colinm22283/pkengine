@@ -26,5 +26,9 @@ namespace PKEngine {
         inline ~FrameBuffers() {
             for (auto & instance : instances) delete instance;
         }
+
+        inline VkFramebuffer operator[](auto index) const noexcept {
+            return *instances[index];
+        }
     };
 }

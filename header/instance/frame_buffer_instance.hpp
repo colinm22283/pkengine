@@ -47,8 +47,6 @@ namespace PKEngine {
 
         inline ~FrameBufferInstance() {
             if (_instance != nullptr) {
-                logger << "TESTESTSET";
-
                 vkDestroyFramebuffer(device, _instance, nullptr);
 
                 logger.log<"Frame buffer destroyed">();

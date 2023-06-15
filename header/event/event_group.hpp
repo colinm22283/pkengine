@@ -79,9 +79,26 @@ namespace PKEngine {
         EventHandler head = EventHandler(&tail, nullptr);
         EventHandler tail = EventHandler(nullptr, &head);
 
-        DispatchableThread<void(EventHandler *, EventHandler *, Args...)> thread;
+        DispatchableThread<void(EventHandler *, EventHandler *, std::mutex *, Args...)> thread;
 
     public:
+        using internal_control_t = InternalControl;
+
+        inline ~_EventGroup() {
+            std::lock_guard<std::mutex> lock(mutex);
+
+            EventHandler * event = head.next;
+            EventHandler * temp;
+
+            while (event != &tail) {
+                temp = event->next;
+
+                delete event;
+
+                event = temp;
+            }
+        }
+
         inline ExternalControl add(handler_t handler) noexcept {
             std::lock_guard<std::mutex> lock(mutex);
 
@@ -94,30 +111,29 @@ namespace PKEngine {
         }
 
         inline void call(Args... args) {
-            std::lock_guard<std::mutex> lock(mutex);
+            mutex.lock();
 
             EventHandler * event = head.next;
 
-            thread.call(
-                +[](EventHandler * event, EventHandler * tail, Args... args) {
-                    while (event != tail) {
-                        if (event->enabled) {
-                            InternalControl control(event);
+            thread.call(+[](EventHandler * event, EventHandler * tail, std::mutex * mutex, Args... args) {
+                while (event != tail) {
+                    if (event->enabled) {
+                        InternalControl control(event);
 
-                            try {
-                                event->handler(control, args...);
-                            }
-                            catch (std::exception & e) {
-                                logger.error().template log<prefix>();
-                                logger.error().template log<"what(): ">() << e.what();
-                            }
+                        try {
+                            event->handler(control, args...);
                         }
-
-                        event = event->next;
+                        catch (std::exception & e) {
+                            logger.error().template log<prefix>();
+                            logger.error().template log<"what(): ">() << e.what();
+                        }
                     }
-                },
-                event, &tail, args...
-            );
+
+                    event = event->next;
+                }
+
+                mutex->unlock();
+            }, event, &tail, &mutex, args...);
         }
         inline void operator()(Args... args) { call(std::forward<Args>(args)...); }
     };

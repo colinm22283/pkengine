@@ -69,6 +69,9 @@ namespace PKEngine {
         PK_VULKAN_EXCEPTION(UnableToCreateRenderPass,          "Unable to create render pass",              10);
         PK_VULKAN_EXCEPTION(UnableToCreatePipeline,            "Unable to create pipeline",                 11);
         PK_VULKAN_EXCEPTION(UnableToCreateFramebuffer,         "Unable to create framebuffer",              12);
+        PK_VULKAN_EXCEPTION(UnableToCreateCommandPool,         "Unable to create command pool",             13);
+        PK_VULKAN_EXCEPTION(UnableToCreateCommandBuffer,       "Unable to create command buffer",           14);
+        PK_VULKAN_EXCEPTION(UnableToBeginCommandBuffer,        "Unable to begin command buffer",            15);
 
         PK_DUAL_EXCEPTION(UnableToCreateWindowSurface, "Unable to create window surface", 1);
     }
