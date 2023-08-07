@@ -6,6 +6,8 @@
 
 #include <logger/logger.hpp>
 
+#include <color_vertex.hpp>
+
 namespace PKEngine {
     class PipelineInstance {
     protected:
@@ -57,6 +59,13 @@ namespace PKEngine {
             vertex_input_info.pVertexBindingDescriptions = nullptr; // Optional
             vertex_input_info.vertexAttributeDescriptionCount = 0;
             vertex_input_info.pVertexAttributeDescriptions = nullptr; // Optional
+
+            auto bindingDescription = color_vertex_t::getBindingDescription();
+            auto attributeDescriptions = color_vertex_t::getAttributeDescriptions();
+            vertex_input_info.vertexBindingDescriptionCount = 1;
+            vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+            vertex_input_info.pVertexBindingDescriptions = &bindingDescription;
+            vertex_input_info.pVertexAttributeDescriptions = attributeDescriptions.data();
 
             VkPipelineInputAssemblyStateCreateInfo input_assembly{};
             input_assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

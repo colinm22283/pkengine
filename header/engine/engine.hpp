@@ -4,7 +4,6 @@
 #include <GLFW/glfw3.h>
 
 #include <instance/glfw_instance.hpp>
-#include <instance/engine_instance.hpp>
 #include <instance/vulkan_instance.hpp>
 #include <instance/physical_device_instance.hpp>
 
@@ -12,6 +11,8 @@
 
 #include <types/engine_config.hpp>
 #include <types/forward_list.hpp>
+
+#include <engine/engine_instance.hpp>
 
 namespace PKEngine {
     class Engine {

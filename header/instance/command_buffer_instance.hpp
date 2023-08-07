@@ -3,10 +3,12 @@
 #include <vulkan/vulkan.h>
 
 #include <util/engine_exception.hpp>
-#include <frame_buffers.hpp>
+
+#include <engine/frame_buffers.hpp>
 
 #include <instance/swap_chain_instance.hpp>
 #include <instance/pipeline_instance.hpp>
+#include <instance/vertex_buffer_instance.hpp>
 
 namespace PKEngine {
     class CommandBufferInstance {
@@ -33,7 +35,9 @@ namespace PKEngine {
             VkRenderPass render_pass,
             FrameBuffers & frame_buffers,
             SwapChainInstance & swap_chain,
-            PipelineInstance & pipeline
+            PipelineInstance & pipeline,
+            VertexBufferInstance & vertex_buffer
+
         ) {
             VkCommandBufferBeginInfo begin_info{};
             begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -72,6 +76,10 @@ namespace PKEngine {
             scissor.offset = {0, 0};
             scissor.extent = swap_chain.extent;
             vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+
+            VkBuffer vertexBuffers[] = { vertex_buffer };
+            VkDeviceSize offsets[] = {0};
+            vkCmdBindVertexBuffers(command_buffer, 0, 1, vertexBuffers, offsets);
 
             vkCmdDraw(command_buffer, 3, 1, 0, 0);
 

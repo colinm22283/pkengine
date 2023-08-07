@@ -1,7 +1,9 @@
 #pragma once
 
-#include <window.hpp>
-#include <surface.hpp>
+#include <engine/window.hpp>
+#include <engine/surface.hpp>
+#include <engine/frame_buffers.hpp>
+#include <engine/engine_flags.hpp>
 
 #include <instance/physical_device_instance.hpp>
 #include <instance/queue_instance.hpp>
@@ -12,14 +14,11 @@
 #include <instance/command_pool_instance.hpp>
 #include <instance/command_buffer_instance.hpp>
 #include <instance/render_pass_instance.hpp>
-
-#include <frame_buffers.hpp>
+#include <instance/vertex_buffer_instance.hpp>
 
 #include <types/engine_config.hpp>
 
 #include <query/query_queue_families.hpp>
-
-#include <event/event_group.hpp>
 
 namespace PKEngine {
     class EngineInstance {
@@ -34,17 +33,14 @@ namespace PKEngine {
         ImageViewsInstance image_views;
         PipelineInstance pipeline;
         RenderPassInstance render_pass;
-
         FrameBuffers frame_buffers;
-
         CommandPoolInstance command_pool;
+        VertexBufferInstance vertex_buffer;
         CommandBufferInstance command_buffer;
 
-    public:
-        EventGroup<"Start Event", void()> start_group;
-        EventGroup<"Update Event", void()> update_group;
-        EventGroup<"Window Close Event", void()> close_group;
+        engine_flags_t flags;
 
+    public:
         inline explicit EngineInstance(VkInstance instance, instance_config_t & config):
             window(config),
             surface(instance, window),
@@ -59,24 +55,24 @@ namespace PKEngine {
             render_pass(logical_device, swap_chain.image_format),
             frame_buffers(logical_device, swap_chain, image_views, pipeline.render_pass()),
             command_pool(logical_device, physical_device, surface),
-            command_buffer(logical_device, command_pool) {  }
+            vertex_buffer(logical_device, physical_device),
+            // TODO: add sync objects
+            command_buffer(logical_device, command_pool) { }
 
         inline void start() {
             create_sync_objects();
 
-            start_group();
+//            on_start();
 
-            while (!glfwWindowShouldClose(window.handle())) {
+            while (!(glfwWindowShouldClose(window.handle()) || flags.awaiting_exit)) {
                 glfwPollEvents();
 
                 update();
-
-                update_group();
             }
 
             vkDeviceWaitIdle(logical_device);
 
-            close_group();
+//            on_exit();
 
             vkDestroySemaphore(logical_device, image_available_semaphore, nullptr);
             vkDestroySemaphore(logical_device, render_finished_semaphore, nullptr);
@@ -110,7 +106,7 @@ namespace PKEngine {
             vkAcquireNextImageKHR(logical_device, swap_chain, UINT64_MAX, image_available_semaphore, VK_NULL_HANDLE, &image_index);
 
             vkResetCommandBuffer(command_buffer, 0);
-            command_buffer.record(image_index, render_pass, frame_buffers, swap_chain, pipeline);
+            command_buffer.record(image_index, render_pass, frame_buffers, swap_chain, pipeline, vertex_buffer);
 
             VkSubmitInfo submit_info{};
             submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;

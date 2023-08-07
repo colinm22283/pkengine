@@ -44,15 +44,16 @@ namespace PKEngine {
     class Exception : public std::exception {
     public:
         virtual const char * what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW { return "Unknown exception"; }
-        virtual const exception_code_t code() const = 0;
-        virtual const bool is_vulkan_error() const = 0;
-        virtual const bool is_glfw_error() const = 0;
+        virtual const exception_code_t code() const { return -1; }
+        virtual const bool is_vulkan_error() const { return false; }
+        virtual const bool is_glfw_error() const { return false; }
     };
 
     namespace Exceptions {
-        PK_EXCEPTION(VulkanNotSupported,  "Vulkan is not supported on current system",      1);
-        PK_EXCEPTION(SuitableGPUNotFound, "Unable to locate a GPU with necessary features", 2);
-        PK_EXCEPTION(UnableToOpenFile,        "Unable to open file",                        3)
+        PK_EXCEPTION(VulkanNotSupported,                 "Vulkan is not supported on current system",      1);
+        PK_EXCEPTION(SuitableGPUNotFound,                "Unable to locate a GPU with necessary features", 2);
+        PK_EXCEPTION(UnableToOpenFile,                   "Unable to open file",                            3);
+        PK_EXCEPTION(UnableToGetSuitableMemoryType,      "Unable to get suitable memory type",             4);
 
         PK_GLFW_EXCEPTION(UnableToCreateGLFWWindow, "Unable to create glfw window handle", 1);
         PK_GLFW_EXCEPTION(GLFWInitError,            "Unable to initialize glfw",           2);
@@ -72,6 +73,10 @@ namespace PKEngine {
         PK_VULKAN_EXCEPTION(UnableToCreateCommandPool,         "Unable to create command pool",             13);
         PK_VULKAN_EXCEPTION(UnableToCreateCommandBuffer,       "Unable to create command buffer",           14);
         PK_VULKAN_EXCEPTION(UnableToBeginCommandBuffer,        "Unable to begin command buffer",            15);
+        PK_VULKAN_EXCEPTION(UnableToCreateSemaphore,           "Unable to create semaphore",                16);
+        PK_VULKAN_EXCEPTION(UnableToCreateFence,               "Unable to create fence"    ,                17);
+        PK_VULKAN_EXCEPTION(UnableToCreateVertexBuffer,        "Unable to create vertex buffer",            18);
+        PK_VULKAN_EXCEPTION(UnableToAllocateBufferMemory,      "Unable to allocate vertex buffer memory",   19);
 
         PK_DUAL_EXCEPTION(UnableToCreateWindowSurface, "Unable to create window surface", 1);
     }
