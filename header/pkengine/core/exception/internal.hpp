@@ -42,6 +42,9 @@ namespace PKEngine::Exception {
         // vulkan exceptions
         PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_instance_creation, "Unable to create vulkan instance");
         PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_surface_creation, "Unable to create vulkan surface");
-        PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_cant_get_surface_support, "Unable to get vulkan surface support");
+        PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_unable_to_get_surface_support, "Unable to get vulkan surface support");
+        PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_unable_to_create_logical_device, "Unable to create vulkan logical device");
+        PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_unable_to_create_swap_chain, "Unable to create vulkan swap chain");
+        PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_unable_to_create_image_view, "Unable to create vulkan image view");
     }
 }

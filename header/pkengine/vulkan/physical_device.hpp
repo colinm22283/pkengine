@@ -47,5 +47,7 @@ namespace PKEngine::Vulkan {
             if (physical_device == VK_NULL_HANDLE) throw Exception::Internal::cant_find_vulkan_capable_gpu();
         }
         inline void free() { }
+
+        inline VkPhysicalDevice handle() const noexcept { return physical_device; }
     };
 }

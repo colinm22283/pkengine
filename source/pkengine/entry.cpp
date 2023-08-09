@@ -4,15 +4,8 @@
 
 using namespace PKEngine;
 
-constexpr Logger<
-    Util::ANSI::BlueFg,
-    "MAIN"
-> logger;
+constexpr Logger<Util::ANSI::BlueFg, "Entry"> logger;
 
 int main() {
-    logger << "Start";
-
     engine_instance::run();
-
-    logger << "Exit";
 }

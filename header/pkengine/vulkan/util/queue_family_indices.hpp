@@ -30,7 +30,7 @@ namespace PKEngine::Vulkan {
 
                 VkBool32 presentSupport = false;
                 if (vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface.handle(), &presentSupport) != VK_SUCCESS) {
-                    throw Exception::Internal::vulkan_cant_get_surface_support();
+                    throw Exception::Internal::vulkan_unable_to_get_surface_support();
                 }
                 if (presentSupport) {
                     present_family = i;
@@ -41,5 +41,41 @@ namespace PKEngine::Vulkan {
                 i++;
             }
         }
+    };
+    template<const auto & surface, const auto & device>
+    class ConstQueueFamilyIndices {
+    public:
+        std::optional<uint32_t> graphics_family;
+        std::optional<uint32_t> present_family;
+
+        [[nodiscard]] inline bool is_complete() const noexcept { return graphics_family.has_value() && present_family.has_value(); }
+
+        inline void init() {
+            uint32_t family_count = 0;
+            vkGetPhysicalDeviceQueueFamilyProperties(device.handle(), &family_count, nullptr);
+
+            std::vector<VkQueueFamilyProperties> queue_families(family_count);
+            vkGetPhysicalDeviceQueueFamilyProperties(device.handle(), &family_count, queue_families.data());
+
+            int i = 0;
+            for (const auto & queueFamily : queue_families) {
+                if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+                    graphics_family = i;
+                }
+
+                VkBool32 presentSupport = false;
+                if (vkGetPhysicalDeviceSurfaceSupportKHR(device.handle(), i, surface.handle(), &presentSupport) != VK_SUCCESS) {
+                    throw Exception::Internal::vulkan_unable_to_get_surface_support();
+                }
+                if (presentSupport) {
+                    present_family = i;
+                }
+
+                if (is_complete()) break;
+
+                i++;
+            }
+        }
+        inline void free() { }
     };
 }

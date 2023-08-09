@@ -6,6 +6,10 @@
 #include "../vulkan/vulkan_instance.hpp"
 #include "../vulkan/surface.hpp"
 #include "../vulkan/physical_device.hpp"
+#include "../vulkan/logical_device.hpp"
+#include "../vulkan/vulkan_queue.hpp"
+#include "../vulkan/swap_chain.hpp"
+#include "../vulkan/image_views.hpp"
 
 namespace PKEngine {
     class engine_instance {
@@ -25,18 +29,39 @@ namespace PKEngine {
     protected:
         static Vulkan::Surface<vulkan_instance, window> vulkan_surface;
         static Vulkan::PhysicalDevice<vulkan_instance, vulkan_surface> physical_device;
+        static Vulkan::ConstQueueFamilyIndices<vulkan_surface, physical_device> queue_family_indices;
+        static Vulkan::LogicalDevice<physical_device, queue_family_indices> logical_device;
+        static Vulkan::VulkanQueue<logical_device> graphics_queue, present_queue;
+        static Vulkan::SwapChain<physical_device, logical_device, vulkan_surface, window, queue_family_indices> swap_chain;
+        static Vulkan::ImageViews<logical_device, swap_chain> image_views;
 
         static inline void init() {
             glfw_instance.init();
-            engine_instance::vulkan_instance.init();
+            vulkan_instance.init();
 
             window.init();
 
             vulkan_surface.init();
             physical_device.init();
+            queue_family_indices.init();
+            logical_device.init();
+
+            graphics_queue.init(queue_family_indices.graphics_family.value());
+            present_queue.init(queue_family_indices.present_family.value());
+
+            swap_chain.init();
+            image_views.init();
         }
 
         static inline void free() {
+            image_views.free();
+            swap_chain.free();
+
+            present_queue.free();
+            graphics_queue.free();
+
+            logical_device.free();
+            queue_family_indices.free();
             physical_device.free();
             vulkan_surface.free();
 
@@ -52,7 +77,7 @@ namespace PKEngine {
             }
         }
 
-        public:
+    public:
         static inline void run() {
             logger << "Starting PKEngine...";
 
