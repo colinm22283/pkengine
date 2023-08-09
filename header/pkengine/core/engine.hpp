@@ -10,6 +10,7 @@
 #include "../vulkan/vulkan_queue.hpp"
 #include "../vulkan/swap_chain.hpp"
 #include "../vulkan/image_views.hpp"
+#include "../vulkan/vulkan_pipeline.hpp"
 
 namespace PKEngine {
     class engine_instance {
@@ -34,6 +35,7 @@ namespace PKEngine {
         static Vulkan::VulkanQueue<logical_device> graphics_queue, present_queue;
         static Vulkan::SwapChain<physical_device, logical_device, vulkan_surface, window, queue_family_indices> swap_chain;
         static Vulkan::ImageViews<logical_device, swap_chain> image_views;
+        static Vulkan::VulkanPipeline vulkan_pipeline;
 
         static inline void init() {
             glfw_instance.init();
@@ -51,9 +53,11 @@ namespace PKEngine {
 
             swap_chain.init();
             image_views.init();
+            vulkan_pipeline.init();
         }
 
         static inline void free() {
+            vulkan_pipeline.free();
             image_views.free();
             swap_chain.free();
 
