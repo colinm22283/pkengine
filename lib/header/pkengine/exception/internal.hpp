@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <algorithm>
 
-#include "../../util/const_string.hpp"
+#include "pkengine/util/const_string.hpp"
 
 #include "exception_base.hpp"
 
@@ -32,6 +32,7 @@ namespace PKEngine::Exception {
 
     namespace Internal {
         // standard exceptions
+        PKENGINE_INTERNAL_EXCEPTION(cant_open_log_file, "Unable to open log file");
         PKENGINE_INTERNAL_EXCEPTION(cant_find_vulkan_capable_gpu, "Unable to locate vulkan capable GPU");
 
         PKENGINE_INTERNAL_EXCEPTION(unable_to_get_suitable_memory_type, "Unable to get suitable memory type");

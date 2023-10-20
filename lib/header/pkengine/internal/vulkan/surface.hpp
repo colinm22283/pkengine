@@ -2,9 +2,9 @@
 
 #include <vulkan/vulkan.h>
 
-#include "../logger/logger.hpp"
+#include "../../logger/logger.hpp"
 
-#include "../glfw/window.hpp"
+#include "../../internal/glfw/window.hpp"
 
 #include "vulkan_instance.hpp"
 

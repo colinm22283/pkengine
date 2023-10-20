@@ -5,9 +5,9 @@
 #include "vulkan_instance.hpp"
 #include "surface.hpp"
 
-#include "util/queue_family_indices.hpp"
-#include "util/are_extensions_supported.hpp"
-#include "util/swap_chain_support.hpp"
+#include "pkengine/internal/vulkan/util/queue_family_indices.hpp"
+#include "pkengine/internal/vulkan/util/are_extensions_supported.hpp"
+#include "pkengine/internal/vulkan/util/swap_chain_support.hpp"
 
 namespace PKEngine::Vulkan {
     template<const VulkanInstance & vulkan_instance, const auto & surface>

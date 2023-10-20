@@ -2,11 +2,11 @@
 
 #include <vulkan/vulkan.h>
 
-#include "../core/engine_info.hpp"
+#include "pkengine/engine_info.hpp"
 
-#include "../config/application_config.hpp"
+#include "engine_config.hpp"
 
-#include "../logger/logger.hpp"
+#include "pkengine/logger/logger.hpp"
 
 namespace PKEngine::Vulkan {
     class VulkanInstance {

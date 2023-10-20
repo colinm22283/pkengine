@@ -9,6 +9,7 @@
 #include "../util/const_string.hpp"
 
 #include "config.hpp"
+#include "stream.hpp"
 
 namespace PKEngine {
     enum _logger_level_t { _LL_STATUS, _LL_SUCCESS, _LL_WARNING, _LL_ERROR };
@@ -19,16 +20,15 @@ namespace PKEngine {
     class _Logger {
     protected:
         static inline void print_header() {
-            if constexpr (!logger_config::enable) return;
-            else if constexpr (level == _LL_STATUS)  fputs(base_color::string + prefix, stdout);
-            else if constexpr (level == _LL_SUCCESS) fputs(logger_config::success_color::string + prefix, stdout);
-            else if constexpr (level == _LL_WARNING) fputs(logger_config::warning_color::string + prefix, stdout);
-            else if constexpr (level == _LL_ERROR)   fputs(logger_config::error_color::string + prefix, stdout);
+            if constexpr (level == _LL_STATUS)  logger_stream_instance << (base_color::string + prefix);
+            else if constexpr (level == _LL_SUCCESS) logger_stream_instance << (LoggerConfig::success_color::string + prefix);
+            else if constexpr (level == _LL_WARNING) logger_stream_instance << (LoggerConfig::warning_color::string + prefix);
+            else if constexpr (level == _LL_ERROR)   logger_stream_instance << (LoggerConfig::error_color::string + prefix);
         }
         static inline void print_footer() { // I love compiler bugs :)
             fputs(
-                Util::ConstString<logger_config::reset_color::string.size() + 1>(
-                    logger_config::reset_color::string.data,
+                Util::ConstString<LoggerConfig::reset_color::string.size() + 1>(
+                    LoggerConfig::reset_color::string.data,
                     "\n"
                 ),
                 stdout
@@ -40,17 +40,17 @@ namespace PKEngine {
         public:
             consteval LoggerOutStream() = default;
             inline ~LoggerOutStream() {
-                 if constexpr (logger_config::enable && is_base) print_footer();
+                 if constexpr (is_base) print_footer();
             }
 
             template<typename T>
             inline LoggerOutStream<false> log(T & value) const noexcept {
-                if constexpr (logger_config::enable) std::cout << value;
+                logger_stream_instance << value;
                 return LoggerOutStream<false>();
             }
             template<typename T>
             inline LoggerOutStream<false> log(T && value) const noexcept {
-                if constexpr (logger_config::enable) std::cout << value;
+                logger_stream_instance << value;
                 return LoggerOutStream<false>();
             }
             template<typename T> inline LoggerOutStream<false> operator<<(T & value) const noexcept { return log<T>(value); }
@@ -61,18 +61,16 @@ namespace PKEngine {
 
         template<typename T>
         inline LoggerOutStream<true> log(T & value) const noexcept {
-            if constexpr (!logger_config::enable) return LoggerOutStream<true>();
             std::lock_guard<std::mutex> lock(_logger_mutex);
             print_header();
-            std::cout << value;
+            logger_stream_instance << value;
             return LoggerOutStream<true>();
         }
         template<typename T>
         inline LoggerOutStream<true> log(T && value) const noexcept {
-            if constexpr (!logger_config::enable) return LoggerOutStream<true>();
             std::lock_guard<std::mutex> lock(_logger_mutex);
             print_header();
-            std::cout << value;
+            logger_stream_instance << value;
             return LoggerOutStream<true>();
         }
         template<typename T> inline LoggerOutStream<true> operator<<(T & value) const noexcept { return log<T>(value); }

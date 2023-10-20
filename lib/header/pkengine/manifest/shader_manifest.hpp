@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../vulkan/shader_module.hpp"
-#include "../vulkan/pipeline/shader_sequence.hpp"
+#include "../internal/vulkan/shader_module.hpp"
+#include "../internal/vulkan/pipeline/shader_sequence.hpp"
 
 namespace PKEngine::Manifest {
     using namespace Vulkan;

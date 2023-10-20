@@ -3,9 +3,9 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include "../core/exception/internal.hpp"
+#include "pkengine/exception/internal.hpp"
 
-#include "../logger/logger.hpp"
+#include "pkengine/logger/logger.hpp"
 
 #include "glfw.hpp"
 

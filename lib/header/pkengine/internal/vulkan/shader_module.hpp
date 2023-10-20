@@ -4,12 +4,12 @@
 
 #include <fstream>
 
-#include "../core/exception/internal.hpp"
+#include "pkengine/exception/internal.hpp"
 
-#include "../util/const_string.hpp"
-#include "../logger/logger.hpp"
+#include "pkengine/util/const_string.hpp"
+#include "pkengine/logger/logger.hpp"
 
-#include "util/spv_buffer.hpp"
+#include "pkengine/internal/vulkan/util/spv_buffer.hpp"
 
 namespace PKEngine::Vulkan {
     class ShaderModule {

@@ -5,11 +5,11 @@
 namespace PKEngine {
     constexpr engine_config_t engine_config = {
         .application = {
-            .name = "PKEngine Test App",
+            .name = "PKEngine Template Project",
             .version = 0.1,
         },
         .window = {
-            .title = "PKEngine Test App",
+            .title = "PKEngine Template Project",
             .width = 800,
             .height = 800,
         }

@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include "../logger/logger.hpp"
+#include "pkengine/logger/logger.hpp"
 
 namespace PKEngine::Vulkan {
     template<const auto & logical_device>

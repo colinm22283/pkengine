@@ -4,7 +4,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include "../surface.hpp"
+#include "pkengine/internal/vulkan/surface.hpp"
 
 namespace PKEngine::Vulkan {
     template<const auto & surface>

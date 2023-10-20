@@ -2,30 +2,30 @@
 
 #include <cmath>
 
-#include "../glfw/glfw_instance.hpp"
-#include "../glfw/window.hpp"
+#include "internal/glfw/glfw_instance.hpp"
+#include "internal/glfw/window.hpp"
 
-#include "../vulkan/vulkan_instance.hpp"
-#include "../vulkan/surface.hpp"
-#include "../vulkan/physical_device.hpp"
-#include "../vulkan/logical_device.hpp"
-#include "../vulkan/vulkan_queue.hpp"
-#include "../vulkan/swap_chain.hpp"
-#include "../vulkan/image_views.hpp"
-#include "../vulkan/render_pass.hpp"
-#include "../vulkan/pipeline/vulkan_pipeline.hpp"
-#include "../vulkan/frame_buffer.hpp"
-#include "../vulkan/frame_buffers.hpp"
-#include "../vulkan/command_pool.hpp"
-#include "../vulkan/command_buffer.hpp"
-#include "../vulkan/sync/semaphore.hpp"
-#include "../vulkan/sync/fence.hpp"
-#include "../vulkan/shader/vertex_buffer.hpp"
-#include "../vulkan/shader/index_buffer.hpp"
+#include "internal/vulkan/vulkan_instance.hpp"
+#include "internal/vulkan/surface.hpp"
+#include "internal/vulkan/physical_device.hpp"
+#include "internal/vulkan/logical_device.hpp"
+#include "internal/vulkan/vulkan_queue.hpp"
+#include "internal/vulkan/swap_chain.hpp"
+#include "internal/vulkan/image_views.hpp"
+#include "internal/vulkan/render_pass.hpp"
+#include "internal/vulkan/pipeline/vulkan_pipeline.hpp"
+#include "internal/vulkan/frame_buffer.hpp"
+#include "internal/vulkan/frame_buffers.hpp"
+#include "internal/vulkan/command_pool.hpp"
+#include "internal/vulkan/command_buffer.hpp"
+#include "internal/vulkan/sync/semaphore.hpp"
+#include "internal/vulkan/sync/fence.hpp"
+#include "internal/vulkan/shader/vertex_buffer.hpp"
+#include "internal/vulkan/shader/index_buffer.hpp"
 
-#include "../manifest/shader_manifest.hpp"
+#include "manifest/shader_manifest.hpp"
 
-#include <memory_config.hpp>
+#include "memory_config.hpp"
 
 namespace PKEngine {
     class engine_instance {
@@ -69,6 +69,8 @@ namespace PKEngine {
 
     protected:
         static inline void init() {
+            logger_stream_instance.init();
+
             glfw_instance.init();
             vulkan_instance.init();
 
@@ -132,6 +134,8 @@ namespace PKEngine {
 
             vulkan_instance.free();
             glfw_instance.free();
+
+            logger_stream_instance.free();
         }
 
         static inline void enter_main_loop() {
@@ -144,14 +148,28 @@ namespace PKEngine {
 
                 iter += 0.001;
 
-                if (iter > 50) {
+                if (iter > 5) {
+                    float b = std::fmod(iter, (float) M_PI / 2);
+                    float d = 1 / (std::cos(b) + std::sin(b));
+                    float c = std::cos(iter);
+                    float s = std::sin(iter);
+
                     vertex_buffer.load_buffer({
-                                                  Vulkan::Vertex(0.9 * std::cos(iter), 0.9 * std::sin(iter), 0.2),
-                                                  Vulkan::Vertex(-0.2 * std::sin(iter), 0.2 * std::cos(iter), 0.7),
-                                                  Vulkan::Vertex(-0.2 * std::cos(iter), -0.2 * std::sin(iter), 1),
-                                                  Vulkan::Vertex(-0.2 * std::cos(iter), -0.2 * std::sin(iter), 1),
-                                                  Vulkan::Vertex(0.2 * std::sin(iter), -0.2 * std::cos(iter), 0.7),
-                                                  Vulkan::Vertex(0.9 * std::cos(iter), 0.9 * std::sin(iter), 0.2),
+                                                  Vulkan::Vertex(d * c, d * s, 0.2),
+                                                  Vulkan::Vertex(-0.2 * s, 0.2 * c, 0.7),
+                                                  Vulkan::Vertex(-0.2 * c, -0.2 * s, 1),
+                                                  Vulkan::Vertex(-0.2 * c, -0.2 * s, 1),
+                                                  Vulkan::Vertex(0.2 * s, -0.2 * c, 0.7),
+                                                  Vulkan::Vertex(d * c, d * s, 0.2),
+                                                  Vulkan::Vertex(1, -1, 1),
+                                                  Vulkan::Vertex(1, 0, 0.2),
+                                                  Vulkan::Vertex(0, -1, 0.2),
+                                                  Vulkan::Vertex(-1, 1, 1),
+                                                  Vulkan::Vertex(-1, 0, 0.2),
+                                                  Vulkan::Vertex(0, 1, 0.2),
+                                                  Vulkan::Vertex(1, 1, 1),
+                                                  Vulkan::Vertex(0, 1, 0.2),
+                                                  Vulkan::Vertex(1, 0, 0.2),
                                                   Vulkan::Vertex(-1, -1, 1),
                                                   Vulkan::Vertex(0, -1, 0.2),
                                                   Vulkan::Vertex(-1, 0, 0.2),

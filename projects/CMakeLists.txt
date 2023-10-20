@@ -20,10 +20,11 @@ function(new_project NAME SOURCES)
 
     if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
         message(STATUS "Building for Debug")
-        target_compile_definitions(${NAME} PUBLIC PKENGINE_LOGGER_ENABLE)
+        target_compile_definitions(${NAME} PUBLIC PKENGINE_LOGGER_ENABLE PKENGINE_LOG_FILE_ENABLE)
     else ()
         message(STATUS "Building for Release")
         target_compile_options(${NAME} PUBLIC -O3 -flto)
+        target_compile_definitions(${NAME} PUBLIC PKENGINE_LOG_FILE_ENABLE)
     endif ()
 
     macro(add_shader)

@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include "../../core/exception/internal.hpp"
+#include "pkengine/exception/internal.hpp"
 
 namespace PKEngine::Vulkan {
     template<const auto & logical_device>

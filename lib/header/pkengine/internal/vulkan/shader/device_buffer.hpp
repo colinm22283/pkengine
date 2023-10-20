@@ -2,11 +2,11 @@
 
 #include <cstring>
 
-#include "../util/choose_memory_type.hpp"
+#include "pkengine/internal/vulkan/util/choose_memory_type.hpp"
 
-#include "../../assert/runtime_assert.hpp"
+#include "pkengine/assert/runtime_assert.hpp"
 
-#include "../../core/exception/runtime.hpp"
+#include "pkengine/exception/runtime.hpp"
 
 namespace PKEngine::Vulkan {
     template<const auto & logical_device, const auto & physical_device, typename T, VkBufferUsageFlags usage>

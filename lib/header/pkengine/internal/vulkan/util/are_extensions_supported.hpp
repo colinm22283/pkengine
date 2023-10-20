@@ -5,7 +5,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include "../extensions.hpp"
+#include "pkengine/internal/vulkan/extensions.hpp"
 
 namespace PKEngine::Vulkan {
     inline bool are_extensions_supported(const VkPhysicalDevice & device) { // TODO: optimize!!!

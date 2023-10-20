@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../pipeline/bind_info.hpp"
+#include "pkengine/internal/vulkan/pipeline/bind_info.hpp"
 
 namespace PKEngine::Vulkan {
     class __attribute__((packed)) Vertex {

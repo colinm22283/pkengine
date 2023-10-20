@@ -2,7 +2,7 @@
 
 #include "config.hpp"
 
-#include "../core/exception/runtime.hpp"
+#include "../exception/runtime.hpp"
 
 namespace PKEngine::Assertion {
     template<typename ExceptionType>
