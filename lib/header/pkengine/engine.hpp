@@ -25,7 +25,9 @@
 
 #include "manifest/shader_manifest.hpp"
 
-#include "memory_config.hpp"
+#include "project.hpp"
+
+#include <memory_config.hpp>
 
 namespace PKEngine {
     class engine_instance {
@@ -237,6 +239,8 @@ namespace PKEngine {
 
                 return;
             }
+
+            if (start) start();
 
             enter_main_loop();
 

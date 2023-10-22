@@ -10,11 +10,10 @@
 
 #include "config.hpp"
 #include "stream.hpp"
+#include "logger_mutex.hpp"
 
 namespace PKEngine {
     enum _logger_level_t { _LL_STATUS, _LL_SUCCESS, _LL_WARNING, _LL_ERROR };
-
-    extern std::mutex _logger_mutex;
 
     template<_logger_level_t level, typename base_color, Util::ConstString prefix>
     class _Logger {
