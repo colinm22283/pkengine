@@ -15,7 +15,7 @@ function(new_project NAME SOURCES)
     find_package(Threads REQUIRED)
 
     add_executable(${NAME} ${SOURCES} ${PKENGINE_SOURCES})
-    target_include_directories(${NAME} PUBLIC config ${PROJECT_SOURCE_DIR}/lib/header)
+    target_include_directories(${NAME} PUBLIC config ${PROJECT_SOURCE_DIR}/lib/header header)
     target_link_libraries(${NAME} PUBLIC ${Vulkan_LIBRARIES} glfw Threads::Threads)
 
     if (${CMAKE_BUILD_TYPE} MATCHES "Debug")

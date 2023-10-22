@@ -1,4 +1,4 @@
-#include "pkengine/manifest/shader_manifest.hpp"
+#include <pkengine-internal/manifest/shader_manifest.hpp>
 
 using namespace PKEngine::Manifest;
 

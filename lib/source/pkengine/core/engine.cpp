@@ -1,4 +1,4 @@
-#include "pkengine/engine.hpp"
+#include <pkengine-internal/engine.hpp>
 
 using namespace PKEngine;
 

@@ -1,4 +1,4 @@
 new_project(
     default_project
-    main.cpp
+    source/main.cpp
 )
