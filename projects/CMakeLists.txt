@@ -28,18 +28,18 @@ function(new_project NAME SOURCES)
         foreach (SOURCE ${SOURCES})
             message(STATUS "Adding target for ${SOURCE}")
 
-#            add_custom_target(
-#                "shader.${SOURCE}"
-#                COMMAND glslc ${SOURCE} -o ${SOURCE}.spv
-#                WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/projects/${NAME}/shaders"
-#            )
-#            add_dependencies(${NAME} "shader.${SOURCE}")
-#            file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders)
-#            add_custom_command(
-#                TARGET "shader.${SOURCE}"
-#                POST_BUILD COMMAND mv ${SOURCE}.spv ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders/${SOURCE}.spv
-#                WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/projects/${NAME}/shaders"
-#            )
+            add_custom_target(
+                "shader.${SOURCE}"
+                COMMAND glslc ${SOURCE} -o ${SOURCE}.spv
+                WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/projects/${NAME}/shaders"
+            )
+            add_dependencies(${NAME} "shader.${SOURCE}")
+            file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders)
+            add_custom_command(
+                TARGET "shader.${SOURCE}"
+                POST_BUILD COMMAND mv ${SOURCE}.spv ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders/${SOURCE}.spv
+                WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/projects/${NAME}/shaders"
+            )
 
             list(APPEND "${NAME}_SHADER_OUTPUT" "shader/${SOURCE}")
         endforeach ()
