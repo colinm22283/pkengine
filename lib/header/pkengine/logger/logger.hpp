@@ -26,10 +26,7 @@ namespace PKEngine {
         }
         static inline void print_footer() { // I love compiler bugs :)
             fputs(
-                Util::ConstString<LoggerConfig::reset_color::string.size() + 1>(
-                    LoggerConfig::reset_color::string.data,
-                    "\n"
-                ),
+                (LoggerConfig::reset_color::string + Util::ConstString("\n")).c_str(),
                 stdout
             );
         }
