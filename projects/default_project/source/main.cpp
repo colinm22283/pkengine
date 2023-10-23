@@ -5,7 +5,5 @@
 void init() {
     using namespace PKEngine;
 
-    auto & clock = object_tree.add<ClockController>(10);
-
-    clock.add<ClockController>(20);
+    object_tree.add<ClockController>(10);
 }

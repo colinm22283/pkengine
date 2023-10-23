@@ -12,9 +12,9 @@ public:
 
 
     inline void start() override {
-        std::cout << "Clock initialized\n";
+        logger << "Clock initialized\n";
     }
     inline void update() override {
-        std::cout << "Time: " << time++ << "\n";
+        logger << "Time: " << time++ << "\n";
     }
 };
