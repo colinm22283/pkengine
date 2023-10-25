@@ -4,6 +4,6 @@
 
 namespace PKEngine {
     constexpr memory_config_t memory_config = {
-        .vertex_buffer_initial_allocation = 2048,
+        .vertex_buffer_allocation = 2048,
     };
 }

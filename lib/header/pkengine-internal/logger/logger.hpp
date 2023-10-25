@@ -25,10 +25,7 @@ namespace PKEngine {
             else if constexpr (level == _LL_ERROR)   logger_stream_instance << (LoggerConfig::error_color::string + prefix);
         }
         static inline void print_footer() { // I love compiler bugs :)
-            fputs(
-                (LoggerConfig::reset_color::string + Util::ConstString("\n")).c_str(),
-                stdout
-            );
+            puts(LoggerConfig::reset_color::string.c_str());
         }
 
         template<bool is_base>

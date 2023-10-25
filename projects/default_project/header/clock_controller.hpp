@@ -10,11 +10,10 @@ public:
 
     explicit inline ClockController(int a): time(a) { }
 
-
-    inline void start() override {
+    inline void start() override { BaseNode::start();
         logger << "Clock initialized\n";
     }
-    inline void update() override {
+    inline void update() override { BaseNode::update();
         logger << "Time: " << time++ << "\n";
     }
 };

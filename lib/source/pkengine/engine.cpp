@@ -1,4 +1,4 @@
-#include <pkengine-internal/engine.hpp>
+#include "pkengine-internal/engine.hpp"
 
 using namespace PKEngine;
 
@@ -21,7 +21,7 @@ Vulkan::Pipeline::VulkanPipeline<engine_instance::logical_device, engine_instanc
 
 Vulkan::FrameBuffers<engine_instance::logical_device, engine_instance::swap_chain, engine_instance::render_pass, engine_instance::image_views> engine_instance::frame_buffers;
 Vulkan::CommandPool<engine_instance::logical_device, engine_instance::queue_family_indices> engine_instance::command_pool;
-Vulkan::CommandBuffer<engine_instance::logical_device, engine_instance::command_pool> engine_instance::command_buffer;
+Vulkan::RenderCommandBuffer<engine_instance::logical_device, engine_instance::command_pool> engine_instance::command_buffer;
 
 Vulkan::Semaphore<engine_instance::logical_device> engine_instance::render_complete_semaphore;
 Vulkan::Fence<engine_instance::logical_device, true> engine_instance::in_flight_fence;

@@ -17,11 +17,10 @@
 #include "internal/vulkan/frame_buffer.hpp"
 #include "internal/vulkan/frame_buffers.hpp"
 #include "internal/vulkan/command_pool.hpp"
-#include "internal/vulkan/command_buffer.hpp"
+#include "internal/vulkan/render_command_buffer.hpp"
 #include "internal/vulkan/sync/semaphore.hpp"
 #include "internal/vulkan/sync/fence.hpp"
 #include "internal/vulkan/shader/vertex_buffer.hpp"
-#include "internal/vulkan/shader/index_buffer.hpp"
 
 #include "manifest/shader_manifest.hpp"
 
@@ -46,7 +45,7 @@ namespace PKEngine {
         static GLFW::Window window;
 
         // vulkan objects
-    protected:
+    public:
         static Vulkan::Surface<vulkan_instance, window> vulkan_surface;
         static Vulkan::PhysicalDevice<vulkan_instance, vulkan_surface> physical_device;
         static Vulkan::ConstQueueFamilyIndices<vulkan_surface, physical_device> queue_family_indices;
@@ -66,7 +65,7 @@ namespace PKEngine {
 
         static Vulkan::FrameBuffers<logical_device, swap_chain, render_pass, image_views> frame_buffers;
         static Vulkan::CommandPool<logical_device, queue_family_indices> command_pool;
-        static Vulkan::CommandBuffer<logical_device, command_pool> command_buffer;
+        static Vulkan::RenderCommandBuffer<logical_device, command_pool> command_buffer;
 
         static Vulkan::Semaphore<logical_device> render_complete_semaphore;
         static Vulkan::Fence<logical_device, true> in_flight_fence;
@@ -94,7 +93,7 @@ namespace PKEngine {
 
             Shaders::init<logical_device>();
 
-            vertex_buffer.init(memory_config.vertex_buffer_initial_allocation);
+            vertex_buffer.init(memory_config.vertex_buffer_allocation);
 
             render_pass.init();
             vulkan_pipeline.init();
@@ -142,60 +141,25 @@ namespace PKEngine {
             logger_stream_instance.free();
         }
 
-        static inline void enter_main_loop() {
-            float iter = 0;
+        static inline void enter_main_loop() noexcept {
+            try {
+                while (!glfwWindowShouldClose(window.handle())) {
+                    glfwPollEvents();
 
-            while (!glfwWindowShouldClose(window.handle())) {
-                glfwPollEvents();
+                    object_tree.update();
 
-                object_tree.update();
+                    draw_frame();
 
-                draw_frame();
-
-                iter += 0.001;
-
-                if (iter > 5) {
-                    float b = std::fmod(iter, (float) M_PI / 2);
-                    float d = 1 / (std::cos(b) + std::sin(b));
-                    float c = std::cos(iter);
-                    float s = std::sin(iter);
-
-                    vertex_buffer.load_buffer({
-                                                  Vulkan::Vertex(d * c, d * s, 0.2),
-                                                  Vulkan::Vertex(-0.2 * s, 0.2 * c, 0.7),
-                                                  Vulkan::Vertex(-0.2 * c, -0.2 * s, 1),
-                                                  Vulkan::Vertex(-0.2 * c, -0.2 * s, 1),
-                                                  Vulkan::Vertex(0.2 * s, -0.2 * c, 0.7),
-                                                  Vulkan::Vertex(d * c, d * s, 0.2),
-                                                  Vulkan::Vertex(1, -1, 1),
-                                                  Vulkan::Vertex(1, 0, 0.2),
-                                                  Vulkan::Vertex(0, -1, 0.2),
-                                                  Vulkan::Vertex(-1, 1, 1),
-                                                  Vulkan::Vertex(-1, 0, 0.2),
-                                                  Vulkan::Vertex(0, 1, 0.2),
-                                                  Vulkan::Vertex(1, 1, 1),
-                                                  Vulkan::Vertex(0, 1, 0.2),
-                                                  Vulkan::Vertex(1, 0, 0.2),
-                                                  Vulkan::Vertex(-1, -1, 1),
-                                                  Vulkan::Vertex(0, -1, 0.2),
-                                                  Vulkan::Vertex(-1, 0, 0.2),
-                                              });
+                    vkDeviceWaitIdle(logical_device.handle());
                 }
-                else {
-                    vertex_buffer.load_buffer({
-                                                  Vulkan::Vertex(0.9 * std::cos(iter), 0.9 * std::sin(iter), 0.2),
-                                                  Vulkan::Vertex(-0.2 * std::sin(iter), 0.2 * std::cos(iter), 0.7),
-                                                  Vulkan::Vertex(-0.2 * std::cos(iter), -0.2 * std::sin(iter), 1),
-                                                  Vulkan::Vertex(-0.2 * std::cos(iter), -0.2 * std::sin(iter), 1),
-                                                  Vulkan::Vertex(0.2 * std::sin(iter), -0.2 * std::cos(iter), 0.7),
-                                                  Vulkan::Vertex(0.9 * std::cos(iter), 0.9 * std::sin(iter), 0.2),
-                                              });
-                }
-
-
             }
-
-            vkDeviceWaitIdle(logical_device.handle());
+            catch (Exception::ExceptionBase & ex) {
+                logger.error() << "Exception occurred during user code update";
+                switch (ex.exception_type()) {
+                    case Exception::ET_INTERNAL: logger.error() << "Internal error: " << ex.what(); break;
+                    case Exception::ET_RUNTIME: logger.error() << "Runtime error: " << ex.what(); break;
+                }
+            }
         }
 
         static inline void draw_frame() {
@@ -244,11 +208,24 @@ namespace PKEngine {
                 return;
             }
 
-            if (::init) ::init();
+            try {
+                if (::init) ::init();
 
-            object_tree.start();
+                object_tree.start();
 
-            enter_main_loop();
+                enter_main_loop();
+            }
+            catch (Exception::ExceptionBase & ex) {
+                logger.error() << "Exception occurred during user code initialization";
+                switch (ex.exception_type()) {
+                    case Exception::ET_INTERNAL: logger.error() << "Internal error: " << ex.what(); break;
+                    case Exception::ET_RUNTIME: logger.error() << "Runtime error: " << ex.what(); break;
+                }
+
+                free();
+
+                return;
+            }
 
             free();
 

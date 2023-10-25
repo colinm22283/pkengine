@@ -2,34 +2,44 @@
 
 #include "../pipeline/bind_info.hpp"
 
+#include <pkengine/math/vector3.hpp>
+
 namespace PKEngine::Vulkan {
     class __attribute__((packed)) Vertex {
     public:
         float x, y, z;
 
-        Vertex(): x(0), y(0), z(0) { }
-        Vertex(float _x, float _y, float _z): x(_x), y(_y), z(_z) { }
+        constexpr Vertex(): x(0), y(0), z(0) { }
+        constexpr Vertex(float _x, float _y, float _z): x(_x), y(_y), z(_z) { }
+        constexpr Vertex(Vertex & v) noexcept = default;
+        constexpr Vertex(Vertex && v) noexcept = default;
 
-        inline Vertex operator+(Vertex & v) const noexcept { return Vertex(x + v.x, y + v.y, z + v.z); }
-        inline Vertex operator+(Vertex && v) const noexcept { return Vertex(x + v.x, y + v.y, z + v.z); }
-        inline Vertex operator-(Vertex & v) const noexcept { return Vertex(x - v.x, y - v.y, z - v.z); }
-        inline Vertex operator-(Vertex && v) const noexcept { return Vertex(x - v.x, y - v.y, z - v.z); }
-        inline Vertex operator*(float & v) const noexcept { return Vertex(x * v, y * v, z * v); }
-        inline Vertex operator*(float && v) const noexcept { return Vertex(x * v, y * v, z * v); }
-        inline Vertex operator/(float & v) const noexcept { return Vertex(x / v, y / v, z / v); }
-        inline Vertex operator/(float && v) const noexcept { return Vertex(x / v, y / v, z / v); }
+        constexpr Vertex(Vector3 & v): x(v.x), y(v.y), z(v.z) { }
+        constexpr Vertex(Vector3 && v): x(v.x), y(v.y), z(v.z) { }
 
-        inline Vertex & operator+=(Vertex & v) noexcept { x += v.x; y += v.y; z += v.z; return *this; }
-        inline Vertex & operator+=(Vertex && v) noexcept { x += v.x; y += v.y; z += v.z; return *this; }
-        inline Vertex & operator-=(Vertex & v) noexcept { x -= v.x; y -= v.y; z -= v.z; return *this; }
-        inline Vertex & operator-=(Vertex && v) noexcept { x -= v.x; y -= v.y; z -= v.z; return *this; }
-        inline Vertex & operator*=(float & v) noexcept { x *= v; y *= v; z *= v; return *this; }
-        inline Vertex & operator*=(float && v) noexcept { x *= v; y *= v; z *= v; return *this; }
-        inline Vertex & operator/=(float & v) noexcept { x /= v; y /= v; z /= v; return *this; }
-        inline Vertex & operator/=(float && v) noexcept { x /= v; y /= v; z /= v; return *this; }
+        constexpr Vertex operator+(Vertex & v) const noexcept { return { x + v.x, y + v.y, z + v.z }; }
+        constexpr Vertex operator+(Vertex && v) const noexcept { return { x + v.x, y + v.y, z + v.z }; }
+        constexpr Vertex operator-(Vertex & v) const noexcept { return { x - v.x, y - v.y, z - v.z }; }
+        constexpr Vertex operator-(Vertex && v) const noexcept { return { x - v.x, y - v.y, z - v.z }; }
+        constexpr Vertex operator*(float & v) const noexcept { return { x * v, y * v, z * v }; }
+        constexpr Vertex operator*(float && v) const noexcept { return { x * v, y * v, z * v }; }
+        constexpr Vertex operator/(float & v) const noexcept { return { x / v, y / v, z / v }; }
+        constexpr Vertex operator/(float && v) const noexcept { return { x / v, y / v, z / v }; }
 
-        inline float dot_prod(Vertex & v) const noexcept { return x * v.x + y * v.y + z * v.z; }
-        inline float dot_prod(Vertex && v) const noexcept { return x * v.x + y * v.y + z * v.z; }
+        constexpr Vertex & operator+=(Vertex & v) noexcept { x += v.x; y += v.y; z += v.z; return *this; }
+        constexpr Vertex & operator+=(Vertex && v) noexcept { x += v.x; y += v.y; z += v.z; return *this; }
+        constexpr Vertex & operator-=(Vertex & v) noexcept { x -= v.x; y -= v.y; z -= v.z; return *this; }
+        constexpr Vertex & operator-=(Vertex && v) noexcept { x -= v.x; y -= v.y; z -= v.z; return *this; }
+        constexpr Vertex & operator*=(float & v) noexcept { x *= v; y *= v; z *= v; return *this; }
+        constexpr Vertex & operator*=(float && v) noexcept { x *= v; y *= v; z *= v; return *this; }
+        constexpr Vertex & operator/=(float & v) noexcept { x /= v; y /= v; z /= v; return *this; }
+        constexpr Vertex & operator/=(float && v) noexcept { x /= v; y /= v; z /= v; return *this; }
+
+        constexpr float dot_prod(Vertex & v) const noexcept { return x * v.x + y * v.y + z * v.z; }
+        constexpr float dot_prod(Vertex && v) const noexcept { return x * v.x + y * v.y + z * v.z; }
+
+        constexpr Vertex & operator=(Vertex const & v) { x = v.x; y = v.y; z = v.z; return *this; }
+        constexpr Vertex & operator=(Vertex && v) { x = v.x; y = v.y; z = v.z; return *this; }
 
         [[nodiscard]] static consteval auto get_bind_info() noexcept {
             return Pipeline::bind_info_t<1> {

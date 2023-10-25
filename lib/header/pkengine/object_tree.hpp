@@ -3,7 +3,7 @@
 #include <memory>
 #include <forward_list>
 
-#include "pkengine/node/base_node.hpp"
+#include <pkengine/component/component_base.hpp>
 
 namespace PKEngine {
     class _ObjectTree {
@@ -11,46 +11,40 @@ namespace PKEngine {
         class Node {
             friend class _ObjectTree;
         protected:
-            std::unique_ptr<BaseNode> data;
+            std::forward_list<std::unique_ptr<ComponentBase>> _components;
             std::forward_list<Node> branches;
 
-            inline void start() const noexcept {
-                data->start();
+            inline void start() {
+                for (auto & ele : _components) ele->start();
                 for (auto & ele : branches) ele.start();
             }
-            inline void update() const noexcept {
-                data->update();
+            inline void update() {
+                for (auto & ele : _components) ele->update();
                 for (auto & ele : branches) ele.update();
             }
 
         public:
-            inline Node(auto && uni_ptr): data(std::move(uni_ptr)) { }
-        };
+            [[nodiscard]] inline std::forward_list<std::unique_ptr<ComponentBase>> & components() noexcept { return _components; }
+            [[nodiscard]] inline std::forward_list<Node> & children() noexcept { return branches; }
 
-        template<typename T>
-        class NodeAccessor : public Node {
-        public:
-            inline operator T &() noexcept { return (T &) *(data.get()); }
-            inline T * operator->() noexcept { return (T *) data.get(); }
+            inline Node & add_node() { return branches.emplace_front(); }
 
-            template<typename _T, typename... Args>
-            inline NodeAccessor<_T> & add(Args &&... args) {
-                return (NodeAccessor<_T> &) branches.emplace_front(std::make_unique<_T>(std::forward<Args>(args)...));
+            template<typename T, typename... Args>
+            inline T & add_component(Args &&... args) {
+                _components.push_front(std::move(std::make_unique<T>(std::forward<Args>(args)...)));
+                return (T &) _components.front();
             }
         };
 
         std::forward_list<Node> branches;
 
     public:
-        template<typename T, typename... Args>
-        inline NodeAccessor<T> & add(Args &&... args) {
-            return (NodeAccessor<T> &) branches.emplace_front(std::make_unique<T>(std::forward<Args>(args)...));
-        }
+        inline Node & add_node() { return branches.emplace_front(); }
 
-        inline void start() const noexcept {
+        inline void start() {
             for (auto & ele : branches) ele.start();
         }
-        inline void update() const noexcept {
+        inline void update() {
             for (auto & ele : branches) ele.update();
         }
     };

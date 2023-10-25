@@ -4,6 +4,6 @@
 
 namespace PKEngine {
     struct memory_config_t {
-        VkDeviceSize vertex_buffer_initial_allocation;
+        VkDeviceSize vertex_buffer_allocation;
     };
 }
