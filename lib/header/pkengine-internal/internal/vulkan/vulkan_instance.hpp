@@ -63,6 +63,6 @@ namespace PKEngine::Vulkan {
             }
         }
 
-        inline VkInstance handle() const noexcept { return instance; }
+        [[nodiscard]] inline VkInstance handle() const noexcept { return instance; }
     };
 }

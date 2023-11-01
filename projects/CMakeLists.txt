@@ -1,5 +1,6 @@
+option(ENABLE_ASAN "Enable address sanitization" OFF)
+
 function(new_project NAME SOURCES)
-#    file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/build/${NAME})
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/build/${NAME})
 
     file(GLOB_RECURSE PKENGINE_SOURCES ${PROJECT_SOURCE_DIR}/lib/source/*.cpp)
@@ -15,6 +16,10 @@ function(new_project NAME SOURCES)
 
     if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
         message(STATUS "Building for Debug")
+        if (${ENABLE_ASAN})
+            target_compile_options(${NAME} PUBLIC -fsanitize=address)
+            target_link_libraries(${NAME} PUBLIC asan)
+        endif ()
         target_compile_definitions(${NAME} PUBLIC PKENGINE_LOGGER_ENABLE PKENGINE_LOG_FILE_ENABLE)
     else ()
         message(STATUS "Building for Release")

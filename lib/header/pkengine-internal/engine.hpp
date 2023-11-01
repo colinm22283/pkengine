@@ -29,6 +29,7 @@
 #include <memory_config.hpp>
 
 #include <pkengine/object_tree.hpp>
+#include <pkengine/time.hpp>
 
 namespace PKEngine {
     class engine_instance {
@@ -146,6 +147,8 @@ namespace PKEngine {
                 while (!glfwWindowShouldClose(window.handle())) {
                     glfwPollEvents();
 
+                    Time::update();
+
                     object_tree.update();
 
                     draw_frame();
@@ -209,6 +212,8 @@ namespace PKEngine {
             }
 
             try {
+                Time::start();
+
                 if (::init) ::init();
 
                 object_tree.start();

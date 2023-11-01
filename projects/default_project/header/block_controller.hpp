@@ -9,11 +9,13 @@ protected:
     PKEngine::Transform & pos;
 
 public:
-    explicit inline BlockController(PKEngine::Transform & _pos): pos(_pos) { }
+    inline BlockController(PKEngine::EngineNode & _parent, PKEngine::Transform & _pos): PKEngine::ComponentBase(_parent), pos(_pos) { }
 
     inline void update() override {
-        pos.position = { std::cos(time), std::sin(time), 0 };
+        using namespace PKEngine;
 
-        time += 0.001;
+        pos.position = Vector3(0.8f * std::cos(time), 0.8f * std::sin(time), 0);
+
+        time += (float) Time::delta_time().count() * 0.00000001f;
     }
 };

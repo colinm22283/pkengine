@@ -6,7 +6,7 @@ namespace PKEngine {
 
         constexpr Vector3(): x(0), y(0), z(0) { }
         constexpr Vector3(float _x, float _y, float _z): x(_x), y(_y), z(_z) { }
-        constexpr Vector3(Vector3 & v) noexcept = default;
+        constexpr Vector3(Vector3 const & v) noexcept = default;
         constexpr Vector3(Vector3 && v) noexcept = default;
 
         constexpr Vector3 operator+(Vector3 & v) const noexcept { return { x + v.x, y + v.y, z + v.z }; }
@@ -30,7 +30,7 @@ namespace PKEngine {
         constexpr float dot_prod(Vector3 & v) const noexcept { return x * v.x + y * v.y + z * v.z; }
         constexpr float dot_prod(Vector3 && v) const noexcept { return x * v.x + y * v.y + z * v.z; }
 
-        constexpr Vector3 & operator=(Vector3 const & v) { x = v.x; y = v.y; z = v.z; return *this; }
-        constexpr Vector3 & operator=(Vector3 && v) { x = v.x; y = v.y; z = v.z; return *this; }
+        constexpr Vector3 & operator=(Vector3 const & v) noexcept = default;
+        constexpr Vector3 & operator=(Vector3 && v) noexcept = default;
     };
 }

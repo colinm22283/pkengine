@@ -1,5 +1,6 @@
 #pragma once
 
+#include "component_base.hpp"
 #include <pkengine/math/vector3.hpp>
 
 namespace PKEngine {
@@ -7,6 +8,10 @@ namespace PKEngine {
     public:
         Vector3 position, rotation, scale;
 
-        inline Transform() = default;
+        using ComponentBase::ComponentBase;
+
+        Vector3 & absolute_position = position;
+        Vector3 & absolute_rotation = rotation;
+        Vector3 & absolute_scale = scale;
     };
 }
