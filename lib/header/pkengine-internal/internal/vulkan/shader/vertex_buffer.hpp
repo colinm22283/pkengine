@@ -74,6 +74,7 @@ namespace PKEngine::Vulkan {
 
         [[nodiscard]] inline VkBuffer buffer_handle() const noexcept { return vertex_buffer.buffer_handle(); }
 
+        [[nodiscard]] inline VkDeviceSize capacity() const noexcept { return _capacity; }
         [[nodiscard]] inline VkDeviceSize size() const noexcept { return _size; }
         [[nodiscard]] consteval auto get_bind_info() const noexcept { return Vertex::get_bind_info(); }
 
