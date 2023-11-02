@@ -21,6 +21,7 @@
 #include "internal/vulkan/sync/semaphore.hpp"
 #include "internal/vulkan/sync/fence.hpp"
 #include "internal/vulkan/shader/vertex_buffer.hpp"
+#include "internal/vulkan/shader/vertex_allocator.hpp"
 
 #include "manifest/shader_manifest.hpp"
 
@@ -60,6 +61,7 @@ namespace PKEngine {
         using ShaderSequence = Shaders::DefaultShaderSequence;
 
         static Vulkan::VertexBuffer<logical_device, physical_device> vertex_buffer;
+        static Vulkan::VertexAllocator<vertex_buffer> vertex_allocator;
 
         static Vulkan::RenderPass<logical_device, swap_chain> render_pass;
         static Vulkan::Pipeline::VulkanPipeline<logical_device, swap_chain, ShaderSequence, render_pass, vertex_buffer> vulkan_pipeline;
@@ -73,7 +75,7 @@ namespace PKEngine {
 
     protected:
         static inline void init() {
-            logger_stream_instance.init();
+            logger_file_stream.init();
 
             glfw_instance.init();
             vulkan_instance.init();
@@ -139,7 +141,7 @@ namespace PKEngine {
             vulkan_instance.free();
             glfw_instance.free();
 
-            logger_stream_instance.free();
+            logger_file_stream.free();
         }
 
         static inline void enter_main_loop() noexcept {
@@ -195,6 +197,8 @@ namespace PKEngine {
 
             try {
                 init();
+
+                Time::start();
             }
             catch (const Exception::ExceptionBase & ex) {
                 logger.error() << "Exception occurred during PKEngine initialization:";
@@ -212,8 +216,6 @@ namespace PKEngine {
             }
 
             try {
-                Time::start();
-
                 if (::init) ::init();
 
                 object_tree.start();

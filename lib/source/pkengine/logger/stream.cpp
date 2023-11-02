@@ -1,3 +1,5 @@
-#include <pkengine-internal/logger/stream.hpp>
+#include <pkengine-internal/logger/file_stream.hpp>
 
-PKEngine::_LoggerStream PKEngine::logger_stream_instance;
+#ifdef PKENGINE_LOG_FILE_ENABLE
+std::ofstream PKEngine::_LoggerFileStream::log_file;
+#endif

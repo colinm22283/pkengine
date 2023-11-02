@@ -8,40 +8,34 @@
 #include <logger_config.hpp>
 
 namespace PKEngine {
-    class _LoggerStream {
+    class _LoggerFileStream {
     protected:
 #ifdef PKENGINE_LOG_FILE_ENABLE
-        std::ofstream log_file;
+        static std::ofstream log_file;
 #endif
 
     public:
-        inline void init() {
+        inline void init() const {
             log_file.open(logger_config.log_file_path);
             if (!log_file.is_open()) throw Exception::Internal::cant_open_log_file();
         }
-        inline void free() { }
+        inline void free() const noexcept { }
 
         template<typename T>
         inline auto & operator<<(T & v) const noexcept {
-#ifdef PKENGINE_LOGGER_ENABLE
-            std::cout << v;
-#endif
 #ifdef PKENGINE_LOG_FILE_ENABLE
-//            log_file << v;
+            log_file << v;
 #endif
             return *this;
         }
         template<typename T>
         inline auto & operator<<(T && v) const noexcept {
-#ifdef PKENGINE_LOGGER_ENABLE
-            std::cout << v;
-#endif
 #ifdef PKENGINE_LOG_FILE_ENABLE
-//            log_file << std::forward(v);
+            log_file << std::forward<T>(v);
 #endif
             return *this;
         }
     };
 
-    extern _LoggerStream logger_stream_instance;
+    constexpr _LoggerFileStream logger_file_stream;
 }

@@ -15,6 +15,7 @@ Vulkan::SwapChain<engine_instance::physical_device, engine_instance::logical_dev
 Vulkan::ImageViews<engine_instance::logical_device, engine_instance::swap_chain> engine_instance::image_views;
 
 Vulkan::VertexBuffer<engine_instance::logical_device, engine_instance::physical_device> engine_instance::vertex_buffer;
+Vulkan::VertexAllocator<engine_instance::vertex_buffer> engine_instance::vertex_allocator;
 
 Vulkan::RenderPass<engine_instance::logical_device, engine_instance::swap_chain> engine_instance::render_pass;
 Vulkan::Pipeline::VulkanPipeline<engine_instance::logical_device, engine_instance::swap_chain, engine_instance::ShaderSequence, engine_instance::render_pass, engine_instance::vertex_buffer> engine_instance::vulkan_pipeline;

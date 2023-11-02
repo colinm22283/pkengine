@@ -16,6 +16,6 @@ public:
 
         pos.position = Vector3(0.8f * std::cos(time), 0.8f * std::sin(time), 0);
 
-        time += (float) Time::delta_time().count() * 0.00000001f;
+        time += (float) std::chrono::duration_cast<std::chrono::microseconds>(Time::delta_time()).count() * 0.0000005f;
     }
 };
