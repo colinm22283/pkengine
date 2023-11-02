@@ -97,6 +97,7 @@ namespace PKEngine {
             Shaders::init<logical_device>();
 
             vertex_buffer.init(memory_config.vertex_buffer_allocation);
+            vertex_allocator.init();
 
             render_pass.init();
             vulkan_pipeline.init();
@@ -120,6 +121,7 @@ namespace PKEngine {
             vulkan_pipeline.free();
             render_pass.free();
 
+            vertex_allocator.free();
             vertex_buffer.free();
 
             Shaders::free<logical_device>();

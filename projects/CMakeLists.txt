@@ -1,4 +1,4 @@
-option(ENABLE_ASAN "Enable address sanitization" OFF)
+set(ENABLE_ASAN "Enable address sanitization" ON)
 
 function(new_project NAME SOURCES)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/build/${NAME})
@@ -18,7 +18,8 @@ function(new_project NAME SOURCES)
 
     if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
         message(STATUS "Building for Debug")
-        if (${ENABLE_ASAN})
+        if (ENABLE_ASAN)
+            message(STATUS "Address sanitation enabled")
             target_compile_options(${NAME} PUBLIC -fsanitize=address)
             target_link_libraries(${NAME} PUBLIC asan)
         endif ()

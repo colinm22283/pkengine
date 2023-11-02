@@ -58,12 +58,12 @@ namespace PKEngine::Vulkan {
         }
 
     public:
-        inline void init(VkDeviceSize capacity) {
-            _capacity = capacity;
+        inline void init(VkDeviceSize __capacity) {
+            _capacity = __capacity;
             _size = 0;
 
-            staging_buffer.init(capacity);
-            vertex_buffer.init(capacity);
+            staging_buffer.init(__capacity);
+            vertex_buffer.init(__capacity);
         }
         inline void free() {
             _capacity = 0;
