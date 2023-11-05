@@ -1,33 +1,34 @@
 #pragma once
 
+#ifndef TEST
+#define TEST
+
 #include <cstdint>
 #include <algorithm>
+#include <exception>
 
 #include "../util/const_string.hpp"
 
-#include "exception_base.hpp"
-
 namespace PKEngine::Exception {
-    class InternalException : public ExceptionBase {
+    class InternalException : public std::exception {
     public:
-        [[nodiscard]] _exception_type_t exception_type() const noexcept final { return ET_INTERNAL; }
-        [[nodiscard]] virtual bool is_glfw_error() const noexcept { return false; }
-        [[nodiscard]] virtual bool is_vulkan_error() const noexcept { return false; }
+        [[nodiscard]] virtual inline bool is_glfw_error() const noexcept { return false; }
+        [[nodiscard]] virtual inline bool is_vulkan_error() const noexcept { return false; }
     };
 
 #define PKENGINE_INTERNAL_EXCEPTION(name, message)                                 \
     class name : public InternalException {                                        \
-        [[nodiscard]] const char * what() const noexcept final { return message; } \
+        [[nodiscard]] inline virtual const char * what() const noexcept final { return message; } \
     }
 #define PKENGINE_INTERNAL_GLFW_EXCEPTION(name, message)                                  \
     class name : public InternalException {                                              \
-        [[nodiscard]] const char * what() const noexcept final { return message; }       \
-        [[nodiscard]] virtual bool is_glfw_error() const noexcept final { return true; } \
+        [[nodiscard]] inline virtual const char * what() const noexcept final { return message; }       \
+        [[nodiscard]] inline virtual bool is_glfw_error() const noexcept final { return true; } \
     }
 #define PKENGINE_INTERNAL_VULKAN_EXCEPTION(name, message)                                  \
     class name : public InternalException {                                                \
-        [[nodiscard]] const char * what() const noexcept final { return message; }         \
-        [[nodiscard]] virtual bool is_vulkan_error() const noexcept final { return true; } \
+        [[nodiscard]] inline virtual const char * what() const noexcept final { return message; }         \
+        [[nodiscard]] inline virtual bool is_vulkan_error() const noexcept final { return true; } \
     }
 
     namespace Internal {
@@ -68,3 +69,5 @@ namespace PKEngine::Exception {
         PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_unable_to_submit_draw_buffer, "Unable to submit draw command buffer");
     }
 }
+
+#endif

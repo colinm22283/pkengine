@@ -24,6 +24,8 @@ namespace PKEngine {
                 PKEngine::Vulkan::Vertex(origin.absolute_position + Vector3(0, 0.2, 0))
             };
 
+            auto Allocation = engine_instance::vertex_allocator.allocate(vertexes, 6);
+
             engine_instance::vertex_buffer.send_buffer<engine_instance::command_pool, engine_instance::graphics_queue>(vertexes, 6);
         }
     };

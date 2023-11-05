@@ -1,4 +1,6 @@
-set(ENABLE_ASAN "Enable address sanitization" ON)
+if (NOT WIN32)
+    set(ENABLE_ASAN "Enable address sanitization" ON)
+endif ()
 
 function(new_project NAME SOURCES)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/build/${NAME})

@@ -160,12 +160,9 @@ namespace PKEngine {
                     vkDeviceWaitIdle(logical_device.handle());
                 }
             }
-            catch (Exception::ExceptionBase & ex) {
+            catch (std::exception & ex) {
                 logger.error() << "Exception occurred during user code update";
-                switch (ex.exception_type()) {
-                    case Exception::ET_INTERNAL: logger.error() << "Internal error: " << ex.what(); break;
-                    case Exception::ET_RUNTIME: logger.error() << "Runtime error: " << ex.what(); break;
-                }
+                logger.error() << "what(): " << ex.what();
             }
         }
 
@@ -202,14 +199,11 @@ namespace PKEngine {
 
                 Time::start();
             }
-            catch (const Exception::ExceptionBase & ex) {
+            catch (const Exception::InternalException & ex) {
                 logger.error() << "Exception occurred during PKEngine initialization:";
                 logger.error() << "\tWhat: " << ex.what();
-                if (ex.exception_type() == Exception::ET_INTERNAL) {
-                    auto & ie = (Exception::InternalException &) ex;
-                    if (ie.is_glfw_error()) {
-                        logger.error() << "\tGLFW Error String: " << GLFW::glfw_error_string;
-                    }
+                if (ex.is_glfw_error()) {
+                    logger.error() << "\tGLFW Error String: " << GLFW::glfw_error_string;
                 }
 
                 free();
@@ -224,12 +218,9 @@ namespace PKEngine {
 
                 enter_main_loop();
             }
-            catch (Exception::ExceptionBase & ex) {
+            catch (std::exception & ex) {
                 logger.error() << "Exception occurred during user code initialization";
-                switch (ex.exception_type()) {
-                    case Exception::ET_INTERNAL: logger.error() << "Internal error: " << ex.what(); break;
-                    case Exception::ET_RUNTIME: logger.error() << "Runtime error: " << ex.what(); break;
-                }
+                logger.error() << "What(): " << ex.what();
 
                 free();
 

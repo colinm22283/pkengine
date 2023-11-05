@@ -12,9 +12,9 @@ namespace PKEngine::Vulkan {
     template<const auto & vertex_buffer>
     class VertexAllocator { // TODO: look into better allocation techniques
     public:
-        struct Exceptions {
-            PKENGINE_RUNTIME_EXCEPTION(NotEnoughFreeSpace, "Not enough free space to make allocation");
-        };
+//        struct Exceptions {
+//            PKENGINE_RUNTIME_EXCEPTION(NotEnoughFreeSpace, "Not enough free space to make allocation");
+//        };
 
     protected:
         static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Vertex Allocator">();
@@ -83,7 +83,8 @@ namespace PKEngine::Vulkan {
             }
 
             logger.error() << "Unable to allocate " << n << " vertices to device (" << (n * sizeof(Vertex)) << " bytes)";
-            throw typename Exceptions::NotEnoughFreeSpace();
+//            throw typename Exceptions::NotEnoughFreeSpace();
+            return Allocation(*this, std::move(sectors.begin()));
         }
 
         inline void log_sectors() {

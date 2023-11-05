@@ -1,17 +1,14 @@
 #pragma once
 
-#include "exception_base.hpp"
+#include <exception>
 
 namespace PKEngine::Exception {
-    class RuntimeException : public ExceptionBase {
-    public:
-        [[nodiscard]] _exception_type_t exception_type() const noexcept final { return ET_RUNTIME; }
-    };
+    class RuntimeException : public std::exception { };
 
 }
 #define PKENGINE_RUNTIME_EXCEPTION(name, message)                              \
 class name : public PKEngine::Exception::RuntimeException {                    \
-    [[nodiscard]] const char * what() const noexcept final { return message; } \
+    [[nodiscard]] inline const char * what() const noexcept final { return message; } \
 }
 
 #define PKENGINE_INLINE_RUNTIME_THROW(message)                  \
