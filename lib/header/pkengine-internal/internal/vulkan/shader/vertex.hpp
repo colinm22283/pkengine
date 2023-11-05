@@ -11,11 +11,12 @@ namespace PKEngine::Vulkan {
 
         constexpr Vertex(): x(0), y(0), z(0) { }
         constexpr Vertex(float _x, float _y, float _z): x(_x), y(_y), z(_z) { }
-        constexpr Vertex(Vertex & v) noexcept = default;
+        constexpr ~Vertex() noexcept = default;
+        constexpr Vertex(const Vertex & v) noexcept = default;
         constexpr Vertex(Vertex && v) noexcept = default;
 
-        constexpr Vertex(Vector3 & v): x(v.x), y(v.y), z(v.z) { }
-        constexpr Vertex(Vector3 && v): x(v.x), y(v.y), z(v.z) { }
+        constexpr Vertex(Vector3 & v) noexcept: x(v.x), y(v.y), z(v.z) { }
+        constexpr Vertex(Vector3 && v) noexcept: x(v.x), y(v.y), z(v.z) { }
 
         constexpr Vertex operator+(Vertex & v) const noexcept { return { x + v.x, y + v.y, z + v.z }; }
         constexpr Vertex operator+(Vertex && v) const noexcept { return { x + v.x, y + v.y, z + v.z }; }
@@ -38,8 +39,8 @@ namespace PKEngine::Vulkan {
         constexpr float dot_prod(Vertex & v) const noexcept { return x * v.x + y * v.y + z * v.z; }
         constexpr float dot_prod(Vertex && v) const noexcept { return x * v.x + y * v.y + z * v.z; }
 
-        constexpr Vertex & operator=(Vertex const & v) { x = v.x; y = v.y; z = v.z; return *this; }
-        constexpr Vertex & operator=(Vertex && v) { x = v.x; y = v.y; z = v.z; return *this; }
+        constexpr Vertex & operator=(Vertex const & v) = default;
+        constexpr Vertex & operator=(Vertex && v) = default;
 
         [[nodiscard]] static consteval auto get_bind_info() noexcept {
             return Pipeline::bind_info_t<1> {

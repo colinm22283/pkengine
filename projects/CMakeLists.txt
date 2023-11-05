@@ -41,16 +41,13 @@ function(new_project NAME SOURCES)
         foreach (SOURCE ${SOURCES})
             message(STATUS "Adding target for ${SOURCE}")
 
-            # TODO: Add windows support
-            if (NOT WIN32)
-                add_custom_target(
-                    "shader.${SOURCE}"
-                    COMMAND glslc ${SOURCE} -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders/${SOURCE}.spv
-                    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/projects/${NAME}/shaders"
-                )
-                add_dependencies(${NAME} "shader.${SOURCE}")
-                file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders)
-            endif ()
+            add_custom_target(
+                "shader.${SOURCE}"
+                COMMAND glslc ${SOURCE} -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders/${SOURCE}.spv
+                WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/projects/${NAME}/shaders"
+            )
+            add_dependencies(${NAME} "shader.${SOURCE}")
+            file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders)
 
             list(APPEND "${NAME}_SHADER_OUTPUT" "shader/${SOURCE}")
         endforeach ()

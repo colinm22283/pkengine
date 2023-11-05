@@ -6,10 +6,10 @@
 #include "../../../logger/logger.hpp"
 #include "vertex.hpp"
 
-#include "device_buffer.hpp"
+#include "vertex_buffer.hpp"
 
 namespace PKEngine::Vulkan {
-    template<const auto & vertex_buffer>
+    template<auto & vertex_buffer>
     class VertexAllocator { // TODO: look into better allocation techniques
     public:
         struct Exceptions {
@@ -58,6 +58,7 @@ namespace PKEngine::Vulkan {
         inline void init() { sectors.front().size = vertex_buffer.capacity(); }
         inline void free() { }
 
+        template<const auto & command_pool, const auto & vulkan_queue>
         [[nodiscard]] inline Allocation allocate(Vertex * vertices, VkDeviceSize n) {
             logger << "Allocating " << n << " vertices to device (" << (n * sizeof(Vertex)) << " bytes)";
 
@@ -66,6 +67,7 @@ namespace PKEngine::Vulkan {
                     if (n == itr->size) {
                         itr->free = false;
                         logger << "\tAllocated at offset of " << itr->offset;
+                        vertex_buffer.template send_buffer<command_pool, vulkan_queue>(vertices, n, itr->offset);
                         return Allocation(*this, std::move(itr));
                     }
                     else {
@@ -77,6 +79,7 @@ namespace PKEngine::Vulkan {
                         itr->offset += n;
                         itr->size -= n;
                         logger << "\tAllocated at offset of " << allocation->offset;
+                        vertex_buffer.template send_buffer<command_pool, vulkan_queue>(vertices, n, allocation->offset);
                         return Allocation(*this, std::move(allocation));
                     }
                 }
@@ -85,6 +88,8 @@ namespace PKEngine::Vulkan {
             logger.error() << "Unable to allocate " << n << " vertices to device (" << (n * sizeof(Vertex)) << " bytes)";
             throw typename Exceptions::NotEnoughFreeSpace();
         }
+        template<const auto & command_pool, const auto & vulkan_queue, VkDeviceSize n> [[nodiscard]] inline Allocation allocate(Vertex (& vertices)[n]) { return allocate<command_pool, vulkan_queue>(vertices, n); }
+        template<const auto & command_pool, const auto & vulkan_queue, VkDeviceSize n> [[nodiscard]] inline Allocation allocate(Vertex (&& vertices)[n]) { return allocate<command_pool, vulkan_queue>(std::move(vertices), n); }
 
         inline void log_sectors() {
             for (auto & sec : sectors) {

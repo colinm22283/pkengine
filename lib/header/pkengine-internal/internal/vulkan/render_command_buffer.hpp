@@ -12,7 +12,13 @@ namespace PKEngine::Vulkan {
         using CommandBuffer<logical_device, command_pool>::buffer;
 
     public:
-        template<const auto & render_pass, const auto & swap_chain, const auto & frame_buffers, const auto & pipeline, const auto & vertex_buffer>
+        template<
+            const auto & render_pass,
+            const auto & swap_chain,
+            const auto & frame_buffers,
+            const auto & pipeline,
+            const auto & vertex_buffer
+        >
         inline void record(uint32_t image_index) {
             VkCommandBufferBeginInfo beginInfo{};
             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -63,7 +69,7 @@ namespace PKEngine::Vulkan {
             VkDeviceSize offsets[] = { 0 };
             vkCmdBindVertexBuffers(buffer, 0, 1, buffers, offsets);
 
-            vkCmdDraw(buffer, static_cast<uint32_t>(vertex_buffer.size()), 1, 0, 0);
+            vkCmdDraw(buffer, static_cast<uint32_t>(20), 1, 0, 0);
 
             vkCmdEndRenderPass(buffer);
 
