@@ -12,23 +12,28 @@
 namespace PKEngine::Exception {
     class InternalException : public std::exception {
     public:
-        [[nodiscard]] virtual inline bool is_glfw_error() const noexcept { return false; }
-        [[nodiscard]] virtual inline bool is_vulkan_error() const noexcept { return false; }
+        [[nodiscard]] virtual bool is_glfw_error() const noexcept { return false; }
+        [[nodiscard]] virtual bool is_vulkan_error() const noexcept { return false; }
     };
 
-#define PKENGINE_INTERNAL_EXCEPTION(name, message)                                 \
-    class name : public InternalException {                                        \
-        [[nodiscard]] inline virtual const char * what() const noexcept final { return message; } \
+#define PKENGINE_INTERNAL_EXCEPTION(name, message)                                         \
+    class name : public PKEngine::Exception::InternalException {                           \
+    public:                                                                                \
+        [[nodiscard]] virtual const char * what() const noexcept final { return message; } \
     }
-#define PKENGINE_INTERNAL_GLFW_EXCEPTION(name, message)                                  \
-    class name : public InternalException {                                              \
-        [[nodiscard]] inline virtual const char * what() const noexcept final { return message; }       \
-        [[nodiscard]] inline virtual bool is_glfw_error() const noexcept final { return true; } \
+
+#define PKENGINE_INTERNAL_GLFW_EXCEPTION(name, message)                                    \
+    class name : public PKEngine::Exception::InternalException {                           \
+    public:                                                                                \
+        [[nodiscard]] virtual const char * what() const noexcept final { return message; } \
+        [[nodiscard]] virtual bool is_glfw_error() const noexcept final { return true; }   \
     }
+
 #define PKENGINE_INTERNAL_VULKAN_EXCEPTION(name, message)                                  \
     class name : public InternalException {                                                \
-        [[nodiscard]] inline virtual const char * what() const noexcept final { return message; }         \
-        [[nodiscard]] inline virtual bool is_vulkan_error() const noexcept final { return true; } \
+    public:                                                                                \
+        [[nodiscard]] virtual const char * what() const noexcept final { return message; } \
+        [[nodiscard]] virtual bool is_vulkan_error() const noexcept final { return true; } \
     }
 
     namespace Internal {
