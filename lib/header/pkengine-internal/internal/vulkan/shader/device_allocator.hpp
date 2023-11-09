@@ -9,15 +9,15 @@
 #include "vertex_buffer.hpp"
 
 namespace PKEngine::Vulkan {
-    template<auto & vertex_buffer>
-    class VertexAllocator { // TODO: look into better allocation techniques
+    template<typename T, auto & buffer>
+    class DeviceAllocator { // TODO: look into better allocation techniques
     public:
         struct Exceptions {
             PKENGINE_RUNTIME_EXCEPTION(NotEnoughFreeSpace, "Not enough free space to make allocation");
         };
 
     protected:
-        static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Vertex Allocator">();
+        static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Device Allocator">();
 
         struct sector_t {
             bool free;
@@ -31,13 +31,13 @@ namespace PKEngine::Vulkan {
 
     public:
         class Allocation {
-            friend class VertexAllocator;
+            friend class DeviceAllocator;
         protected:
             bool was_moved = false;
-            VertexAllocator<vertex_buffer> & allocator;
+            DeviceAllocator<T, buffer> & allocator;
             sector_list_iterator_t itr;
 
-            explicit inline Allocation(VertexAllocator<vertex_buffer> & _allocator, sector_list_iterator_t && _itr):
+            explicit inline Allocation(DeviceAllocator<T, buffer> & _allocator, sector_list_iterator_t && _itr):
                 allocator(_allocator),
                 itr(std::move(_itr)) { }
 
@@ -51,23 +51,23 @@ namespace PKEngine::Vulkan {
             [[nodiscard]] inline VkDeviceSize size() const noexcept { return itr->size; }
         };
 
-        inline VertexAllocator() = default;
-        inline VertexAllocator(VertexAllocator &) = delete;
-        inline VertexAllocator(VertexAllocator &&) = delete;
+        inline DeviceAllocator() = default;
+        inline DeviceAllocator(DeviceAllocator &) = delete;
+        inline DeviceAllocator(DeviceAllocator &&) = delete;
 
-        inline void init() { sectors.front().size = vertex_buffer.capacity(); }
+        inline void init() { sectors.front().size = buffer.capacity(); }
         inline void free() { }
 
         template<const auto & command_pool, const auto & vulkan_queue>
-        [[nodiscard]] inline Allocation allocate(Vertex * vertices, VkDeviceSize n) {
-            logger << "Allocating " << n << " vertices to device (" << (n * sizeof(Vertex)) << " bytes)";
+        [[nodiscard]] inline Allocation allocate(T * vertices, VkDeviceSize n) {
+            logger << "Allocating " << n << " elements to device (" << (n * sizeof(T)) << " bytes)";
 
             for (auto itr = sectors.begin(); itr != sectors.end(); itr++) {
                 if (itr->free && n <= itr->size) { // found a spot!
                     if (n == itr->size) {
                         itr->free = false;
                         logger << "\tAllocated at offset of " << itr->offset;
-                        vertex_buffer.template send_buffer<command_pool, vulkan_queue>(vertices, n, itr->offset);
+                        buffer.template begin_transfer<command_pool, vulkan_queue>().add(vertices, n, itr->offset).commit();
                         return Allocation(*this, std::move(itr));
                     }
                     else {
@@ -79,13 +79,13 @@ namespace PKEngine::Vulkan {
                         itr->offset += n;
                         itr->size -= n;
                         logger << "\tAllocated at offset of " << allocation->offset;
-                        vertex_buffer.template send_buffer<command_pool, vulkan_queue>(vertices, n, allocation->offset);
+                        buffer.template begin_transfer<command_pool, vulkan_queue>().add(vertices, n, allocation->offset).commit();
                         return Allocation(*this, std::move(allocation));
                     }
                 }
             }
 
-            logger.error() << "Unable to allocate " << n << " vertices to device (" << (n * sizeof(Vertex)) << " bytes)";
+            logger.error() << "Unable to allocate " << n << " elements to device (" << (n * sizeof(Vertex)) << " bytes)";
             throw typename Exceptions::NotEnoughFreeSpace();
         }
         template<const auto & command_pool, const auto & vulkan_queue, VkDeviceSize n> [[nodiscard]] inline Allocation allocate(Vertex (& vertices)[n]) { return allocate<command_pool, vulkan_queue>(vertices, n); }
@@ -100,6 +100,8 @@ namespace PKEngine::Vulkan {
     protected:
         inline void dealloc(Allocation & sector) {
             logger << "Freeing sector at offset of " << sector.offset();
+
+            std::cout.flush();
 
             sector.itr->free = true;
 

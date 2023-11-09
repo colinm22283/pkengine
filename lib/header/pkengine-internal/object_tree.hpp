@@ -3,13 +3,20 @@
 #include <memory>
 #include <forward_list>
 
-#include "component/component_base.hpp"
-#include "engine_node.hpp"
+#include "pkengine/component/component_base.hpp"
+#include "pkengine/engine_node.hpp"
 
 namespace PKEngine {
-    class _ObjectTree {
+    class ObjectTree {
+        friend class engine_instance;
+
     protected:
         std::forward_list<EngineNode> branches;
+
+        inline void init() const noexcept { }
+        inline void free() {
+            branches.clear();
+        }
 
     public:
         inline EngineNode & add_node() { return branches.emplace_front(); }
@@ -20,7 +27,8 @@ namespace PKEngine {
         inline void update() {
             for (auto & ele : branches) ele.update();
         }
+        inline void sync_record_buffer() {
+            for (auto & ele : branches) ele.sync_record_buffer();
+        }
     };
-
-    extern _ObjectTree object_tree;
 }

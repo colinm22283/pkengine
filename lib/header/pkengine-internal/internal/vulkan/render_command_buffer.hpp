@@ -2,6 +2,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include "pkengine-internal/engine.hpp"
+
 #include "../../exception/internal.hpp"
 #include "command_buffer.hpp"
 
@@ -17,7 +19,9 @@ namespace PKEngine::Vulkan {
             const auto & swap_chain,
             const auto & frame_buffers,
             const auto & pipeline,
-            const auto & vertex_buffer
+            const auto & vertex_buffer,
+            const auto & index_buffer,
+            auto & object_tree
         >
         inline void record(uint32_t image_index) {
             VkCommandBufferBeginInfo beginInfo{};
@@ -65,11 +69,13 @@ namespace PKEngine::Vulkan {
             scissor.extent = swap_chain.extent;
             vkCmdSetScissor(buffer, 0, 1, &scissor);
 
-            VkBuffer buffers[] = { vertex_buffer.buffer_handle() };
-            VkDeviceSize offsets[] = { 0 };
-            vkCmdBindVertexBuffers(buffer, 0, 1, buffers, offsets);
+            VkBuffer vertex_buffers[] = { vertex_buffer.buffer_handle(), };
+            VkDeviceSize vertex_offsets[] = { 0 };
+            vkCmdBindVertexBuffers(buffer, 0, 1, vertex_buffers, vertex_offsets);
 
-            vkCmdDraw(buffer, static_cast<uint32_t>(20), 1, 0, 0);
+            vkCmdBindIndexBuffer(buffer, index_buffer.buffer_handle(), 0, VK_INDEX_TYPE_UINT32);
+
+            object_tree.sync_record_buffer();
 
             vkCmdEndRenderPass(buffer);
 

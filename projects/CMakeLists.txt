@@ -18,6 +18,10 @@ function(new_project NAME SOURCES)
 
     target_compile_options(${NAME} PUBLIC -Wall -ffast-math)
 
+    if (WIN32)
+        target_compile_options(${NAME} PUBLIC -static-libstdc++ -static-libgcc)
+    endif ()
+
     if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
         message(STATUS "Building for Debug")
         if (ENABLE_ASAN)

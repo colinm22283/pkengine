@@ -9,32 +9,32 @@
 
 #include "../util/const_string.hpp"
 
+#define PKENGINE_INTERNAL_EXCEPTION(_NAME_, _MESSAGE_)                                       \
+    struct _NAME_ : public PKEngine::Exception::InternalException {                          \
+        [[nodiscard]] virtual const char * what() const noexcept final { return _MESSAGE_; } \
+        [[nodiscard]] virtual bool is_glfw_error() const noexcept final { return false; }    \
+        [[nodiscard]] virtual bool is_vulkan_error() const noexcept final { return false; }  \
+    }
+
+#define PKENGINE_INTERNAL_GLFW_EXCEPTION(_NAME_, _MESSAGE_)                                  \
+    struct _NAME_ : public PKEngine::Exception::InternalException {                          \
+        [[nodiscard]] virtual const char * what() const noexcept final { return _MESSAGE_; } \
+        [[nodiscard]] virtual bool is_glfw_error() const noexcept final { return true; }     \
+        [[nodiscard]] virtual bool is_vulkan_error() const noexcept final { return false; }  \
+    }
+
+#define PKENGINE_INTERNAL_VULKAN_EXCEPTION(_NAME_, _MESSAGE_)                                \
+    struct _NAME_ : public PKEngine::Exception::InternalException {                          \
+        [[nodiscard]] virtual const char * what() const noexcept final { return _MESSAGE_; } \
+        [[nodiscard]] virtual bool is_glfw_error() const noexcept final { return false; }    \
+        [[nodiscard]] virtual bool is_vulkan_error() const noexcept final { return true; }   \
+    }
+
 namespace PKEngine::Exception {
-    class InternalException : public std::exception {
-    public:
-        [[nodiscard]] virtual bool is_glfw_error() const noexcept { return false; }
-        [[nodiscard]] virtual bool is_vulkan_error() const noexcept { return false; }
+    struct InternalException : public std::exception {
+        [[nodiscard]] virtual bool is_glfw_error() const noexcept = 0;
+        [[nodiscard]] virtual bool is_vulkan_error() const noexcept = 0;
     };
-
-#define PKENGINE_INTERNAL_EXCEPTION(name, message)                                         \
-    class name : public PKEngine::Exception::InternalException {                           \
-    public:                                                                                \
-        [[nodiscard]] virtual const char * what() const noexcept final { return message; } \
-    }
-
-#define PKENGINE_INTERNAL_GLFW_EXCEPTION(name, message)                                    \
-    class name : public PKEngine::Exception::InternalException {                           \
-    public:                                                                                \
-        [[nodiscard]] virtual const char * what() const noexcept final { return message; } \
-        [[nodiscard]] virtual bool is_glfw_error() const noexcept final { return true; }   \
-    }
-
-#define PKENGINE_INTERNAL_VULKAN_EXCEPTION(name, message)                                  \
-    class name : public InternalException {                                                \
-    public:                                                                                \
-        [[nodiscard]] virtual const char * what() const noexcept final { return message; } \
-        [[nodiscard]] virtual bool is_vulkan_error() const noexcept final { return true; } \
-    }
 
     namespace Internal {
         // standard exceptions

@@ -21,15 +21,19 @@
 #include "internal/vulkan/sync/semaphore.hpp"
 #include "internal/vulkan/sync/fence.hpp"
 #include "internal/vulkan/shader/vertex_buffer.hpp"
-#include "internal/vulkan/shader/vertex_allocator.hpp"
+#include "internal/vulkan/shader/index_buffer.hpp"
+#include "internal/vulkan/shader/device_allocator.hpp"
 
 #include "manifest/shader_manifest.hpp"
 
+#include "model/model_allocator.hpp"
+
 #include "project.hpp"
+#include "object_tree.hpp"
 
 #include <memory_config.hpp>
 
-#include <pkengine/object_tree.hpp>
+#include "object_tree.hpp"
 #include <pkengine/time.hpp>
 
 namespace PKEngine {
@@ -61,7 +65,11 @@ namespace PKEngine {
         using ShaderSequence = Shaders::DefaultShaderSequence;
 
         static Vulkan::VertexBuffer<logical_device, physical_device> vertex_buffer;
-        static Vulkan::VertexAllocator<vertex_buffer> vertex_allocator;
+        using vertex_allocator_t = Vulkan::DeviceAllocator<Vulkan::Vertex, vertex_buffer>;
+        static vertex_allocator_t vertex_allocator;
+        static Vulkan::IndexBuffer<logical_device, physical_device> index_buffer;
+        using index_allocator_t = Vulkan::DeviceAllocator<uint32_t, index_buffer>;
+        static index_allocator_t index_allocator;
 
         static Vulkan::RenderPass<logical_device, swap_chain> render_pass;
         static Vulkan::Pipeline::VulkanPipeline<logical_device, swap_chain, ShaderSequence, render_pass, vertex_buffer> vulkan_pipeline;
@@ -72,6 +80,11 @@ namespace PKEngine {
 
         static Vulkan::Semaphore<logical_device> render_complete_semaphore;
         static Vulkan::Fence<logical_device, true> in_flight_fence;
+
+        using model_allocator_t = ModelAllocator<vertex_allocator, index_allocator, vertex_allocator_t::Allocation, index_allocator_t::Allocation>;
+        static model_allocator_t model_allocator;
+
+        static ObjectTree object_tree;
 
     protected:
         static inline void init() {
@@ -98,6 +111,8 @@ namespace PKEngine {
 
             vertex_buffer.init(memory_config.vertex_buffer_allocation);
             vertex_allocator.init();
+            index_buffer.init(memory_config.index_buffer_allocation);
+            index_allocator.init();
 
             render_pass.init();
             vulkan_pipeline.init();
@@ -108,9 +123,17 @@ namespace PKEngine {
 
             render_complete_semaphore.init();
             in_flight_fence.init();
+
+            model_allocator.init();
+
+            object_tree.init();
         }
 
         static inline void free() {
+            object_tree.free();
+
+            model_allocator.free();
+
             in_flight_fence.free();
             render_complete_semaphore.free();
 
@@ -121,6 +144,8 @@ namespace PKEngine {
             vulkan_pipeline.free();
             render_pass.free();
 
+            index_allocator.free();
+            index_buffer.free();
             vertex_allocator.free();
             vertex_buffer.free();
 
@@ -177,7 +202,9 @@ namespace PKEngine {
                 swap_chain,
                 frame_buffers,
                 vulkan_pipeline,
-                vertex_buffer
+                vertex_buffer,
+                index_buffer,
+                object_tree
             >(image_index);
 
             graphics_queue.submit<
@@ -212,7 +239,7 @@ namespace PKEngine {
             }
 
             try {
-                if (::init) ::init();
+                ::init();
 
                 object_tree.start();
 

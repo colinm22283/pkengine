@@ -4,7 +4,7 @@
 
 namespace PKEngine {
     class EngineNode {
-        friend class _ObjectTree;
+        friend class ObjectTree;
     protected:
         std::forward_list<std::unique_ptr<ComponentBase>> _components;
         std::forward_list<EngineNode> branches;
@@ -18,6 +18,10 @@ namespace PKEngine {
             for (auto & ele : _components) ele->sync_update();
             for (auto & ele : _components) ele->update();
             for (auto & ele : branches) ele.update();
+        }
+        inline void sync_record_buffer() {
+            for (auto & ele : _components) ele->sync_record_buffer();
+            for (auto & ele : branches) ele.sync_record_buffer();
         }
 
     public:

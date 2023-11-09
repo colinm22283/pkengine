@@ -20,6 +20,7 @@ namespace PKEngine {
 
         virtual inline void sync_start() { }
         virtual inline void sync_update() { }
+        virtual inline void sync_record_buffer() { }
 
         virtual inline void start() { }
         virtual inline void update() { }

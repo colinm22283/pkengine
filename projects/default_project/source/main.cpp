@@ -1,4 +1,4 @@
-#include <pkengine/object_tree.hpp>
+#include <pkengine-internal/engine.hpp>
 
 #include <pkengine/component/mesh_renderer.hpp>
 #include <pkengine/component/relative_transform.hpp>
@@ -7,11 +7,15 @@
 void init() {
     using namespace PKEngine;
 
-    auto & block_parent_node = object_tree.add_node();
-    auto & block_parent_transform = block_parent_node.add_component<Transform>();
-
-    auto & block_node = block_parent_node.add_node();
-    auto & block_transform = block_node.add_component<RelativeTransform>(block_parent_transform);
+    auto & block_node = engine_instance::object_tree.add_node();
+    auto & block_transform = block_node.add_component<Transform>();
+    block_transform.position.x = 0.5;
+    block_transform.position.y = 0.5;
     block_node.add_component<MeshRenderer>(block_transform);
-    block_node.add_component<BlockController>(block_transform);
+
+    auto & block_node_2 = engine_instance::object_tree.add_node();
+    auto & block_transform_2 = block_node_2.add_component<Transform>();
+    block_transform_2.position.x = -0.5;
+    block_transform_2.position.y = -0.5;
+    block_node_2.add_component<MeshRenderer>(block_transform_2);
 }
