@@ -96,10 +96,11 @@ namespace PKEngine::Vulkan {
         };
 
     public:
+        /// @param __capacity Capacity of the buffer in elements
         inline void init(VkDeviceSize __capacity) {
             staging_buffer.init(__capacity);
             vertex_buffer.init(__capacity);
-            vkMapMemory(logical_device.handle(), staging_buffer.memory_handle(), 0, _capacity, 0, &staging_buffer_memory);
+            vkMapMemory(logical_device.handle(), staging_buffer.memory_handle(), 0, __capacity * sizeof(T), 0, &staging_buffer_memory);
             _capacity = __capacity;
         }
         inline void free() {

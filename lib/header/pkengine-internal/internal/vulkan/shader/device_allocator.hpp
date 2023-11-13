@@ -47,7 +47,9 @@ namespace PKEngine::Vulkan {
 
             inline ~Allocation() { if (!was_moved) allocator.dealloc(*this); }
 
+            /// @brief offset in elements
             [[nodiscard]] inline VkDeviceSize offset() const noexcept { return itr->offset; }
+            /// @brief size in elements
             [[nodiscard]] inline VkDeviceSize size() const noexcept { return itr->size; }
         };
 
@@ -99,7 +101,7 @@ namespace PKEngine::Vulkan {
 
     protected:
         inline void dealloc(Allocation & sector) {
-            logger << "Freeing sector at offset of " << sector.offset();
+            logger << "Freeing sector at offset of " << sector.offset() << " with a size of " << sector.size() << " elements (" << (sector.size() * sizeof(T)) << " bytes)";
 
             std::cout.flush();
 

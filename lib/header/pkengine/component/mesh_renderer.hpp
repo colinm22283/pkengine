@@ -29,6 +29,15 @@ namespace PKEngine {
     public:
         explicit inline MeshRenderer(EngineNode & _parent, Transform & _origin): ComponentBase(_parent), origin(_origin) { }
 
+        inline void update() override {
+            engine_instance::vertex_buffer.begin_transfer<engine_instance::command_pool, engine_instance::graphics_queue>().add({
+                PKEngine::Vulkan::Vertex(origin.absolute_position + Vector3(-0.2f, 0, origin.position.x / -2 + 1.5f)),
+                PKEngine::Vulkan::Vertex(origin.absolute_position + Vector3(0.2, 0, origin.position.x / -2 + 1.5f)),
+                PKEngine::Vulkan::Vertex(origin.absolute_position + Vector3(0, 0.2, origin.position.x / 2 + 0.5f)),
+                PKEngine::Vulkan::Vertex(origin.absolute_position + Vector3(0, -0.2, origin.position.x / 2 + 0.5f)),
+            }, model.vertex_allocation.offset()).commit();
+        }
+
         inline void sync_record_buffer() override { ComponentBase::sync_record_buffer();
             vkCmdDrawIndexed(
                 engine_instance::command_buffer.handle(),

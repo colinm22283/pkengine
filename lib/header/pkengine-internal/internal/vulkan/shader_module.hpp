@@ -41,14 +41,14 @@ namespace PKEngine::Vulkan {
 
             logger.success() << "Shader module created";
         }
-        template<const auto & logical_device, std::size_t _size>
-        inline void init(const SPVBuffer<_size> & buffer) {
+        template<const auto & logical_device>
+        inline void init(const char * buffer, std::size_t size) {
             logger << "Creating shader module...";
 
             VkShaderModuleCreateInfo create_info = {
                 .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-                .codeSize = (std::size_t) buffer.size(),
-                .pCode = reinterpret_cast<const uint32_t*>(buffer.data()),
+                .codeSize = size,
+                .pCode = reinterpret_cast<const uint32_t*>(buffer),
             };
 
             if (vkCreateShaderModule(logical_device.handle(), &create_info, nullptr, &_shader_module) != VK_SUCCESS) {

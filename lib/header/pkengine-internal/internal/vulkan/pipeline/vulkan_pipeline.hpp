@@ -6,7 +6,7 @@
 
 namespace PKEngine::Vulkan::Pipeline {
     template<const auto & logical_device, const auto & swap_chain, typename _ShaderSequence, const auto & render_pass, const auto & vertex_buffer>
-    class VulkanPipeline { // TODO: finish
+    class VulkanPipeline {
     protected:
         static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Vulkan Pipeline">();
 
