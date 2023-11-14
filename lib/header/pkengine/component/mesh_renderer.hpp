@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include <pkengine-internal/engine.hpp>
+#include "pkengine/engine.hpp"
 
 #include <pkengine/time.hpp>
 

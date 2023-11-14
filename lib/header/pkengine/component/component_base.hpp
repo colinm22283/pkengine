@@ -2,7 +2,7 @@
 
 #include <chrono>
 
-#include <pkengine-internal/logger/logger.hpp>
+#include <pkengine/logger/logger.hpp>
 
 namespace PKEngine {
     class EngineNode;

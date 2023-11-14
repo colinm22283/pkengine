@@ -1,6 +1,6 @@
 #pragma once
 
-#include "pkengine-internal/types/version.hpp"
+#include "pkengine/types/version.hpp"
 
 namespace PKEngine {
     struct engine_config_t {

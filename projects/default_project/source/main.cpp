@@ -1,4 +1,4 @@
-#include <pkengine-internal/engine.hpp>
+#include "pkengine/engine.hpp"
 
 #include <pkengine/component/mesh_renderer.hpp>
 #include <pkengine/component/relative_transform.hpp>
