@@ -3,28 +3,23 @@
 #include <algorithm>
 
 namespace PKEngine::Util {
-    template<std::size_t _size>
+    template<std::size_t char_count>
     class ConstString {
     public:
-        char data[_size] = { };
+        char data[char_count] = { 0 };
 
-        ConstString() = delete;
-
-        consteval ConstString(const char (& _data)[_size]) noexcept { std::copy_n(_data, _size, data); }
-
-        template<std::size_t an, std::size_t bn>
+        consteval ConstString(const char (& _data)[char_count]) noexcept {
+            std::copy_n(_data, char_count, data);
+        }
+        template<std::size_t an, std::size_t bn> requires(char_count == an + bn - 1)
         consteval ConstString(const char (& a)[an], const char (& b)[bn]) noexcept {
             std::copy_n(a, an - 1, data);
-            std::copy_n(b, bn - 1, data + an - 1);
-            data[an + bn - 2] = '\0';
+            std::copy_n(b, bn, data + an - 1);
         }
 
-        inline operator const char *() const noexcept { return data; }
-
         [[nodiscard]] inline const char * c_str() const noexcept { return data; }
-
-        static consteval std::size_t static_size() noexcept { return _size; }
-        [[nodiscard]] consteval std::size_t size() const noexcept { return _size; }
+        [[nodiscard]] inline operator const char *() const noexcept { return data; }
+        [[nodiscard]] consteval std::size_t size() const noexcept { return char_count - 1; }
     };
 
     namespace _ConstStringPrivate {
