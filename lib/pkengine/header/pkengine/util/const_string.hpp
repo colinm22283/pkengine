@@ -11,6 +11,7 @@ namespace PKEngine::Util {
         ConstString() = delete;
 
         consteval ConstString(const char (& _data)[_size]) noexcept { std::copy_n(_data, _size, data); }
+
         template<std::size_t an, std::size_t bn>
         consteval ConstString(const char (& a)[an], const char (& b)[bn]) noexcept {
             std::copy_n(a, an - 1, data);
@@ -19,6 +20,7 @@ namespace PKEngine::Util {
         }
 
         inline operator const char *() const noexcept { return data; }
+
         [[nodiscard]] inline const char * c_str() const noexcept { return data; }
 
         static consteval std::size_t static_size() noexcept { return _size; }

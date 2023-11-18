@@ -5,16 +5,11 @@ endif ()
 function(new_project NAME SOURCES)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/build/${NAME})
 
-    file(GLOB_RECURSE PKENGINE_SOURCES ${PROJECT_SOURCE_DIR}/lib/source/*.cpp)
-
     set(OpenGL_GL_PREFERENCE GLVND)
 
-    set(THREADS_PREFER_PTHREAD_FLAG ON)
-    find_package(Threads REQUIRED)
-
-    add_executable(${NAME} ${SOURCES} ${PKENGINE_SOURCES})
-    target_include_directories(${NAME} PUBLIC config ${PROJECT_SOURCE_DIR}/lib/header header)
-    target_link_libraries(${NAME} PUBLIC ext-vulkan glfw Threads::Threads)
+    add_executable(${NAME} ${SOURCES})
+    target_include_directories(${NAME} PUBLIC config header)
+    target_link_libraries(${NAME} PUBLIC pkengine pkpkg)
 
     target_compile_options(${NAME} PUBLIC -Wall -ffast-math)
 

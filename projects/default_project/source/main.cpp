@@ -1,12 +1,16 @@
-#include "pkengine/engine.hpp"
+#include <pkengine/engine.hpp>
 
 #include <pkengine/component/mesh_renderer.hpp>
 #include <pkengine/component/relative_transform.hpp>
 #include <block_controller.hpp>
 #include <pkengine/component/animation_controller.hpp>
 
+#include <pkpkg/package_reader.hpp>
+
 void init() {
     using namespace PKEngine;
+
+    PKPKG::PackageReader test_package("test.ppg");
 
     auto & block_node = engine_instance::object_tree.add_node();
     auto & block_transform = block_node.add_component<Transform>();

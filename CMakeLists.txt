@@ -5,4 +5,5 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/build)
 
 add_subdirectory(external)
+add_subdirectory(lib)
 add_subdirectory(projects)
