@@ -10,21 +10,24 @@ namespace PKEngine::Manifest {
     class ShaderManifest {
     public:
         static ShaderModule
-            default_vertex_shader, default_fragment_shader;
+            default_vertex_shader, stage_2_vs, default_fragment_shader;
 
         using DefaultShaderSequence = ShaderSequence<
             ShaderSequenceStage<"main", VERTEX_SHADER, default_vertex_shader>,
+            ShaderSequenceStage<"main", VERTEX_SHADER, stage_2_vs>,
             ShaderSequenceStage<"main", FRAGMENT_SHADER, default_fragment_shader>
         >;
 
         template<const auto & logical_device>
         static inline void init() {
             default_vertex_shader.init<logical_device>("shaders/shader.vert.spv");
+            stage_2_vs.init<logical_device>("shaders/test.vert.spv");
             default_fragment_shader.init<logical_device>("shaders/shader.frag.spv");
         }
         template<const auto & logical_device>
         static inline void free() {
             default_fragment_shader.free<logical_device>();
+            stage_2_vs.free<logical_device>();
             default_vertex_shader.free<logical_device>();
         }
     };

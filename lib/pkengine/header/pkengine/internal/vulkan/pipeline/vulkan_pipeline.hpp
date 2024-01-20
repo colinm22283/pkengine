@@ -125,7 +125,7 @@ namespace PKEngine::Vulkan::Pipeline {
 
             VkGraphicsPipelineCreateInfo pipelineInfo{};
             pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-            pipelineInfo.stageCount = 2;
+            pipelineInfo.stageCount = shader_stages.size();
             pipelineInfo.pStages = shader_stages.data();
             pipelineInfo.pVertexInputState = &vertex_input_info;
             pipelineInfo.pInputAssemblyState = &input_assembly;

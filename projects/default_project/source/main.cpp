@@ -2,10 +2,11 @@
 
 #include <pkengine/component/mesh_renderer.hpp>
 #include <pkengine/component/relative_transform.hpp>
-#include <block_controller.hpp>
 #include <pkengine/component/animation_controller.hpp>
 
 #include <pkpkg/package_reader.hpp>
+
+#include <block_controller.hpp>
 
 void init() {
     using namespace PKEngine;
@@ -18,10 +19,10 @@ void init() {
     block_transform.position.y = 0.5;
     block_node.add_component<MeshRenderer>(block_transform);
     block_node.add_component<AnimationController>(block_transform, std::vector<Vector3> {
-        Vector3(0, 0, 0),
-        Vector3(1, 1, 0),
-        Vector3(1, -1, 0),
-        Vector3(-0.8, -0.5, 0)
+        Vector3(-0.8, 0.8, 0),
+        Vector3(0.8, 0.8, 0),
+        Vector3(0.8, -0.8, 0),
+        Vector3(-0.8, -0.8, 0)
     });
 
     auto & block_node_2 = engine_instance::object_tree.add_node();
