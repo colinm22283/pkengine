@@ -42,7 +42,7 @@ function(new_project NAME SOURCES)
 
             add_custom_target(
                 "shader.${SOURCE}"
-                COMMAND glslc ${SOURCE} -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders/${SOURCE}.spv
+                COMMAND ${GLSLC} ${SOURCE} -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders/${SOURCE}.spv
                 WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/projects/${NAME}/shaders"
             )
             add_dependencies(${NAME} "shader.${SOURCE}")
