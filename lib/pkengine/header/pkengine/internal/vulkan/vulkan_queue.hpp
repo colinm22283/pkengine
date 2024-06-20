@@ -22,13 +22,12 @@ namespace PKEngine::Vulkan {
         }
         inline void free() { }
 
-        template<
+        inline void submit(
             const auto & image_available_semaphore,
             const auto & render_finished_semaphore,
             const auto & in_flight_fence,
             const auto & command_buffer
-        >
-        inline void submit() {
+        ) {
             VkSubmitInfo submit_info{};
             submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 

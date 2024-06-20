@@ -10,8 +10,8 @@ Vulkan::PhysicalDevice<engine_instance::vulkan_instance, engine_instance::vulkan
 Vulkan::ConstQueueFamilyIndices<engine_instance::vulkan_surface, engine_instance::physical_device> engine_instance::queue_family_indices;
 Vulkan::LogicalDevice<engine_instance::physical_device, engine_instance::queue_family_indices> engine_instance::logical_device;
 Vulkan::VulkanQueue<engine_instance::logical_device> engine_instance::graphics_queue, engine_instance::present_queue;
-Vulkan::Semaphore<engine_instance::logical_device> engine_instance::image_available_semaphore;
-Vulkan::SwapChain<engine_instance::physical_device, engine_instance::logical_device, engine_instance::vulkan_surface, engine_instance::window, engine_instance::queue_family_indices, engine_instance::image_available_semaphore> engine_instance::swap_chain;
+std::array<Vulkan::Semaphore<engine_instance::logical_device>, render_config.max_frames_in_flight> engine_instance::image_available_semaphores;
+Vulkan::SwapChain<engine_instance::physical_device, engine_instance::logical_device, engine_instance::vulkan_surface, engine_instance::window, engine_instance::queue_family_indices> engine_instance::swap_chain;
 Vulkan::ImageViews<engine_instance::logical_device, engine_instance::swap_chain> engine_instance::image_views;
 
 Vulkan::VertexBuffer<engine_instance::logical_device, engine_instance::physical_device> engine_instance::vertex_buffer;
@@ -19,16 +19,21 @@ engine_instance::vertex_allocator_t engine_instance::vertex_allocator;
 Vulkan::IndexBuffer<engine_instance::logical_device, engine_instance::physical_device> engine_instance::index_buffer;
 engine_instance::index_allocator_t engine_instance::index_allocator;
 
+UniformBuffers engine_instance::uniform_buffers;
+
+Vulkan::DescriptorSetLayout<engine_instance::logical_device> engine_instance::descriptor_set_layout;
 Vulkan::RenderPass<engine_instance::logical_device, engine_instance::swap_chain> engine_instance::render_pass;
-Vulkan::Pipeline::VulkanPipeline<engine_instance::logical_device, engine_instance::swap_chain, engine_instance::ShaderSequence, engine_instance::render_pass, engine_instance::vertex_buffer> engine_instance::vulkan_pipeline;
+Vulkan::Pipeline::VulkanPipeline<engine_instance::logical_device, engine_instance::swap_chain, engine_instance::ShaderSequence, engine_instance::render_pass, engine_instance::vertex_buffer, engine_instance::descriptor_set_layout> engine_instance::vulkan_pipeline;
 
 Vulkan::FrameBuffers<engine_instance::logical_device, engine_instance::swap_chain, engine_instance::render_pass, engine_instance::image_views> engine_instance::frame_buffers;
 Vulkan::CommandPool<engine_instance::logical_device, engine_instance::queue_family_indices> engine_instance::command_pool;
-Vulkan::RenderCommandBuffer<engine_instance::logical_device, engine_instance::command_pool> engine_instance::command_buffer;
+std::array<Vulkan::RenderCommandBuffer<engine_instance::logical_device, engine_instance::command_pool>, render_config.max_frames_in_flight> engine_instance::command_buffers;
 
-Vulkan::Semaphore<engine_instance::logical_device> engine_instance::render_complete_semaphore;
-Vulkan::Fence<engine_instance::logical_device, true> engine_instance::in_flight_fence;
+std::array<Vulkan::Semaphore<engine_instance::logical_device>, render_config.max_frames_in_flight> engine_instance::render_complete_semaphores;
+std::array<Vulkan::Fence<engine_instance::logical_device, true>, render_config.max_frames_in_flight> engine_instance::in_flight_fences;
 
 engine_instance::model_allocator_t engine_instance::model_allocator;
 
 PKEngine::ObjectTree engine_instance::object_tree;
+
+unsigned int engine_instance::current_frame;

@@ -18,9 +18,9 @@ namespace PKEngine {
         explicit inline ComponentBase(EngineNode & _parent): parent(_parent) { }
         virtual inline ~ComponentBase() = default;
 
-        virtual inline void sync_start() { }
-        virtual inline void sync_update() { }
-        virtual inline void sync_record_buffer() { }
+        virtual inline void pre_start() { }
+        virtual inline void pre_update() { }
+        virtual inline void record_buffer() { }
 
         virtual inline void start() { }
         virtual inline void update() { }

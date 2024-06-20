@@ -27,8 +27,8 @@ namespace PKEngine {
         inline void update() {
             for (auto & ele : branches) ele.update();
         }
-        inline void sync_record_buffer() {
-            for (auto & ele : branches) ele.sync_record_buffer();
+        inline void record_buffer() {
+            for (auto & ele : branches) ele.record_buffer();
         }
     };
 }

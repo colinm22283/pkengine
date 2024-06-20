@@ -15,6 +15,7 @@ public:
         using namespace PKEngine;
 
         pos.position = Vector3(0.8f * std::cos(time), 0.8f * std::sin(time), 0);
+        pos.rotation = Vector3(time, time, time);
 
         time += (float) std::chrono::duration_cast<std::chrono::microseconds>(Time::delta_time()).count() * 0.000001f;
     }

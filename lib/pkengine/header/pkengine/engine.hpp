@@ -23,6 +23,8 @@
 #include "pkengine/internal/vulkan/shader/vertex_buffer.hpp"
 #include "pkengine/internal/vulkan/shader/index_buffer.hpp"
 #include "pkengine/internal/vulkan/shader/device_allocator.hpp"
+#include "pkengine/internal/vulkan/descriptor_set_layout.hpp"
+#include "pkengine/internal/vulkan/shader/uniform_buffers.hpp"
 
 #include "pkengine/manifest/shader_manifest.hpp"
 
@@ -35,6 +37,8 @@
 
 #include "object_tree.hpp"
 #include "time.hpp"
+
+#include <render_config.hpp>
 
 namespace PKEngine {
     class engine_instance {
@@ -57,8 +61,9 @@ namespace PKEngine {
         static Vulkan::ConstQueueFamilyIndices<vulkan_surface, physical_device> queue_family_indices;
         static Vulkan::LogicalDevice<physical_device, queue_family_indices> logical_device;
         static Vulkan::VulkanQueue<logical_device> graphics_queue, present_queue;
-        static Vulkan::Semaphore<logical_device> image_available_semaphore;
-        static Vulkan::SwapChain<physical_device, logical_device, vulkan_surface, window, queue_family_indices, image_available_semaphore> swap_chain;
+        static std::array<Vulkan::Semaphore<logical_device>, render_config.max_frames_in_flight> image_available_semaphores;
+//        static Vulkan::Semaphore<logical_device> image_available_semaphore;
+        static Vulkan::SwapChain<physical_device, logical_device, vulkan_surface, window, queue_family_indices> swap_chain;
         static Vulkan::ImageViews<logical_device, swap_chain> image_views;
 
         using Shaders = Manifest::ShaderManifest;
@@ -71,15 +76,21 @@ namespace PKEngine {
         using index_allocator_t = Vulkan::DeviceAllocator<uint32_t, index_buffer>;
         static index_allocator_t index_allocator;
 
+        static UniformBuffers uniform_buffers;
+
         static Vulkan::RenderPass<logical_device, swap_chain> render_pass;
-        static Vulkan::Pipeline::VulkanPipeline<logical_device, swap_chain, ShaderSequence, render_pass, vertex_buffer> vulkan_pipeline;
+        static Vulkan::DescriptorSetLayout<logical_device> descriptor_set_layout;
+        static Vulkan::Pipeline::VulkanPipeline<logical_device, swap_chain, ShaderSequence, render_pass, vertex_buffer, descriptor_set_layout> vulkan_pipeline;
 
         static Vulkan::FrameBuffers<logical_device, swap_chain, render_pass, image_views> frame_buffers;
         static Vulkan::CommandPool<logical_device, queue_family_indices> command_pool;
-        static Vulkan::RenderCommandBuffer<logical_device, command_pool> command_buffer;
+        static std::array<Vulkan::RenderCommandBuffer<logical_device, command_pool>, render_config.max_frames_in_flight> command_buffers;
+//        static Vulkan::RenderCommandBuffer<logical_device, command_pool> command_buffer;
 
-        static Vulkan::Semaphore<logical_device> render_complete_semaphore;
-        static Vulkan::Fence<logical_device, true> in_flight_fence;
+        static std::array<Vulkan::Semaphore<logical_device>, render_config.max_frames_in_flight> render_complete_semaphores;
+//        static Vulkan::Semaphore<logical_device> render_complete_semaphore;
+        static std::array<Vulkan::Fence<logical_device, true>, render_config.max_frames_in_flight> in_flight_fences;
+//        static Vulkan::Fence<logical_device, true> in_flight_fence;
 
         using model_allocator_t = ModelAllocator<vertex_allocator, index_allocator, vertex_allocator_t::Allocation, index_allocator_t::Allocation>;
         static model_allocator_t model_allocator;
@@ -87,7 +98,11 @@ namespace PKEngine {
         static ObjectTree object_tree;
 
     protected:
+        static unsigned int current_frame;
+
         static inline void init() {
+            current_frame = 0;
+
             logger_file_stream.init();
 
             glfw_instance.init();
@@ -103,7 +118,7 @@ namespace PKEngine {
             graphics_queue.init(queue_family_indices.graphics_family.value());
             present_queue.init(queue_family_indices.present_family.value());
 
-            image_available_semaphore.init();
+            for (auto & semaphore : image_available_semaphores) semaphore.init();
             swap_chain.init();
             image_views.init();
 
@@ -115,14 +130,18 @@ namespace PKEngine {
             index_allocator.init();
 
             render_pass.init();
+            descriptor_set_layout.init();
             vulkan_pipeline.init();
 
             frame_buffers.init();
             command_pool.init();
-            command_buffer.init();
 
-            render_complete_semaphore.init();
-            in_flight_fence.init();
+            for (unsigned int i = 0; i < render_config.max_frames_in_flight; i++) {
+                command_buffers[i].init();
+
+                render_complete_semaphores[i].init();
+                in_flight_fences[i].init();
+            }
 
             model_allocator.init();
 
@@ -134,14 +153,18 @@ namespace PKEngine {
 
             model_allocator.free();
 
-            in_flight_fence.free();
-            render_complete_semaphore.free();
+            for (unsigned int i = 0; i < render_config.max_frames_in_flight; i++) {
+                in_flight_fences[i].free();
+                render_complete_semaphores[i].free();
 
-            command_buffer.free();
+                command_buffers[i].free();
+            }
+
             command_pool.free();
             frame_buffers.free();
 
             vulkan_pipeline.free();
+            descriptor_set_layout.free();
             render_pass.free();
 
             index_allocator.free();
@@ -153,7 +176,7 @@ namespace PKEngine {
 
             image_views.free();
             swap_chain.free();
-            image_available_semaphore.free();
+            for (auto & semaphore : image_available_semaphores) semaphore.free();
 
             present_queue.free();
             graphics_queue.free();
@@ -192,12 +215,12 @@ namespace PKEngine {
         }
 
         static inline void draw_frame() {
-            in_flight_fence.wait();
+            in_flight_fences[current_frame].wait();
 
-            uint32_t image_index = swap_chain.get_next_image_index();
+            uint32_t image_index = swap_chain.get_next_image_index(image_available_semaphores[current_frame]);
 
-            command_buffer.reset();
-            command_buffer.record<
+            command_buffers[current_frame].reset();
+            command_buffers[current_frame].record<
                 render_pass,
                 swap_chain,
                 frame_buffers,
@@ -207,14 +230,16 @@ namespace PKEngine {
                 object_tree
             >(image_index);
 
-            graphics_queue.submit<
-                image_available_semaphore,
-                render_complete_semaphore,
-                in_flight_fence,
-                command_buffer
-            >();
+            graphics_queue.submit(
+                image_available_semaphores[current_frame],
+                render_complete_semaphores[current_frame],
+                in_flight_fences[current_frame],
+                command_buffers[current_frame]
+            );
 
-            swap_chain.present<render_complete_semaphore, present_queue>(image_index);
+            swap_chain.present<present_queue>(image_index, render_complete_semaphores[current_frame]);
+
+            current_frame = (current_frame + 1) % render_config.max_frames_in_flight;
         }
 
     public:
@@ -258,5 +283,6 @@ namespace PKEngine {
 
             logger.success() << "PKEngine exited with no internal errors";
         }
+        [[nodiscard]] static inline auto & current_command_buffer() noexcept { return command_buffers[current_frame]; }
     };
 }

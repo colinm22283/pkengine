@@ -2,8 +2,10 @@
 
 #include <vulkan/vulkan.h>
 
+#include <pkengine/internal/vulkan/sync/semaphore.hpp>
+
 namespace PKEngine::Vulkan {
-    template<const auto & physical_device, const auto & logical_device, const auto &surface, const auto & window, const auto & queue_family_indices, const auto & image_available_semaphore>
+    template<const auto & physical_device, const auto & logical_device, const auto &surface, const auto & window, const auto & queue_family_indices>
     class SwapChain {
     protected:
         static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Swap Chain">();
@@ -125,14 +127,14 @@ namespace PKEngine::Vulkan {
 
         [[nodiscard]] inline VkSwapchainKHR handle() const noexcept { return swap_chain; }
 
-        [[nodiscard]] inline uint32_t get_next_image_index() {
+        [[nodiscard]] inline uint32_t get_next_image_index(Vulkan::Semaphore<logical_device> & image_available_semaphore) {
             uint32_t index;
             vkAcquireNextImageKHR(logical_device.handle(), swap_chain, UINT64_MAX, image_available_semaphore.handle(), VK_NULL_HANDLE, &index);
             return index;
         }
 
-        template<const auto & render_complete_semaphore, const auto & present_queue>
-        inline void present(uint32_t image_index) {
+        template<const auto & present_queue>
+        inline void present(uint32_t image_index, const auto & render_complete_semaphore) {
             VkPresentInfoKHR presentInfo{};
             presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 

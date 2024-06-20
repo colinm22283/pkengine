@@ -75,7 +75,7 @@ namespace PKEngine::Vulkan {
 
             vkCmdBindIndexBuffer(buffer, index_buffer.buffer_handle(), 0, VK_INDEX_TYPE_UINT32);
 
-            object_tree.sync_record_buffer();
+            object_tree.record_buffer();
 
             vkCmdEndRenderPass(buffer);
 

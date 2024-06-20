@@ -5,13 +5,15 @@
 #include "shader_sequence.hpp"
 
 namespace PKEngine::Vulkan::Pipeline {
-    template<const auto & logical_device, const auto & swap_chain, typename _ShaderSequence, const auto & render_pass, const auto & vertex_buffer>
+    template<const auto & logical_device, const auto & swap_chain, typename _ShaderSequence, const auto & render_pass, const auto & vertex_buffer, const auto & descriptor_set_layout>
     class VulkanPipeline {
     protected:
         static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Vulkan Pipeline">();
 
         VkPipeline pipeline = VK_NULL_HANDLE;
         VkPipelineLayout layout = VK_NULL_HANDLE;
+
+        const VkDescriptorSetLayout descriptor_set_layouts[1] = { descriptor_set_layout.handle() };
 
     public:
         inline void init() {
@@ -85,8 +87,8 @@ namespace PKEngine::Vulkan::Pipeline {
 
             VkPipelineLayoutCreateInfo pipeline_layout_info{};
             pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-            pipeline_layout_info.setLayoutCount = 0; // Optional
-            pipeline_layout_info.pSetLayouts = nullptr; // Optional
+            pipeline_layout_info.setLayoutCount = 1;
+            pipeline_layout_info.pSetLayouts = descriptor_set_layouts;
             pipeline_layout_info.pushConstantRangeCount = 0; // Optional
             pipeline_layout_info.pPushConstantRanges = nullptr; // Optional
 
@@ -157,7 +159,5 @@ namespace PKEngine::Vulkan::Pipeline {
         }
 
         [[nodiscard]] inline VkPipeline handle() const noexcept { return pipeline; }
-
-
     };
 }

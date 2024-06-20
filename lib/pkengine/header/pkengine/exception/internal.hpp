@@ -64,6 +64,7 @@ namespace PKEngine::Exception {
         PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_unable_to_create_vulkan_command_buffer, "Unable to create vulkan command buffer");
         PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_unable_to_record_vulkan_command_buffer, "Unable to enter_main_loop recording vulkan command buffer");
         PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_unable_to_create_vulkan_device_buffer, "Unable to create vulkan vertex buffer");
+        PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_unable_to_create_vulkan_descriptor_set_layout, "Unable to create vulkan descriptor set layout");
 
         PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_unable_to_create_semaphore, "Unable to create vulkan semaphore");
         PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_unable_to_create_fence, "Unable to create vulkan fence");

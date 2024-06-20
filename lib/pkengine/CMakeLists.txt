@@ -10,4 +10,4 @@ file(GLOB_RECURSE PKENGINE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/source/pkengine/
 
 target_sources(pkengine INTERFACE ${PKENGINE_SOURCES})
 target_include_directories(pkengine INTERFACE header)
-target_link_libraries(pkengine INTERFACE ext-vulkan glfw Threads::Threads)
+target_link_libraries(pkengine INTERFACE ext-vulkan glfw mipp Threads::Threads)

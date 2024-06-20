@@ -35,7 +35,7 @@ namespace PKEngine {
                 Vector3 dir = (positions[current_index] - origin.position);
                 float mag = dir.magnitude();
                 Vector3 velocity = dir * (1 / std::min(mag, 1.0f));
-                origin.position += velocity * (float) (std::chrono::duration_cast<std::chrono::microseconds>(Time::delta_time())).count() / 1000000.0f;
+                origin.position += velocity * (float) (Time::delta_time<std::chrono::microseconds>()).count() / 1000000.0f;
             }
         }
     };

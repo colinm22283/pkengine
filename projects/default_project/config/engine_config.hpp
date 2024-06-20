@@ -1,6 +1,6 @@
 #pragma once
 
-#include <pkengine/config/application_config_type.hpp>
+#include <pkengine/config/engine_config_type.hpp>
 
 namespace PKEngine {
     constexpr engine_config_t engine_config = {

@@ -19,10 +19,6 @@ namespace PKEngine {
     template<_logger_level_t level, typename base_color, Util::ConstString prefix>
     class _Logger {
     protected:
-#ifdef PKENGINE_LOGGER_ENABLE
-
-#endif
-
         static inline void print_header() {
             logger_file_stream << prefix;
 

@@ -10,18 +10,18 @@ namespace PKEngine {
         std::forward_list<EngineNode> branches;
 
         inline void start() {
-            for (auto & ele : _components) ele->sync_start();
+            for (auto & ele : _components) ele->pre_start();
             for (auto & ele : _components) ele->start();
             for (auto & ele : branches) ele.start();
         }
         inline void update() {
-            for (auto & ele : _components) ele->sync_update();
+            for (auto & ele : _components) ele->pre_update();
             for (auto & ele : _components) ele->update();
             for (auto & ele : branches) ele.update();
         }
-        inline void sync_record_buffer() {
-            for (auto & ele : _components) ele->sync_record_buffer();
-            for (auto & ele : branches) ele.sync_record_buffer();
+        inline void record_buffer() {
+            for (auto & ele : _components) ele->record_buffer();
+            for (auto & ele : branches) ele.record_buffer();
         }
 
     public:

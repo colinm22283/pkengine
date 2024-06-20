@@ -9,7 +9,7 @@ function(new_project NAME SOURCES)
 
     add_executable(${NAME} ${SOURCES})
     target_include_directories(${NAME} PUBLIC config header)
-    target_link_libraries(${NAME} PUBLIC pkengine pkpkg)
+    target_link_libraries(${NAME} PUBLIC pkengine)
 
     target_compile_options(${NAME} PUBLIC -Wall -ffast-math)
 
@@ -19,6 +19,7 @@ function(new_project NAME SOURCES)
 
     if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
         message(STATUS "Building for Debug")
+        target_compile_options(${NAME} PUBLIC -O1)
         if (ENABLE_ASAN)
             message(STATUS "Address sanitation enabled")
             target_compile_options(${NAME} PUBLIC -fsanitize=address)

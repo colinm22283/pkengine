@@ -5,13 +5,31 @@
 
 namespace PKEngine {
     class Transform : public ComponentBase {
+    protected:
+        explicit inline Transform(
+            EngineNode & _parent,
+            const Vector3 & _absolute_position,
+            const Vector3 & _absolute_rotation,
+            const Vector3 & _absolute_scale
+        ):
+            ComponentBase(_parent),
+            absolute_position(_absolute_position),
+            absolute_rotation(_absolute_rotation),
+            absolute_scale(_absolute_scale) { }
+
     public:
         Vector3 position, rotation, scale;
 
         using ComponentBase::ComponentBase;
 
-        Vector3 & absolute_position = position;
-        Vector3 & absolute_rotation = rotation;
-        Vector3 & absolute_scale = scale;
+        const Vector3 & absolute_position;
+        const Vector3 & absolute_rotation;
+        const Vector3 & absolute_scale;
+
+        explicit inline Transform(EngineNode & _parent):
+            ComponentBase(_parent),
+            absolute_position(position),
+            absolute_rotation(rotation),
+            absolute_scale(scale) { }
     };
 }

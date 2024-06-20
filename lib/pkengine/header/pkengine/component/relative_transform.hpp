@@ -13,14 +13,10 @@ namespace PKEngine {
 
     public:
         inline RelativeTransform(EngineNode & _parent, const Transform & _parent_transform):
-          Transform(_parent),
+          Transform(_parent, absolute_cache.position, absolute_cache.rotation, absolute_cache.scale),
           parent_transform(_parent_transform) { }
 
-        Vector3 & absolute_position = absolute_cache.position;
-        Vector3 & absolute_rotation = absolute_cache.rotation;
-        Vector3 & absolute_scale = absolute_cache.scale;
-
-        inline void sync_update() override {
+        inline void pre_update() override {
             absolute_cache.position = parent_transform.absolute_position + position;
             absolute_cache.rotation = parent_transform.absolute_rotation + rotation;
             absolute_cache.scale = parent_transform.absolute_scale + scale;
