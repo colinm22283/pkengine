@@ -12,10 +12,9 @@ int main() {
         !__builtin_cpu_supports("sse2")
     ) {
         logger.error() << "SSE is not supported on this architecture!";
-        return 1;
+        return 2;
     }
 
-    PKEngine::engine_instance::run();
-
-    return 0;
+    if (!PKEngine::engine_instance::run()) return 1;
+    else return 0;
 }

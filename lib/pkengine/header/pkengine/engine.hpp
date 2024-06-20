@@ -51,19 +51,18 @@ namespace PKEngine {
         static Vulkan::VulkanInstance vulkan_instance;
 
         // window
-    public:
-        static GLFW::Window window;
+        static GLFW::Window glfw_window;
 
         // vulkan objects
     public:
-        static Vulkan::Surface<vulkan_instance, window> vulkan_surface;
+        static Vulkan::Surface<vulkan_instance, glfw_window> vulkan_surface;
         static Vulkan::PhysicalDevice<vulkan_instance, vulkan_surface> physical_device;
         static Vulkan::ConstQueueFamilyIndices<vulkan_surface, physical_device> queue_family_indices;
         static Vulkan::LogicalDevice<physical_device, queue_family_indices> logical_device;
         static Vulkan::VulkanQueue<logical_device> graphics_queue, present_queue;
         static std::array<Vulkan::Semaphore<logical_device>, render_config.max_frames_in_flight> image_available_semaphores;
 //        static Vulkan::Semaphore<logical_device> image_available_semaphore;
-        static Vulkan::SwapChain<physical_device, logical_device, vulkan_surface, window, queue_family_indices> swap_chain;
+        static Vulkan::SwapChain<physical_device, logical_device, vulkan_surface, glfw_window, queue_family_indices> swap_chain;
         static Vulkan::ImageViews<logical_device, swap_chain> image_views;
 
         using Shaders = Manifest::ShaderManifest;
@@ -108,7 +107,7 @@ namespace PKEngine {
             glfw_instance.init();
             vulkan_instance.init();
 
-            window.init();
+            glfw_window.init();
 
             vulkan_surface.init();
             physical_device.init();
@@ -186,7 +185,7 @@ namespace PKEngine {
             physical_device.free();
             vulkan_surface.free();
 
-            window.free();
+            glfw_window.free();
 
             vulkan_instance.free();
             glfw_instance.free();
@@ -194,23 +193,17 @@ namespace PKEngine {
             logger_file_stream.free();
         }
 
-        static inline void enter_main_loop() noexcept {
-            try {
-                while (!glfwWindowShouldClose(window.handle())) {
-                    glfwPollEvents();
+        static inline void enter_main_loop() {
+            while (!glfwWindowShouldClose(glfw_window.handle())) {
+                glfwPollEvents();
 
-                    Time::update();
+                Time::update();
 
-                    object_tree.update();
+                object_tree.update();
 
-                    draw_frame();
+                draw_frame();
 
-                    vkDeviceWaitIdle(logical_device.handle());
-                }
-            }
-            catch (std::exception & ex) {
-                logger.error() << "Exception occurred during user code update";
-                logger.error() << "what(): " << ex.what();
+                vkDeviceWaitIdle(logical_device.handle());
             }
         }
 
@@ -243,8 +236,22 @@ namespace PKEngine {
         }
 
     public:
-        static inline void run() {
+        static inline bool run() noexcept {
             logger << "Starting PKEngine...";
+
+            static auto do_cleanup = []() {
+                try {
+                    free();
+                }
+                catch (const std::exception & ex) {
+                    logger.error() << "Exception occurred during PKEngine cleanup";
+                    logger.error() << "what(): " << ex.what();
+
+                    return false;
+                }
+
+                return true;
+            };
 
             try {
                 init();
@@ -252,37 +259,69 @@ namespace PKEngine {
                 Time::start();
             }
             catch (const Exception::InternalException & ex) {
-                logger.error() << "Exception occurred during PKEngine initialization:";
+                logger.error() << "Exception occurred during PKEngine initialization";
                 logger.error() << "\tWhat: " << ex.what();
                 if (ex.is_glfw_error()) {
                     logger.error() << "\tGLFW Error String: " << GLFW::glfw_error_string;
                 }
 
-                free();
+                do_cleanup();
 
-                return;
+                return false;
             }
 
             try {
                 ::init();
-
-                object_tree.start();
-
-                enter_main_loop();
             }
-            catch (std::exception & ex) {
+            catch (const std::exception & ex) {
                 logger.error() << "Exception occurred during user code initialization";
                 logger.error() << "What(): " << ex.what();
 
-                free();
+                do_cleanup();
 
-                return;
+                return false;
             }
 
-            free();
+
+            try {
+                object_tree.start();
+            }
+            catch (const std::exception & ex) {
+                logger.error() << "Exception occurred during user code start";
+                logger.error() << "What(): " << ex.what();
+
+                do_cleanup();
+
+                return false;
+            }
+
+            try {
+                enter_main_loop();
+            }
+            catch (const std::exception & ex) {
+                logger.error() << "Exception occurred during user code update";
+                logger.error() << "what(): " << ex.what();
+
+                do_cleanup();
+
+                return false;
+            }
+
+            if (!do_cleanup()) return false;
 
             logger.success() << "PKEngine exited with no internal errors";
+
+            return true;
         }
+
+        struct window {
+            static inline void resize(int width, int height) {
+                glfw_window.set_dimensions(width, height);
+
+                // TODO: complete this, will probably have to like refresh every vulkan object :(
+            }
+        };
+
         [[nodiscard]] static inline auto & current_command_buffer() noexcept { return command_buffers[current_frame]; }
     };
 }

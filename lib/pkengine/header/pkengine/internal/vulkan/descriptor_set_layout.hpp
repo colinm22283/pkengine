@@ -7,7 +7,7 @@ namespace PKEngine::Vulkan {
         static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Vulkan Descriptor Set Layout">();
 
         VkDescriptorSetLayoutBinding layout_binding;
-        VkDescriptorSetLayout layout;
+        VkDescriptorSetLayout layout = VK_NULL_HANDLE;
 
     public:
         inline void init() {
@@ -34,7 +34,7 @@ namespace PKEngine::Vulkan {
         inline void free() {
             logger << "Destroying vulkan descriptor set layout...";
 
-            vkDestroyDescriptorSetLayout(logical_device.handle(), layout, nullptr);
+            if (layout != VK_NULL_HANDLE) vkDestroyDescriptorSetLayout(logical_device.handle(), layout, nullptr);
 
             logger.success() << "Vulkan descriptor set layout destroyed";
         }
