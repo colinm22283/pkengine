@@ -1,3 +1,3 @@
 #!/bin/bash
 
-wc -l $(find -L ./lib ./projects)
+wc -l $(find -L ./lib ./projects -type f)

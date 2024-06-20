@@ -193,7 +193,15 @@ namespace PKEngine {
             logger_file_stream.free();
         }
 
+        static inline void test(GLFWwindow* window, int key, int scancode, int action, int mods) {
+            logger << "TEST: " << key << "\n";
+
+            if (action == GLFW_PRESS) object_tree.key_down();
+        }
+
         static inline void enter_main_loop() {
+            glfwSetKeyCallback(glfw_window.handle(), test);
+
             while (!glfwWindowShouldClose(glfw_window.handle())) {
                 glfwPollEvents();
 
@@ -233,6 +241,18 @@ namespace PKEngine {
             swap_chain.present<present_queue>(image_index, render_complete_semaphores[current_frame]);
 
             current_frame = (current_frame + 1) % render_config.max_frames_in_flight;
+        }
+
+        static inline void recreate_swap_chain() {
+            vkDeviceWaitIdle(logical_device.handle());
+
+            frame_buffers.free();
+            image_views.free();
+            swap_chain.free();
+
+            swap_chain.init();
+            image_views.init();
+            frame_buffers.init();
         }
 
     public:
@@ -317,6 +337,8 @@ namespace PKEngine {
         struct window {
             static inline void resize(int width, int height) {
                 glfw_window.set_dimensions(width, height);
+
+                recreate_swap_chain();
 
                 // TODO: complete this, will probably have to like refresh every vulkan object :(
             }

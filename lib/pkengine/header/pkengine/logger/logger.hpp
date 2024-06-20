@@ -39,11 +39,10 @@ namespace PKEngine {
             // TODO: submit a bug report to gcc
 
             logger_file_stream << "\n";
-            if constexpr (level == _LL_STATUS) logger_console_stream::status << (LoggerConfig::reset_color::string + Util::ConstString("\n")).c_str();
-            else if constexpr (level == _LL_SUCCESS) logger_console_stream::success << (LoggerConfig::reset_color::string + Util::ConstString("\n")).c_str();
-            else if constexpr (level == _LL_WARNING) logger_console_stream::warning << (LoggerConfig::reset_color::string + Util::ConstString("\n")).c_str();
-            else if constexpr (level == _LL_ERROR) logger_console_stream::error << (LoggerConfig::reset_color::string + Util::ConstString("\n")).c_str();
-
+            if constexpr (level == _LL_STATUS) (logger_console_stream::status << (LoggerConfig::reset_color::string + Util::ConstString("\n")).c_str()).flush();
+            else if constexpr (level == _LL_SUCCESS) (logger_console_stream::success << (LoggerConfig::reset_color::string + Util::ConstString("\n")).c_str()).flush();
+            else if constexpr (level == _LL_WARNING) (logger_console_stream::warning << (LoggerConfig::reset_color::string + Util::ConstString("\n")).c_str()).flush();
+            else if constexpr (level == _LL_ERROR) (logger_console_stream::error << (LoggerConfig::reset_color::string + Util::ConstString("\n")).c_str()).flush();
         }
 
         template<typename T>

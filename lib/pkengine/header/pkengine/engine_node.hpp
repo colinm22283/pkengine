@@ -23,6 +23,10 @@ namespace PKEngine {
             for (auto & ele : _components) ele->record_buffer();
             for (auto & ele : branches) ele.record_buffer();
         }
+        inline void key_down() {
+            for (auto & ele : _components) ele->key_down();
+            for (auto & ele : branches) ele.key_down();
+        }
 
     public:
         inline EngineNode() = default;

@@ -30,5 +30,8 @@ namespace PKEngine {
         inline void record_buffer() {
             for (auto & ele : branches) ele.record_buffer();
         }
+        inline void key_down() {
+            for (auto & ele : branches) ele.key_down();
+        }
     };
 }

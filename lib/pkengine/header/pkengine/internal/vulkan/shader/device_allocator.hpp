@@ -103,8 +103,6 @@ namespace PKEngine::Vulkan {
         inline void dealloc(Allocation & sector) {
             logger << "Freeing sector at offset of " << sector.offset() << " with a size of " << sector.size() << " elements (" << (sector.size() * sizeof(T)) << " bytes)";
 
-            std::cout.flush();
-
             sector.itr->free = true;
 
             // check ahead

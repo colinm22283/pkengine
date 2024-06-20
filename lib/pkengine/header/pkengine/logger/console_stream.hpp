@@ -22,6 +22,10 @@ namespace PKEngine {
             if constexpr (logger_enable || override_log_disable) std::cout << std::forward<T>(v);
             return *this;
         }
+
+        inline void flush() const noexcept {
+            if constexpr (logger_enable || override_log_disable) std::cout.flush();
+        }
     };
 
     struct logger_console_stream {

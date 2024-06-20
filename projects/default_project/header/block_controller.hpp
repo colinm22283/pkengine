@@ -3,6 +3,8 @@
 #include <pkengine/component/component_base.hpp>
 #include <pkengine/component/transform.hpp>
 
+#include <pkengine/time.hpp>
+
 class BlockController : public PKEngine::ComponentBase {
 protected:
     float time = 0;
@@ -18,5 +20,11 @@ public:
         pos.rotation = Vector3(time, time, time);
 
         time += (float) std::chrono::duration_cast<std::chrono::microseconds>(Time::delta_time()).count() * 0.000001f;
+    }
+
+    inline void key_down() override {
+        time += 1;
+
+        logger << "FPS: " << (1000000 / PKEngine::Time::delta_time().count());
     }
 };

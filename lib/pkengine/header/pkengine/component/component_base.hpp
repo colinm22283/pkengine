@@ -24,5 +24,7 @@ namespace PKEngine {
 
         virtual inline void start() { }
         virtual inline void update() { }
+
+        virtual inline void key_down() { }
     };
 }
