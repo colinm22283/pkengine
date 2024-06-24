@@ -1,5 +1,7 @@
 include(FetchContent)
 
+cmake_policy(SET CMP0077 NEW)
+
 set(MIPP_TESTS_EXE OFF)
 set(MIPP_EXAMPLES_EXE OFF)
 
