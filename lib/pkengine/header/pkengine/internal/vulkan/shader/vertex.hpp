@@ -5,7 +5,7 @@
 #include "pkengine/math/vector3.hpp"
 
 namespace PKEngine::Vulkan {
-    class __attribute__((packed)) Vertex {
+    class Vertex {
     public:
         float x, y, z;
 

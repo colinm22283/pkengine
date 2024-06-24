@@ -4,6 +4,6 @@
 
 namespace PKEngine {
     constexpr render_config_t render_config = {
-        .max_frames_in_flight = 1000,
+        .max_frames_in_flight = 1,
     };
 }

@@ -13,7 +13,7 @@ namespace PKEngine::Vulkan::Pipeline {
         VkPipeline pipeline = VK_NULL_HANDLE;
         VkPipelineLayout layout = VK_NULL_HANDLE;
 
-        const VkDescriptorSetLayout descriptor_set_layouts[1] = { descriptor_set_layout.handle() };
+        VkDescriptorSetLayout descriptor_set_layouts[1] = { };
 
     public:
         inline void init() {
@@ -84,6 +84,8 @@ namespace PKEngine::Vulkan::Pipeline {
             color_blending.blendConstants[1] = 0.0f;
             color_blending.blendConstants[2] = 0.0f;
             color_blending.blendConstants[3] = 0.0f;
+
+            descriptor_set_layouts[0] = descriptor_set_layout.handle();
 
             VkPipelineLayoutCreateInfo pipeline_layout_info{};
             pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -159,5 +161,6 @@ namespace PKEngine::Vulkan::Pipeline {
         }
 
         [[nodiscard]] inline VkPipeline handle() const noexcept { return pipeline; }
+        [[nodiscard]] inline VkPipelineLayout layout_handle() const noexcept { return layout; }
     };
 }

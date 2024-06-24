@@ -6,7 +6,7 @@ namespace PKEngine::Vulkan {
     protected:
         static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Vulkan Descriptor Set Layout">();
 
-        VkDescriptorSetLayoutBinding layout_binding;
+        VkDescriptorSetLayoutBinding layout_binding = { };
         VkDescriptorSetLayout layout = VK_NULL_HANDLE;
 
     public:

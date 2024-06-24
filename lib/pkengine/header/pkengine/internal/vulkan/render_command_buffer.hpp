@@ -23,7 +23,7 @@ namespace PKEngine::Vulkan {
             const auto & index_buffer,
             auto & object_tree
         >
-        inline void record(uint32_t image_index) {
+        inline void record(auto & descriptor_set, uint32_t image_index) {
             VkCommandBufferBeginInfo beginInfo{};
             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
             beginInfo.flags = 0; // Optional
@@ -74,6 +74,17 @@ namespace PKEngine::Vulkan {
             vkCmdBindVertexBuffers(buffer, 0, 1, vertex_buffers, vertex_offsets);
 
             vkCmdBindIndexBuffer(buffer, index_buffer.buffer_handle(), 0, VK_INDEX_TYPE_UINT32);
+
+            vkCmdBindDescriptorSets(
+                buffer,
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                pipeline.layout_handle(),
+                0,
+                1,
+                &descriptor_set.handle(),
+                0,
+                nullptr
+            );
 
             object_tree.record_buffer();
 

@@ -21,10 +21,4 @@ public:
 
         time += (float) std::chrono::duration_cast<std::chrono::microseconds>(Time::delta_time()).count() * 0.000001f;
     }
-
-    inline void key_down() override {
-        time += 1;
-
-        logger << "FPS: " << (1000000 / PKEngine::Time::delta_time().count());
-    }
 };
