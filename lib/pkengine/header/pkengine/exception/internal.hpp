@@ -67,12 +67,16 @@ namespace PKEngine::Exception {
         PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_unable_to_create_vulkan_descriptor_set_layout, "Unable to create vulkan descriptor set layout");
         PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_unable_to_create_vulkan_descriptor_pool, "Unable to create vulkan descriptor pool");
         PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_unable_to_create_vulkan_descriptor_sets, "Unable to create vulkan descriptor sets");
+        PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_unable_to_create_vulkan_image, "Unable to create vulkan image");
 
         PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_unable_to_create_semaphore, "Unable to create vulkan semaphore");
         PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_unable_to_create_fence, "Unable to create vulkan fence");
 
         PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_unable_to_allocate_device_buffer, "Unable to allocate device buffer");
         PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_unable_to_bind_device_buffer, "Unable to bind device buffer");
+
+        PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_unable_to_allocate_image_buffer, "Unable to allocate image buffer");
+        PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_unable_to_bind_image_buffer, "Unable to bind image buffer");
 
         PKENGINE_INTERNAL_VULKAN_EXCEPTION(vulkan_unable_to_submit_draw_buffer, "Unable to submit draw command buffer");
     }

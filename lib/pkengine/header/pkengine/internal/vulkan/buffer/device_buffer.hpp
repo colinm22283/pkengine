@@ -16,14 +16,23 @@ namespace PKEngine::Vulkan {
     protected:
         static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Device Buffer">();
 
-        VkBuffer buffer;
-        VkDeviceMemory memory;
+        VkDeviceSize capacity;
+
+        VkBuffer buffer = VK_NULL_HANDLE;
+        VkDeviceMemory memory = VK_NULL_HANDLE;
 
     public:
+        inline DeviceBuffer() = default;
+        inline DeviceBuffer(DeviceBuffer &) = delete;
+        inline DeviceBuffer(DeviceBuffer && other): capacity(other.capacity), buffer(other.buffer), memory(other.memory) {
+            other.buffer = VK_NULL_HANDLE;
+            other.memory = VK_NULL_HANDLE;
+        }
+
         inline void init(VkDeviceSize _capacity) {
             logger << "Initializing device buffer...";
 
-            VkDeviceSize capacity = _capacity * sizeof(T);
+            capacity = _capacity * sizeof(T);
 
             VkBufferCreateInfo bufferInfo{};
             bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -67,6 +76,27 @@ namespace PKEngine::Vulkan {
 
         [[nodiscard]] consteval auto get_bind_info() const noexcept {
             return T::get_bind_info();
+        }
+
+        [[nodiscard]] inline void * bind() {
+            void * bound_buffer;
+
+            if (vkMapMemory(
+                logical_device.handle(),
+                memory,
+                0,
+                capacity,
+                0,
+                (void **) &bound_buffer
+            ) != VK_SUCCESS) return nullptr;
+
+            return bound_buffer;
+        }
+        inline void unbind() {
+            vkUnmapMemory(
+                logical_device.handle(),
+                memory
+            );
         }
     };
 }

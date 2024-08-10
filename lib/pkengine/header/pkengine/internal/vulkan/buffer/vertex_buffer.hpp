@@ -2,8 +2,8 @@
 
 #include <vulkan/vulkan.h>
 
-#include "staged_buffer.hpp"
-#include "vertex.hpp"
+#include "pkengine/internal/vulkan/buffer/staged_buffer.hpp"
+#include "pkengine/internal/vulkan/types/vertex.hpp"
 
 namespace PKEngine::Vulkan {
     template<const auto & logical_device, const auto & physical_device>

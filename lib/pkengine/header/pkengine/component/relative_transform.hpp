@@ -18,8 +18,8 @@ namespace PKEngine {
 
         inline void pre_update() override {
             absolute_cache.position = parent_transform.absolute_position + position;
-            absolute_cache.rotation = parent_transform.absolute_rotation + rotation;
-            absolute_cache.scale = parent_transform.absolute_scale + scale;
+            absolute_cache.rotation = rotation;
+            absolute_cache.scale = scale;
         }
     };
 }

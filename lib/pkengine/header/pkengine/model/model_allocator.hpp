@@ -4,8 +4,8 @@
 
 #include <vulkan/vulkan.h>
 
-#include "pkengine/internal/vulkan/shader/device_allocator.hpp"
-#include "pkengine/internal/vulkan/shader/vertex.hpp"
+#include "pkengine/internal/vulkan/buffer/device_allocator.hpp"
+#include "pkengine/internal/vulkan/types/vertex.hpp"
 
 namespace PKEngine {
     template<auto & vertex_allocator, auto & index_allocator, typename vertex_allocator_t, typename index_allocator_t>

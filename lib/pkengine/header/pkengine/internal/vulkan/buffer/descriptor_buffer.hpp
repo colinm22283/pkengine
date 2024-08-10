@@ -1,23 +1,23 @@
 #pragma once
 
-#include <pkengine/internal/vulkan/shader/device_buffer.hpp>
-#include <pkengine/internal/vulkan/shader/uniform_buffer_object.hpp>
+#include "pkengine/internal/vulkan/buffer/device_buffer.hpp"
+#include "pkengine/math/matrix4.hpp"
 
-#include <render_config.hpp>
+#include "render_config.hpp"
 
 namespace PKEngine::Vulkan {
-    template<const auto & logical_device, const auto & physical_device>
-    class UniformBuffer {
+    template<const auto & logical_device, const auto & physical_device, typename T>
+    class DescriptorBuffer {
     protected:
         DeviceBuffer<
             logical_device,
             physical_device,
-            UniformBufferObject,
+            T,
             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
         > device_buffer;
 
-        UniformBufferObject * bound_buffer;
+        T * bound_buffer;
 
     public:
         inline void init() {
@@ -27,14 +27,10 @@ namespace PKEngine::Vulkan {
                 logical_device.handle(),
                 device_buffer.memory_handle(),
                 0,
-                sizeof(UniformBufferObject),
+                sizeof(T),
                 0,
                 (void **) &bound_buffer
             );
-
-            bound_buffer->model.set_identity();
-            bound_buffer->proj.set_identity();
-            bound_buffer->view.set_scaling_matrix(0.4, 0.4, 0.4);
         }
 
         inline void free() {
@@ -46,7 +42,8 @@ namespace PKEngine::Vulkan {
             );
         }
 
-        [[nodiscard]] inline UniformBufferObject * buffer() const noexcept { return bound_buffer; }
+        [[nodiscard]] inline T * buffer() const noexcept { return bound_buffer; }
         [[nodiscard]] inline VkBuffer buffer_handle() const noexcept { return device_buffer.buffer_handle(); }
+        [[nodiscard]] inline std::size_t size() const noexcept { return sizeof(T); }
     };
 }

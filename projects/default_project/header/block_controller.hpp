@@ -17,8 +17,8 @@ public:
         using namespace PKEngine;
 
         pos.position = Vector3(0.3f * std::cos(time), 0.3f * std::sin(time), 0);
-        pos.rotation = Vector3(time, time, time);
+//        pos.rotation = Vector3(time, time, time);
 
-        time += (float) std::chrono::duration_cast<std::chrono::microseconds>(Time::delta_time()).count() * 0.000001f;
+        time += (float) std::chrono::duration_cast<std::chrono::microseconds>(Time::delta_time()).count() * 0.00001f;
     }
 };

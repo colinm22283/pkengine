@@ -13,7 +13,8 @@ namespace PKEngine::Vulkan {
         VkDescriptorSetLayout layouts[1];
 
     public:
-        inline void init(auto & uniform_buffer) {
+        template<std::size_t n>
+        inline void init(std::array<VkDescriptorBufferInfo, n> & buffer_infos) {
             layouts[0] = descriptor_set_layout.handle();
 
             VkDescriptorSetAllocateInfo alloc_info {
@@ -27,27 +28,21 @@ namespace PKEngine::Vulkan {
                 throw Exception::Internal::vulkan_unable_to_create_vulkan_descriptor_sets();
             }
 
-            VkDescriptorBufferInfo buffer_info {
-                .buffer = uniform_buffer.buffer_handle(),
-                .offset = 0,
-                .range = sizeof(UniformBufferObject),
-            };
+            VkWriteDescriptorSet descriptor_writes[buffer_infos.size()];
 
-            VkWriteDescriptorSet descriptor_write {
-                .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                .dstSet = descriptor_set,
-                .dstBinding = 0,
-                .dstArrayElement = 0,
+            for (std::size_t i = 0; i < buffer_infos.size(); i++) {
+                descriptor_writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                descriptor_writes[i].dstSet = descriptor_set;
+                descriptor_writes[i].dstBinding = i;
+                descriptor_writes[i].dstArrayElement = 0;
+                descriptor_writes[i].descriptorCount = 1;
+                descriptor_writes[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                descriptor_writes[i].pImageInfo = nullptr;
+                descriptor_writes[i].pBufferInfo = buffer_infos.data();
+                descriptor_writes[i].pTexelBufferView = nullptr;
+            }
 
-                .descriptorCount = 1,
-                .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-
-                .pImageInfo = nullptr,
-                .pBufferInfo = &buffer_info,
-                .pTexelBufferView = nullptr,
-            };
-
-            vkUpdateDescriptorSets(logical_device.handle(), 1, &descriptor_write, 0, nullptr);
+            vkUpdateDescriptorSets(logical_device.handle(), buffer_infos.size(), descriptor_writes, 0, nullptr);
         }
 
         inline void free() { }

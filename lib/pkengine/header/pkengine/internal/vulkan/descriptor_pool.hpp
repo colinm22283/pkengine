@@ -13,17 +13,13 @@ namespace PKEngine::Vulkan {
         VkDescriptorPool descriptor_pool = VK_NULL_HANDLE;
 
     public:
-        inline void init() {
-            VkDescriptorPoolSize pool_size {
-                .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                .descriptorCount = static_cast<uint32_t>(render_config.max_frames_in_flight),
-            };
-
+        template<std::size_t n>
+        inline void init(std::array<VkDescriptorPoolSize, n> & pool_sizes) {
             VkDescriptorPoolCreateInfo create_info {
                 .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
                 .maxSets = static_cast<uint32_t>(render_config.max_frames_in_flight),
-                .poolSizeCount = 1,
-                .pPoolSizes = &pool_size,
+                .poolSizeCount = (uint32_t) pool_sizes.size(),
+                .pPoolSizes = pool_sizes.data(),
             };
 
             if (vkCreateDescriptorPool(logical_device.handle(), &create_info, nullptr, &descriptor_pool) != VK_SUCCESS) {

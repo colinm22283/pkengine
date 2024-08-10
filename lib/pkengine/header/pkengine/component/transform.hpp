@@ -18,7 +18,9 @@ namespace PKEngine {
             absolute_scale(_absolute_scale) { }
 
     public:
-        Vector3 position, rotation, scale;
+        Vector3 position = Vector3(0, 0, 0);
+        Vector3 rotation = Vector3(0, 0, 0);
+        Vector3 scale = Vector3(1, 1, 1);
 
         using ComponentBase::ComponentBase;
 

@@ -26,9 +26,13 @@ namespace PKEngine {
 
     public:
         static inline float float_delta() noexcept { return (float) delta_time().count() / 1000000.0f; }
+
         template<typename DurationType = duration>
         static inline duration delta_time() noexcept { return std::chrono::duration_cast<DurationType>(_delta_time); }
+
         template<typename DurationType = duration>
         static inline duration uptime() noexcept { return std::chrono::duration_cast<DurationType>(last_update_time - start_time); }
+
+        static inline float frames_per_second() noexcept { return 1000000.0f / (float) delta_time<std::chrono::microseconds>().count(); }
     };
 }

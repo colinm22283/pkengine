@@ -19,7 +19,8 @@ engine_instance::vertex_allocator_t engine_instance::vertex_allocator;
 Vulkan::IndexBuffer<engine_instance::logical_device, engine_instance::physical_device> engine_instance::index_buffer;
 engine_instance::index_allocator_t engine_instance::index_allocator;
 
-std::array<Vulkan::UniformBuffer<engine_instance::logical_device, engine_instance::physical_device>, render_config.max_frames_in_flight> engine_instance::uniform_buffers;
+std::array<Vulkan::DescriptorBuffer<engine_instance::logical_device, engine_instance::physical_device, Vulkan::SceneData>, render_config.max_frames_in_flight> engine_instance::scene_data_buffers;
+std::array<Vulkan::DescriptorBuffer<engine_instance::logical_device, engine_instance::physical_device, Vulkan::ModelData>, render_config.max_frames_in_flight> engine_instance::model_data_buffers;
 
 Vulkan::DescriptorSetLayout<engine_instance::logical_device> engine_instance::descriptor_set_layout;
 Vulkan::DescriptorPool<engine_instance::logical_device> engine_instance::descriptor_pool;

@@ -1,11 +1,15 @@
 include(FetchContent)
 
 FetchContent_Declare(
-        libbmp_content
-        GIT_REPOSITORY git@github.com:marc-q/libbmp.git
-        GIT_TAG        66bec6d7daf254e6dc07d55c9383fd68276a6a39
+        cbmp_content
+        GIT_REPOSITORY git@github.com:mattflow/cbmp.git
+        GIT_TAG        v1.0.1
 )
-FetchContent_Populate(libbmp_content)
+FetchContent_GetProperties(cbmp_content)
+if(NOT cbmp_content_POPULATED)
+    FetchContent_Populate(cbmp_content)
+endif()
 
-add_library(libbmp ${libbmp_content_SOURCE_DIR}/libbmp.c)
-target_include_directories(libbmp PUBLIC ${libbmp_content_SOURCE_DIR})
+add_library(cbmp INTERFACE)
+target_include_directories(cbmp INTERFACE ${cbmp_content_SOURCE_DIR})
+target_sources(cbmp INTERFACE ${cbmp_content_SOURCE_DIR}/cbmp.c)

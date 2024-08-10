@@ -4,7 +4,7 @@
 
 #include "pkengine/util/ansi.hpp"
 #include "pkengine/logger/logger.hpp"
-#include "vertex.hpp"
+#include "pkengine/internal/vulkan/types/vertex.hpp"
 
 #include "vertex_buffer.hpp"
 

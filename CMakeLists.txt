@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.7)
-project(pkengine)
+project(pkengine C CXX)
 
 cmake_policy(SET CMP0077 NEW)
 

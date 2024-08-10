@@ -20,13 +20,17 @@
 #include "pkengine/internal/vulkan/render_command_buffer.hpp"
 #include "pkengine/internal/vulkan/sync/semaphore.hpp"
 #include "pkengine/internal/vulkan/sync/fence.hpp"
-#include "pkengine/internal/vulkan/shader/vertex_buffer.hpp"
-#include "pkengine/internal/vulkan/shader/index_buffer.hpp"
-#include "pkengine/internal/vulkan/shader/device_allocator.hpp"
+#include "pkengine/internal/vulkan/buffer/vertex_buffer.hpp"
+#include "pkengine/internal/vulkan/buffer/index_buffer.hpp"
+#include "pkengine/internal/vulkan/buffer/device_allocator.hpp"
 #include "pkengine/internal/vulkan/descriptor_set_layout.hpp"
-#include "pkengine/internal/vulkan/shader/uniform_buffer.hpp"
 #include "pkengine/internal/vulkan/descriptor_pool.hpp"
 #include "pkengine/internal/vulkan/descriptor_set.hpp"
+#include "pkengine/internal/vulkan/buffer/descriptor_buffer.hpp"
+#include "pkengine/internal/vulkan/types/scene_data.hpp"
+#include "pkengine/internal/vulkan/types/model_data.hpp"
+
+#include <pkengine/frame_data.hpp>
 
 #include "pkengine/manifest/shader_manifest.hpp"
 
@@ -76,30 +80,34 @@ namespace PKEngine {
         using index_allocator_t = Vulkan::DeviceAllocator<uint32_t, index_buffer>;
         static index_allocator_t index_allocator;
 
-        static std::array<Vulkan::UniformBuffer<logical_device, physical_device>, render_config.max_frames_in_flight> uniform_buffers;
+        static std::array<Vulkan::DescriptorBuffer<logical_device, physical_device, Vulkan::SceneData>, render_config.max_frames_in_flight> scene_data_buffers;
+        static std::array<Vulkan::DescriptorBuffer<logical_device, physical_device, Vulkan::ModelData>, render_config.max_frames_in_flight> model_data_buffers;
 
         static Vulkan::DescriptorSetLayout<logical_device> descriptor_set_layout;
         static Vulkan::DescriptorPool<logical_device> descriptor_pool;
-        static std::array<Vulkan::DescriptorSet<logical_device, descriptor_set_layout, descriptor_pool>, render_config.max_frames_in_flight> descriptor_sets;
+//        static std::array<Vulkan::DescriptorSet<logical_device, descriptor_set_layout, descriptor_pool>, render_config.max_frames_in_flight> descriptor_sets;
 
         static Vulkan::RenderPass<logical_device, swap_chain> render_pass;
         static Vulkan::Pipeline::VulkanPipeline<logical_device, swap_chain, ShaderSequence, render_pass, vertex_buffer, descriptor_set_layout> vulkan_pipeline;
 
         static Vulkan::FrameBuffers<logical_device, swap_chain, render_pass, image_views> frame_buffers;
         static Vulkan::CommandPool<logical_device, queue_family_indices> command_pool;
-        static std::array<Vulkan::RenderCommandBuffer<logical_device, command_pool>, render_config.max_frames_in_flight> command_buffers;
+//        static std::array<Vulkan::RenderCommandBuffer<logical_device, command_pool>, render_config.max_frames_in_flight> command_buffers;
 
-        static std::array<Vulkan::Semaphore<logical_device>, render_config.max_frames_in_flight> render_complete_semaphores;
-        static std::array<Vulkan::Fence<logical_device, true>, render_config.max_frames_in_flight> in_flight_fences;
+//        static std::array<Vulkan::Semaphore<logical_device>, render_config.max_frames_in_flight> render_complete_semaphores;
+//        static std::array<Vulkan::Fence<logical_device, true>, render_config.max_frames_in_flight> in_flight_fences;
+
+        static std::array<FrameData<logical_device, descriptor_set_layout, descriptor_pool, command_pool>, render_config.max_frames_in_flight> frame_data;
+        static inline auto & get_current_frame_data() noexcept { return frame_data[current_frame]; }
 
         using model_allocator_t = ModelAllocator<vertex_allocator, index_allocator, vertex_allocator_t::Allocation, index_allocator_t::Allocation>;
         static model_allocator_t model_allocator;
 
         static ObjectTree object_tree;
 
-    protected:
         static unsigned int current_frame;
 
+    protected:
         static inline void init() {
             current_frame = 0;
 
@@ -129,11 +137,37 @@ namespace PKEngine {
             index_buffer.init(memory_config.index_buffer_allocation);
             index_allocator.init();
 
-            for (auto & buffer : uniform_buffers) buffer.init();
+            for (auto & buffer : scene_data_buffers) buffer.init();
+            for (auto & buffer : model_data_buffers) buffer.init();
 
             descriptor_set_layout.init();
-            descriptor_pool.init();
-            for (unsigned int i = 0; i < render_config.max_frames_in_flight; i++) descriptor_sets[i].init(uniform_buffers[i]);
+
+            std::array<VkDescriptorPoolSize, 2> pool_sizes {
+                VkDescriptorPoolSize {
+                    .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = static_cast<uint32_t>(render_config.max_frames_in_flight),
+                },
+                VkDescriptorPoolSize {
+                    .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = static_cast<uint32_t>(render_config.max_frames_in_flight),
+                },
+            };
+            descriptor_pool.init(pool_sizes);
+
+            for (unsigned int i = 0; i < render_config.max_frames_in_flight; i++) {
+                std::array<VkDescriptorBufferInfo, 2> buffer_infos = {
+                    VkDescriptorBufferInfo {
+                        .buffer = scene_data_buffers[i].buffer_handle(),
+                        .offset = 0,
+                        .range = scene_data_buffers[i].size(),},
+                    VkDescriptorBufferInfo {
+                        .buffer = model_data_buffers[i].buffer_handle(),
+                        .offset = 0,
+                        .range = model_data_buffers[i].size(),
+                    },
+                };
+                descriptor_sets[i].init(buffer_infos);
+            }
 
             render_pass.init();
             vulkan_pipeline.init();
@@ -175,7 +209,8 @@ namespace PKEngine {
             descriptor_pool.free();
             descriptor_set_layout.free();
 
-            for (auto & buffer : uniform_buffers) buffer.free();
+            for (auto & buffer : model_data_buffers) buffer.free();
+            for (auto & buffer : scene_data_buffers) buffer.free();
 
             index_allocator.free();
             index_buffer.free();
@@ -285,9 +320,9 @@ namespace PKEngine {
             };
 
             try {
-                init();
-
                 Time::start();
+
+                init();
             }
             catch (const Exception::InternalException & ex) {
                 logger.error() << "Exception occurred during PKEngine initialization";
