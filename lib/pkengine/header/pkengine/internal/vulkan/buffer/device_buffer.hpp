@@ -14,7 +14,7 @@ namespace PKEngine::Vulkan {
     template<const auto & logical_device, const auto & physical_device, typename T, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties>
     class DeviceBuffer {
     protected:
-        static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Device Buffer">();
+        static constexpr auto logger = Logger<"Device Buffer">();
 
         VkDeviceSize capacity;
 

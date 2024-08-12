@@ -13,6 +13,6 @@ layout(location = 0) in vec3 inPosition;
 layout(location = 0) out vec3 fragColor;
 
 void main() {
-    gl_Position = scene_data.proj * scene_data.view * model_data.mat * vec4(inPosition.x, inPosition.y, inPosition.z, 1.0);
+    gl_Position = scene_data.proj * scene_data.view * vec4(inPosition.x, inPosition.y, inPosition.z, 1.0);
     fragColor = vec3(1.0f, 0.0f, 0.0f);
 }

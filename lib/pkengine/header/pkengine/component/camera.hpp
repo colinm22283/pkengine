@@ -29,7 +29,7 @@ namespace PKEngine {
         }
 
         inline void update() override {
-            Vulkan::SceneData * ubo = engine_instance::scene_data_buffers[engine_instance::current_frame].buffer();
+            Vulkan::Descriptors::GlobalDescriptor * ubo = engine_instance::get_current_frame_data().global_descriptor_buffer.buffer();
 
             ubo->proj = proj;
             ubo->view =

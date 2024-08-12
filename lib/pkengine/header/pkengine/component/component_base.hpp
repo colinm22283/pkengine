@@ -9,7 +9,7 @@ namespace PKEngine {
 
     class ComponentBase {
     protected:
-        static constexpr auto logger = Logger<Util::ANSI::MagentaFg, "Debug">();
+        static constexpr auto logger = Logger<"Debug">();
 
         EngineNode const & parent;
 

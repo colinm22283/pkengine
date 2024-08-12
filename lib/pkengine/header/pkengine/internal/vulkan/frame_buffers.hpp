@@ -8,7 +8,7 @@ namespace PKEngine::Vulkan {
     template<const auto & logical_device, const auto & swap_chain, const auto & render_pass, const auto & image_views>
     class FrameBuffers {
     protected:
-        static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Frame Buffers">();
+        static constexpr auto logger = Logger<"Frame Buffers">();
 
         std::vector<FrameBuffer<logical_device, swap_chain, render_pass>> frame_buffers;
 

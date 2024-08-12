@@ -6,7 +6,7 @@
 namespace PKEngine {
     class FPSLogger : public ComponentBase {
     protected:
-        static constexpr auto logger = Logger<Util::ANSI::MagentaFg, "FPS Logger">();
+        static constexpr auto logger = Logger<"FPS Logger">();
 
         Time::duration interval;
         Time::duration current_time = Time::duration(0);

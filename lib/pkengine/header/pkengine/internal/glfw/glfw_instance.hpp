@@ -12,7 +12,7 @@
 namespace PKEngine::GLFW {
     class GLFWInstance {
     protected:
-        static constexpr auto logger = Logger<Util::ANSI::BlueFg, "GLFW Instance">();
+        static constexpr auto logger = Logger<"GLFW Instance">();
 
         bool init_success = false;
 

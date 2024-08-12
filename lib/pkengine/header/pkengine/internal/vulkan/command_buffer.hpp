@@ -8,7 +8,7 @@ namespace PKEngine::Vulkan {
     template<const auto & logical_device, const auto & command_pool>
     class CommandBuffer {
     protected:
-        static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Command Buffer">();
+        static constexpr auto logger = Logger<"Command Buffer">();
 
         VkCommandBuffer buffer = nullptr;
 

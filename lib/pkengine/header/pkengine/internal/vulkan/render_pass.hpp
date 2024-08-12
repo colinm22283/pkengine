@@ -6,7 +6,7 @@ namespace PKEngine::Vulkan {
     template<const auto & logical_device, const auto & swap_chain>
     class RenderPass {
     protected:
-        static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Render Pass">();
+        static constexpr auto logger = Logger<"Render Pass">();
 
         VkRenderPass render_pass = VK_NULL_HANDLE;
 

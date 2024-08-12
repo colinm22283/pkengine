@@ -4,7 +4,7 @@ namespace PKEngine::Vulkan {
     template<const auto & logical_device, const auto & queue_family_indices>
     class CommandPool {
     protected:
-        static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Command Pool">();
+        static constexpr auto logger = Logger<"Command Pool">();
 
         VkCommandPool command_pool;
 

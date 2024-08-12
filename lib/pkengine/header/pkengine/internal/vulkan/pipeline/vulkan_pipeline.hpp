@@ -8,7 +8,7 @@ namespace PKEngine::Vulkan::Pipeline {
     template<const auto & logical_device, const auto & swap_chain, typename _ShaderSequence, const auto & render_pass, const auto & vertex_buffer, const auto & descriptor_set_layout>
     class VulkanPipeline {
     protected:
-        static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Vulkan Pipeline">();
+        static constexpr auto logger = Logger<"Vulkan Pipeline">();
 
         VkPipeline pipeline = VK_NULL_HANDLE;
         VkPipelineLayout layout = VK_NULL_HANDLE;

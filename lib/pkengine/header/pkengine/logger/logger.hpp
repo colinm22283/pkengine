@@ -1,115 +1,165 @@
 #pragma once
 
-#include <iostream>
-#include <cstdio>
-#include <algorithm>
 #include <mutex>
+#include <iostream>
 
-#include "pkengine/util/ansi.hpp"
-#include "pkengine/util/const_string.hpp"
+#include <pkengine/util/const_string.hpp>
+#include <pkengine/util/ansi_color.hpp>
+#include <pkengine/util/spin_lock.hpp>
+#include <pkengine/util/temp_file.hpp>
 
-#include "config.hpp"
-#include "file_stream.hpp"
-#include "console_stream.hpp"
-#include "logger_mutex.hpp"
+#ifndef LOGGER_VISIBILITY_LEVEL
+#define LOGGER_VISIBILITY_LEVEL STATUS
+#endif
+
+#ifndef LOGGER_INDENT_LEVEL
+#define LOGGER_INDENT_LEVEL 40
+#endif
+
+#ifndef LOGGER_INDENT_SIZE
+#define LOGGER_INDENT_SIZE 2
+#endif
 
 namespace PKEngine {
-    enum _logger_level_t { _LL_STATUS, _LL_SUCCESS, _LL_WARNING, _LL_ERROR };
-
-    template<_logger_level_t level, typename base_color, Util::ConstString prefix>
-    class _Logger {
-    protected:
-        static inline void print_header() {
-            logger_file_stream << prefix;
-
-            if constexpr (level == _LL_STATUS) {
-                logger_console_stream::status << (base_color::string + prefix);
-            }
-            else if constexpr (level == _LL_SUCCESS) {
-                logger_console_stream::success << (LoggerConfig::success_color::string + prefix);
-            }
-            else if constexpr (level == _LL_WARNING) {
-                logger_console_stream::warning << (LoggerConfig::warning_color::string + prefix);
-            }
-            else if constexpr (level == _LL_ERROR) {
-                logger_console_stream::error << (LoggerConfig::error_color::string + prefix);
-            }
-        }
-        static inline void print_footer() { // I love compiler bugs :)
-            // TODO: submit a bug report to gcc
-
-            logger_file_stream << "\n";
-            if constexpr (level == _LL_STATUS) (logger_console_stream::status << (LoggerConfig::reset_color::string + Util::ConstString("\n")).c_str()).flush();
-            else if constexpr (level == _LL_SUCCESS) (logger_console_stream::success << (LoggerConfig::reset_color::string + Util::ConstString("\n")).c_str()).flush();
-            else if constexpr (level == _LL_WARNING) (logger_console_stream::warning << (LoggerConfig::reset_color::string + Util::ConstString("\n")).c_str()).flush();
-            else if constexpr (level == _LL_ERROR) (logger_console_stream::error << (LoggerConfig::reset_color::string + Util::ConstString("\n")).c_str()).flush();
-        }
-
-        template<typename T>
-        static inline void print(T & v) {
-            if constexpr (level == _LL_STATUS) logger_console_stream::status << v;
-            else if constexpr (level == _LL_SUCCESS) logger_console_stream::success << v;
-            else if constexpr (level == _LL_WARNING) logger_console_stream::warning << v;
-            else if constexpr (level == _LL_ERROR) logger_console_stream::error << v;
-        }
-        template<typename T>
-        static inline void print(T && v) {
-            if constexpr (level == _LL_STATUS) logger_console_stream::status << std::forward<T>(v);
-            else if constexpr (level == _LL_SUCCESS) logger_console_stream::success << std::forward<T>(v);
-            else if constexpr (level == _LL_WARNING) logger_console_stream::warning << std::forward<T>(v);
-            else if constexpr (level == _LL_ERROR) logger_console_stream::error << std::forward<T>(v);
-        }
-
-        template<bool is_base>
-        class LoggerOutStream {
-        public:
-            consteval LoggerOutStream() = default;
-            inline ~LoggerOutStream() {
-                 if constexpr (is_base) print_footer();
-            }
-
-            template<typename T>
-            inline LoggerOutStream<false> log(T & value) const noexcept {
-                logger_file_stream << value;
-                print(value);
-                return LoggerOutStream<false>();
-            }
-            template<typename T>
-            inline LoggerOutStream<false> log(T && value) const noexcept {
-                logger_file_stream << std::forward<T>(value);
-                print(std::forward<T>(value));
-                return LoggerOutStream<false>();
-            }
-            template<typename T> inline LoggerOutStream<false> operator<<(T & value) const noexcept { return log<T>(value); }
-            template<typename T> inline LoggerOutStream<false> operator<<(T && value) const noexcept { return log<T>(std::forward<T>(value)); }
-        };
-    public:
-        consteval _Logger() = default;
-
-        template<typename T>
-        inline LoggerOutStream<true> log(T & value) const noexcept {
-            std::lock_guard<std::mutex> lock(_logger_mutex);
-            print_header();
-            logger_file_stream << value;
-            print(value);
-            return LoggerOutStream<true>();
-        }
-        template<typename T>
-        inline LoggerOutStream<true> log(T && value) const noexcept {
-            std::lock_guard<std::mutex> lock(_logger_mutex);
-            print_header();
-            logger_file_stream << std::forward<T>(value);
-            print(std::forward<T>(value));
-            return LoggerOutStream<true>();
-        }
-        template<typename T> inline LoggerOutStream<true> operator<<(T & value) const noexcept { return log<T>(value); }
-        template<typename T> inline LoggerOutStream<true> operator<<(T && value) const noexcept { return log<T>(std::forward<T>(value)); }
-
-        constexpr _Logger<_LL_SUCCESS, base_color, prefix> success() const noexcept { return _Logger<_LL_SUCCESS, base_color, prefix>(); }
-        constexpr _Logger<_LL_WARNING, base_color, prefix> warning() const noexcept { return _Logger<_LL_WARNING, base_color, prefix>(); }
-        constexpr _Logger<_LL_ERROR, base_color, prefix>   error()   const noexcept { return _Logger<_LL_ERROR, base_color, prefix>(); }
+    enum _LoggerLevel {
+        _LoggerLevel_DEBUG, _LoggerLevel_SUCCESS, _LoggerLevel_STATUS, _LoggerLevel_WARNING, _LoggerLevel_ERROR,
     };
 
-    template<typename base_color, Util::ConstString name>
-    using Logger = _Logger<_LL_STATUS, base_color, "[ " + name + " ] ">;
+    extern Util::SpinLock _Logger_lock;
+    extern Util::TempFile _Logger_temp_file;
+    constexpr auto _Logger_postfix = Util::ANSIColor::Reset::const_string + "\n";
+
+    template<_LoggerLevel level, Util::ConstString name, std::size_t indent_level = 0>
+    class _Logger {
+    protected:
+        struct LoggerLevels {
+            static constexpr _LoggerLevel DEBUG = _LoggerLevel_DEBUG;
+            static constexpr _LoggerLevel SUCCESS = _LoggerLevel_SUCCESS;
+            static constexpr _LoggerLevel STATUS = _LoggerLevel_STATUS;
+            static constexpr _LoggerLevel WARNING = _LoggerLevel_WARNING;
+            static constexpr _LoggerLevel ERROR = _LoggerLevel_ERROR;
+        };
+        static constexpr _LoggerLevel visibility_level = LoggerLevels::LOGGER_VISIBILITY_LEVEL;
+
+        static constexpr std::size_t name_size = LOGGER_INDENT_LEVEL;
+        static constexpr std::size_t indent_size = LOGGER_INDENT_SIZE;
+
+        static constexpr auto color = []() {
+            if constexpr (level == _LoggerLevel_DEBUG) return Util::ANSIColor::Dimmed::CyanFg::const_string;
+            else if constexpr (level == _LoggerLevel_SUCCESS) return Util::ANSIColor::GreenFg::const_string;
+            else if constexpr (level == _LoggerLevel_STATUS) return Util::ANSIColor::BlueFg::const_string;
+            else if constexpr (level == _LoggerLevel_WARNING) return Util::ANSIColor::Dimmed::Bold::YellowFg::const_string;
+            else if constexpr (level == _LoggerLevel_ERROR) return Util::ANSIColor::Bold::RedFg::const_string;
+            else return Util::ConstString("");
+        }();
+        static constexpr auto level_name = []() {
+            if constexpr (level == _LoggerLevel_DEBUG) return Util::ConstString("DEBUG  ");
+            else if constexpr (level == _LoggerLevel_SUCCESS) return Util::ConstString("SUCCESS");
+            else if constexpr (level == _LoggerLevel_STATUS) return Util::ConstString("STATUS ");
+            else if constexpr (level == _LoggerLevel_WARNING) return Util::ConstString("WARNING");
+            else if constexpr (level == _LoggerLevel_ERROR) return Util::ConstString("ERROR  ");
+            else return Util::ConstString("");
+        }();
+
+        static_assert(
+            level_name.size() + name.size() + 8 <= name_size,
+            "Logger name is too long!"
+        );
+        static constexpr std::size_t prefix_repeat_count = name_size - level_name.size() - name.size() - 8;
+        static constexpr auto prefix =
+            color +
+            "[ " +
+            level_name +
+            " | " +
+            Util::const_string_repeat < " ", prefix_repeat_count / 2> +
+            name +
+            Util::const_string_repeat<" ", prefix_repeat_count / 2 + prefix_repeat_count % 2> +
+            " ] " +
+            Util::const_string_repeat<" ", indent_level * indent_size>;
+
+        static constexpr bool logger_enabled = level >= visibility_level;
+
+        template<bool is_base>
+        class SubLogger {
+        public:
+            inline ~SubLogger() {
+                if constexpr (logger_enabled && is_base) {
+                    std::cout << _Logger_postfix.string_view();
+                    std::cout.flush();
+                    _Logger_temp_file << _Logger_postfix.string_view();
+                    _Logger_temp_file.flush();
+
+                    _Logger_lock.unlock();
+                }
+            }
+
+            template<typename T>
+            inline auto operator<<(T & v) const noexcept {
+                if constexpr (logger_enabled) {
+                    std::cout << v;
+                    _Logger_temp_file << v;
+                }
+                return SubLogger<false>();
+            }
+
+            template<typename T>
+            inline auto operator<<(T && v) const noexcept {
+                if constexpr (logger_enabled) {
+                    std::cout << v;
+                    _Logger_temp_file << v;
+                }
+                return SubLogger<false>();
+            }
+        };
+
+    public:
+        template<typename T>
+        inline auto operator<<(T & v) const noexcept {
+            if constexpr (logger_enabled) {
+                _Logger_lock.lock();
+                std::cout << prefix.string_view() << v;
+                _Logger_temp_file << prefix.string_view() << v;
+            }
+            return SubLogger<true>();
+        }
+
+        template<typename T>
+        inline auto operator<<(T && v) const noexcept {
+            if constexpr (logger_enabled) {
+                _Logger_lock.lock();
+                std::cout << prefix.string_view() << v;
+                _Logger_temp_file << prefix.string_view() << v;
+            }
+            return SubLogger<true>();
+        }
+
+        consteval auto debug() const noexcept { return _Logger<_LoggerLevel_DEBUG, name>(); }
+        consteval auto success() const noexcept { return _Logger<_LoggerLevel_SUCCESS, name>(); }
+        consteval auto status() const noexcept { return _Logger<_LoggerLevel_STATUS, name>(); }
+        consteval auto warning() const noexcept { return _Logger<_LoggerLevel_WARNING, name>(); }
+        consteval auto error() const noexcept { return _Logger<_LoggerLevel_ERROR, name>(); }
+
+        template<std::size_t indent_count = 1>
+        consteval auto indent() const noexcept { return _Logger<level, name, indent_level + indent_count>(); }
+
+        template<std::size_t dedent_count = 1>
+        consteval auto dedent() const noexcept {
+            static_assert(indent_level > 0, "Cannot indent to a negative value!");
+            return _Logger<level, name, indent_level - dedent_count>();
+        }
+    };
+
+    template<Util::ConstString name>
+    using Logger = _Logger<_LoggerLevel_STATUS, name>;
+
+    inline void dump_log_to(const char * path) {
+        _Logger_temp_file.seekg(0, std::ios::beg);
+
+        std::ofstream os(path);
+
+        os << _Logger_temp_file.rdbuf();
+
+        _Logger_temp_file.clear();
+        _Logger_temp_file.seekg(0, std::ios::end);
+    }
 }

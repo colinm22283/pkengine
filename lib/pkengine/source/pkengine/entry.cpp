@@ -2,10 +2,10 @@
 
 #include <pkengine/logger/logger.hpp>
 
-#include <pkengine/util/ansi.hpp>
+#include <pkengine/util/ansi_color.hpp>
 
 int main() {
-    static constexpr PKEngine::Logger<PKEngine::Util::ANSI::BlueFg, "Entry"> logger;
+    static constexpr auto logger = PKEngine::Logger<"Entry">();
 
     if (
         !__builtin_cpu_supports("sse") ||

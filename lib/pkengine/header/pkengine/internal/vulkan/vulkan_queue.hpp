@@ -8,7 +8,7 @@ namespace PKEngine::Vulkan {
     template<const auto & logical_device>
     class VulkanQueue {
     protected:
-        static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Vulkan Queue">();
+        static constexpr auto logger = Logger<"Vulkan Queue">();
 
         VkQueue queue = VK_NULL_HANDLE;
 

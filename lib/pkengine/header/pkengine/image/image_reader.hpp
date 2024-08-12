@@ -12,7 +12,7 @@
 namespace PKEngine {
     class ImageReader {
     protected:
-        static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Image Reader">();
+        static constexpr auto logger = Logger<"Image Reader">();
 
     public:
         struct Exceptions {

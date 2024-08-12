@@ -14,7 +14,7 @@ namespace PKEngine::Vulkan {
         using buffer_t = StagedBuffer<logical_device, physical_device, T, usage, properties>;
 
     protected:
-        static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Staged Buffer">();
+        static constexpr auto logger = Logger<"Staged Buffer">();
 
         DeviceBuffer<
             logical_device, physical_device,
@@ -27,8 +27,8 @@ namespace PKEngine::Vulkan {
             T,
             VK_BUFFER_USAGE_TRANSFER_DST_BIT | usage,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | properties
-        > vertex_buffer;
-        void * staging_buffer_memory;
+        > primary_buffer;
+        void * staging_buffer_memory = nullptr;
 
         VkDeviceSize _capacity = 0; // count
 
@@ -77,7 +77,7 @@ namespace PKEngine::Vulkan {
                 vkCmdCopyBuffer(
                     command_buffer.handle(),
                     buffer.staging_buffer.buffer_handle(),
-                    buffer.vertex_buffer.buffer_handle(),
+                    buffer.primary_buffer.buffer_handle(),
                     copy_regions.size(),
                     copy_regions.data()
                 );
@@ -99,7 +99,7 @@ namespace PKEngine::Vulkan {
         /// @param __capacity Capacity of the buffer in elements
         inline void init(VkDeviceSize __capacity) {
             staging_buffer.init(__capacity);
-            vertex_buffer.init(__capacity);
+            primary_buffer.init(__capacity);
             vkMapMemory(logical_device.handle(), staging_buffer.memory_handle(), 0, __capacity * sizeof(T), 0, &staging_buffer_memory);
             _capacity = __capacity;
         }
@@ -107,10 +107,10 @@ namespace PKEngine::Vulkan {
             _capacity = 0;
             vkUnmapMemory(logical_device.handle(), staging_buffer.memory_handle());
             staging_buffer.free();
-            vertex_buffer.free();
+            primary_buffer.free();
         }
 
-        [[nodiscard]] inline VkBuffer buffer_handle() const noexcept { return vertex_buffer.buffer_handle(); }
+        [[nodiscard]] inline VkBuffer buffer_handle() const noexcept { return primary_buffer.buffer_handle(); }
 
         [[nodiscard]] inline VkDeviceSize capacity() const noexcept { return _capacity; }
 

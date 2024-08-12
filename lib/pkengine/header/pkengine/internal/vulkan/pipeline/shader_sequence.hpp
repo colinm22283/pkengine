@@ -19,7 +19,7 @@ namespace PKEngine::Vulkan::Pipeline {
                 .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
                 .stage = Stage::type == VERTEX_SHADER ? VK_SHADER_STAGE_VERTEX_BIT : VK_SHADER_STAGE_FRAGMENT_BIT,
                 .module = Stage::shader_module.handle(),
-                .pName = Stage::entry_point,
+                .pName = Stage::entry_point.c_str(),
             };
         }
 

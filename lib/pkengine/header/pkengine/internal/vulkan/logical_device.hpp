@@ -6,7 +6,7 @@ namespace PKEngine::Vulkan {
     template<const auto & physical_device, const auto & queue_family_indices>
     class LogicalDevice {
     protected:
-        static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Logical Device">();
+        static constexpr auto logger = Logger<"Logical Device">();
 
         VkDevice logical_device = VK_NULL_HANDLE;
 

@@ -4,7 +4,7 @@ namespace PKEngine::Vulkan {
     template<const auto & logical_device>
     class DescriptorSetLayout {
     protected:
-        static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Vulkan Descriptor Set Layout">();
+        static constexpr auto logger = Logger<"Descriptor Set Layout">();
         VkDescriptorSetLayout layout = VK_NULL_HANDLE;
 
     public:

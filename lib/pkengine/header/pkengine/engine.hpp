@@ -27,8 +27,6 @@
 #include "pkengine/internal/vulkan/descriptor_pool.hpp"
 #include "pkengine/internal/vulkan/descriptor_set.hpp"
 #include "pkengine/internal/vulkan/buffer/descriptor_buffer.hpp"
-#include "pkengine/internal/vulkan/types/scene_data.hpp"
-#include "pkengine/internal/vulkan/types/model_data.hpp"
 
 #include <pkengine/frame_data.hpp>
 
@@ -49,7 +47,7 @@
 namespace PKEngine {
     class engine_instance {
     protected:
-        static constexpr auto logger = Logger<Util::ANSI::CyanFg, "Engine Instance">();
+        static constexpr auto logger = Logger<"Engine Instance">();
 
         // graphics api init
     protected:
@@ -66,7 +64,7 @@ namespace PKEngine {
         static Vulkan::ConstQueueFamilyIndices<vulkan_surface, physical_device> queue_family_indices;
         static Vulkan::LogicalDevice<physical_device, queue_family_indices> logical_device;
         static Vulkan::VulkanQueue<logical_device> graphics_queue, present_queue;
-        static std::array<Vulkan::Semaphore<logical_device>, render_config.max_frames_in_flight> image_available_semaphores;
+//        static std::array<Vulkan::Semaphore<logical_device>, render_config.max_frames_in_flight> image_available_semaphores;
         static Vulkan::SwapChain<physical_device, logical_device, vulkan_surface, glfw_window, queue_family_indices> swap_chain;
         static Vulkan::ImageViews<logical_device, swap_chain> image_views;
 
@@ -80,8 +78,8 @@ namespace PKEngine {
         using index_allocator_t = Vulkan::DeviceAllocator<uint32_t, index_buffer>;
         static index_allocator_t index_allocator;
 
-        static std::array<Vulkan::DescriptorBuffer<logical_device, physical_device, Vulkan::SceneData>, render_config.max_frames_in_flight> scene_data_buffers;
-        static std::array<Vulkan::DescriptorBuffer<logical_device, physical_device, Vulkan::ModelData>, render_config.max_frames_in_flight> model_data_buffers;
+//        static std::array<Vulkan::DescriptorBuffer<logical_device, physical_device, Vulkan::SceneData>, render_config.max_frames_in_flight> scene_data_buffers;
+//        static std::array<Vulkan::DescriptorBuffer<logical_device, physical_device, Vulkan::ModelData>, render_config.max_frames_in_flight> model_data_buffers;
 
         static Vulkan::DescriptorSetLayout<logical_device> descriptor_set_layout;
         static Vulkan::DescriptorPool<logical_device> descriptor_pool;
@@ -97,7 +95,16 @@ namespace PKEngine {
 //        static std::array<Vulkan::Semaphore<logical_device>, render_config.max_frames_in_flight> render_complete_semaphores;
 //        static std::array<Vulkan::Fence<logical_device, true>, render_config.max_frames_in_flight> in_flight_fences;
 
-        static std::array<FrameData<logical_device, descriptor_set_layout, descriptor_pool, command_pool>, render_config.max_frames_in_flight> frame_data;
+        static std::array<
+            FrameData<
+                logical_device,
+                physical_device,
+                descriptor_set_layout,
+                descriptor_pool,
+                command_pool
+            >,
+            render_config.max_frames_in_flight
+        > frame_data;
         static inline auto & get_current_frame_data() noexcept { return frame_data[current_frame]; }
 
         using model_allocator_t = ModelAllocator<vertex_allocator, index_allocator, vertex_allocator_t::Allocation, index_allocator_t::Allocation>;
@@ -110,8 +117,6 @@ namespace PKEngine {
     protected:
         static inline void init() {
             current_frame = 0;
-
-            logger_file_stream.init();
 
             glfw_instance.init();
             vulkan_instance.init();
@@ -126,7 +131,6 @@ namespace PKEngine {
             graphics_queue.init(queue_family_indices.graphics_family.value());
             present_queue.init(queue_family_indices.present_family.value());
 
-            for (auto & semaphore : image_available_semaphores) semaphore.init();
             swap_chain.init();
             image_views.init();
 
@@ -136,9 +140,6 @@ namespace PKEngine {
             vertex_allocator.init();
             index_buffer.init(memory_config.index_buffer_allocation);
             index_allocator.init();
-
-            for (auto & buffer : scene_data_buffers) buffer.init();
-            for (auto & buffer : model_data_buffers) buffer.init();
 
             descriptor_set_layout.init();
 
@@ -154,33 +155,13 @@ namespace PKEngine {
             };
             descriptor_pool.init(pool_sizes);
 
-            for (unsigned int i = 0; i < render_config.max_frames_in_flight; i++) {
-                std::array<VkDescriptorBufferInfo, 2> buffer_infos = {
-                    VkDescriptorBufferInfo {
-                        .buffer = scene_data_buffers[i].buffer_handle(),
-                        .offset = 0,
-                        .range = scene_data_buffers[i].size(),},
-                    VkDescriptorBufferInfo {
-                        .buffer = model_data_buffers[i].buffer_handle(),
-                        .offset = 0,
-                        .range = model_data_buffers[i].size(),
-                    },
-                };
-                descriptor_sets[i].init(buffer_infos);
-            }
-
             render_pass.init();
             vulkan_pipeline.init();
 
             frame_buffers.init();
             command_pool.init();
 
-            for (unsigned int i = 0; i < render_config.max_frames_in_flight; i++) {
-                command_buffers[i].init();
-
-                render_complete_semaphores[i].init();
-                in_flight_fences[i].init();
-            }
+            for (auto & frame : frame_data) frame.init();
 
             model_allocator.init();
 
@@ -192,12 +173,7 @@ namespace PKEngine {
 
             model_allocator.free();
 
-            for (unsigned int i = 0; i < render_config.max_frames_in_flight; i++) {
-                in_flight_fences[i].free();
-                render_complete_semaphores[i].free();
-
-                command_buffers[i].free();
-            }
+            for (auto & frame : frame_data) frame.free();
 
             command_pool.free();
             frame_buffers.free();
@@ -205,12 +181,8 @@ namespace PKEngine {
             vulkan_pipeline.free();
             render_pass.free();
 
-            for (auto & descriptor_set : descriptor_sets) descriptor_set.free();
             descriptor_pool.free();
             descriptor_set_layout.free();
-
-            for (auto & buffer : model_data_buffers) buffer.free();
-            for (auto & buffer : scene_data_buffers) buffer.free();
 
             index_allocator.free();
             index_buffer.free();
@@ -221,7 +193,6 @@ namespace PKEngine {
 
             image_views.free();
             swap_chain.free();
-            for (auto & semaphore : image_available_semaphores) semaphore.free();
 
             present_queue.free();
             graphics_queue.free();
@@ -235,8 +206,6 @@ namespace PKEngine {
 
             vulkan_instance.free();
             glfw_instance.free();
-
-            logger_file_stream.free();
         }
 
         static inline void test(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -262,12 +231,13 @@ namespace PKEngine {
         }
 
         static inline void draw_frame() {
-            in_flight_fences[current_frame].wait();
+            auto & frame = get_current_frame_data();
+            frame.in_flight_fence.wait();
 
-            uint32_t image_index = swap_chain.get_next_image_index(image_available_semaphores[current_frame]);
+            uint32_t image_index = swap_chain.get_next_image_index(frame.image_available_semaphore);
 
-            command_buffers[current_frame].reset();
-            command_buffers[current_frame].record<
+            frame.command_buffer.reset();
+            frame.command_buffer.record<
                 render_pass,
                 swap_chain,
                 frame_buffers,
@@ -275,16 +245,16 @@ namespace PKEngine {
                 vertex_buffer,
                 index_buffer,
                 object_tree
-            >(descriptor_sets[current_frame], image_index);
+            >(frame.descriptor_set, image_index);
 
             graphics_queue.submit(
-                image_available_semaphores[current_frame],
-                render_complete_semaphores[current_frame],
-                in_flight_fences[current_frame],
-                command_buffers[current_frame]
+                frame.image_available_semaphore,
+                frame.render_complete_semaphore,
+                frame.in_flight_fence,
+                frame.command_buffer
             );
 
-            swap_chain.present<present_queue>(image_index, render_complete_semaphores[current_frame]);
+            swap_chain.present<present_queue>(image_index, frame.render_complete_semaphore);
 
             current_frame = (current_frame + 1) % render_config.max_frames_in_flight;
         }
@@ -389,7 +359,5 @@ namespace PKEngine {
                 // TODO: complete this, will probably have to like refresh every vulkan object :(
             }
         };
-
-        [[nodiscard]] static inline auto & current_command_buffer() noexcept { return command_buffers[current_frame]; }
     };
 }

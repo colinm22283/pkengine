@@ -12,7 +12,7 @@
 namespace PKEngine::GLFW {
     class Window {
     protected:
-        static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Window">();
+        static constexpr auto logger = Logger<"Window">();
 
         GLFWwindow * window;
 

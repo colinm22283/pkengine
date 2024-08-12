@@ -2,7 +2,7 @@
 
 #include <list>
 
-#include "pkengine/util/ansi.hpp"
+#include "pkengine/util/ansi_color.hpp"
 #include "pkengine/logger/logger.hpp"
 #include "pkengine/internal/vulkan/types/vertex.hpp"
 
@@ -17,7 +17,7 @@ namespace PKEngine::Vulkan {
         };
 
     protected:
-        static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Device Allocator">();
+        static constexpr auto logger = Logger<"Device Allocator">();
 
         struct sector_t {
             bool free;

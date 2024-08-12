@@ -13,7 +13,7 @@ namespace PKEngine::Vulkan {
     template<const VulkanInstance & vulkan_instance, const auto & surface>
     class PhysicalDevice {
     protected:
-        static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Physical Device">();
+        static constexpr auto logger = Logger<"Physical Device">();
 
         VkPhysicalDevice physical_device = VK_NULL_HANDLE;
 

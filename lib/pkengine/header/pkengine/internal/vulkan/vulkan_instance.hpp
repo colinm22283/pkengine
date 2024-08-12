@@ -13,7 +13,7 @@
 namespace PKEngine::Vulkan {
     class VulkanInstance {
     protected:
-        static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Vulkan Instance">();
+        static constexpr auto logger = Logger<"Vulkan Instance">();
 
         VkInstance instance = nullptr;
 

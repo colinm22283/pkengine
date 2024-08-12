@@ -43,13 +43,13 @@ namespace PKEngine {
         inline void record_buffer() override {
             ComponentBase::record_buffer();
 
-            engine_instance::model_data_buffers[engine_instance::current_frame].buffer()->mat =
+            engine_instance::get_current_frame_data().object_descriptor_buffer.buffer()->mat =
                 scale_matrix(origin.absolute_scale.x, origin.absolute_scale.y, origin.absolute_scale.z) *
                 rotation_matrix(origin.absolute_rotation.x, origin.absolute_rotation.y, origin.absolute_rotation.z) *
                 translation_matrix(origin.absolute_position.x, origin.absolute_position.y, origin.absolute_position.z);
 
             vkCmdDrawIndexed(
-                engine_instance::current_command_buffer().handle(),
+                engine_instance::get_current_frame_data().command_buffer.handle(),
                 model.index_allocation.size(),
                 1,
                 model.index_allocation.offset(),

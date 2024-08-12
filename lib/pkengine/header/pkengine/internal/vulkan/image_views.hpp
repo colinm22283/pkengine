@@ -8,7 +8,7 @@ namespace PKEngine::Vulkan {
     template<const auto & logical_device, const auto & swap_chain>
     class ImageViews {
     protected:
-        static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Image Views">();
+        static constexpr auto logger = Logger<"Image Views">();
 
         std::vector<VkImageView> views;
 

@@ -8,7 +8,7 @@ namespace PKEngine::Vulkan {
     template<const auto & physical_device, const auto & logical_device, const auto &surface, const auto & window, const auto & queue_family_indices>
     class SwapChain {
     protected:
-        static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Swap Chain">();
+        static constexpr auto logger = Logger<"Swap Chain">();
 
         static inline VkSurfaceFormatKHR choose_swap_surface_format(const std::vector<VkSurfaceFormatKHR> & available_formats) {
             for (const auto & availableFormat : available_formats) {

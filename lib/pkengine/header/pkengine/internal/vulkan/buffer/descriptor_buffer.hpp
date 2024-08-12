@@ -20,14 +20,14 @@ namespace PKEngine::Vulkan {
         T * bound_buffer;
 
     public:
-        inline void init() {
-            device_buffer.init(1);
+        inline void init(VkDeviceSize count = 1) {
+            device_buffer.init(count);
 
             vkMapMemory(
                 logical_device.handle(),
                 device_buffer.memory_handle(),
                 0,
-                sizeof(T),
+                count * sizeof(T),
                 0,
                 (void **) &bound_buffer
             );

@@ -14,7 +14,7 @@
 namespace PKEngine::Vulkan {
     class ShaderModule {
     protected:
-        static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Shader Module">();
+        static constexpr auto logger = Logger<"Shader Module">();
 
     public:
         VkShaderModule _shader_module = VK_NULL_HANDLE;

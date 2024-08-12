@@ -12,7 +12,7 @@ namespace PKEngine::Vulkan {
     template<const Vulkan::VulkanInstance & inst, const GLFW::Window & window>
     class Surface {
     protected:
-        static constexpr auto logger = Logger<Util::ANSI::BlueFg, "Vulkan Surface">();
+        static constexpr auto logger = Logger<"Vulkan Surface">();
 
         VkSurfaceKHR surface = VK_NULL_HANDLE;
 
