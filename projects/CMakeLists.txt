@@ -11,7 +11,8 @@ function(new_project NAME SOURCES)
     target_include_directories(${NAME} PUBLIC config header)
     target_link_libraries(${NAME} PUBLIC pkengine)
 
-    target_compile_options(${NAME} PUBLIC -Wall -ffast-math)
+    target_compile_options(${NAME} PUBLIC -Wall -ffast-math -rdynamic)
+    target_link_options(${NAME} PUBLIC -rdynamic)
 
     if (WIN32)
         target_compile_options(${NAME} PUBLIC -static-libstdc++ -static-libgcc)
@@ -19,7 +20,7 @@ function(new_project NAME SOURCES)
 
     if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
         message(STATUS "Building for Debug")
-        target_compile_options(${NAME} PUBLIC -O1)
+        target_compile_options(${NAME} PUBLIC -O0)
         if (ENABLE_ASAN)
             message(STATUS "Address sanitation enabled")
             target_compile_options(${NAME} PUBLIC -fsanitize=address)

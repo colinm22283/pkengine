@@ -6,6 +6,7 @@
 #include <filesystem>
 
 #include <pkengine/util/signal_handler.hpp>
+#include <pkengine/util/stack_trace.hpp>
 
 #include <pkengine/logger/logger.hpp>
 
@@ -18,23 +19,15 @@ const auto seg_fault_handler = SignalHandler(
         static constexpr auto logger = Logger<"SIGSEGV">().error();
 
         logger << "Received SIGSEGV signal";
-
-        static void * call_stack[1024];
-
-        backtrace(call_stack, 1024);
-
-        std::size_t call_stack_entries = 0;
-        while (call_stack[call_stack_entries] != nullptr) call_stack_entries++;
-
-        char ** symbols = backtrace_symbols(call_stack, 1024);
-
         logger << "Stack trace:";
-        static constexpr auto indented_logger = logger.indent();
-        for (std::size_t i = 0; i < call_stack_entries; i++) {
-            indented_logger << symbols[i];
-        }
 
-        free(symbols);
+        static StackTrace<1024> stack_trace;
+
+        static constexpr auto indented_logger = logger.indent();
+        for (const auto & trace : stack_trace) {
+            if (trace.name[0] == '\0') indented_logger << trace.file << "(" << std::hex << trace.address << ")";
+            else indented_logger << trace.file << "(" << std::hex << trace.address << ") " << trace.name;
+        }
 
         if (!std::filesystem::exists("logs")) std::filesystem::create_directory("logs");
 
