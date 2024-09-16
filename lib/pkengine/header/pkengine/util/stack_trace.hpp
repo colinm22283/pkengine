@@ -38,7 +38,7 @@ namespace PKEngine::Util {
             void ** current_frame_ptr;
             ResolvedFrame current_frame;
 
-            inline Iterator(void ** _current_frame_ptr) : current_frame_ptr(_current_frame_ptr) {
+            explicit inline Iterator(void ** _current_frame_ptr) : current_frame_ptr(_current_frame_ptr) {
                 decode_frame();
             }
 
@@ -49,13 +49,13 @@ namespace PKEngine::Util {
                 if (dladdr(*current_frame_ptr, &dl_info) != 0) {
                     current_frame.file_base = dl_info.dli_fbase;
 
-                    std::strncpy(current_frame.file, dl_info.dli_fname, string_max_length);
+                    std::strncpy(current_frame.file, dl_info.dli_fname, string_max_length - 1);
                     if (dl_info.dli_sname != nullptr) {
                         int status;
                         std::size_t demangled_length = string_max_length;
                         abi::__cxa_demangle(dl_info.dli_sname, current_frame.name, &demangled_length, &status);
 
-                        if (status != 0) std::strncpy(current_frame.name, dl_info.dli_sname, string_max_length);
+                        if (status != 0) std::strncpy(current_frame.name, dl_info.dli_sname, string_max_length - 1);
                     }
                     else current_frame.name[0] = '\0';
                 }

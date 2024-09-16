@@ -1,8 +1,5 @@
 include(FetchContent)
 
-set(PNG_SHARED OFF)
-set(PNG_STATIC ON)
-
 FetchContent_Declare(
     libpng_content
     GIT_REPOSITORY https://github.com/pnggroup/libpng

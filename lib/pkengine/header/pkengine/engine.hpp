@@ -148,17 +148,7 @@ namespace PKEngine {
             current_frame = (current_frame + 1) % render_config.max_frames_in_flight;
         }
 
-        static inline void recreate_swap_chain() {
-            vkDeviceWaitIdle(logical_device.handle());
-
-            frame_buffers.free();
-            image_views.free();
-            swap_chain.free();
-
-            swap_chain.init();
-            image_views.init();
-            frame_buffers.init();
-        }
+        static void recreate_swap_chain();
 
     public:
         static bool run() noexcept;
