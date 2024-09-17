@@ -28,8 +28,6 @@ void init() {
         Vector3(-0.8, -0.8, 0)
     });
 
-    *(char *) 0 = 10;
-
 //    auto & block_node_2 = block_node.add_node();
 //    auto & block_transform_2 = block_node_2.add_component<RelativeTransform>(block_transform);
 //    block_node_2.add_component<MeshRenderer>(block_transform_2);
