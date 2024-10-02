@@ -38,7 +38,7 @@ namespace PKEngine::Vulkan {
                 descriptor_writes[i].descriptorCount = 1;
                 descriptor_writes[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
                 descriptor_writes[i].pImageInfo = nullptr;
-                descriptor_writes[i].pBufferInfo = buffer_infos.data();
+                descriptor_writes[i].pBufferInfo = &buffer_infos[i];
                 descriptor_writes[i].pTexelBufferView = nullptr;
             }
 

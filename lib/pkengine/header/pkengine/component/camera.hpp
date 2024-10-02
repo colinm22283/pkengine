@@ -36,6 +36,8 @@ namespace PKEngine {
                 translation_matrix(-transform.position.x, -transform.position.y, -transform.position.z) *
                 rotation_matrix(transform.rotation.x, transform.rotation.y, transform.rotation.z) *
                 scale_matrix(1, 1, -1);
+
+            transform.rotation.y += Time::float_delta() * 0.1f;
         }
     };
 }

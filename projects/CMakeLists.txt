@@ -31,7 +31,7 @@ function(new_project NAME SOURCES)
         message(STATUS "Building for Release")
         target_compile_options(${NAME} PUBLIC -O3)
         if (NOT WIN32)
-            #target_compile_options(${NAME} PUBLIC -flto)
+#            target_compile_options(${NAME} PUBLIC -flto)
         endif ()
         target_compile_definitions(${NAME} PUBLIC LOGGER_VISIBILITY_LEVEL=STATUS)
     endif ()
@@ -42,12 +42,13 @@ function(new_project NAME SOURCES)
         foreach (SOURCE ${SOURCES})
             message(STATUS "Adding target for ${SOURCE}")
 
-            add_custom_target(
-                "shader.${SOURCE}"
+            add_custom_command(
+                OUTPUT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders/${SOURCE}.spv"
                 COMMAND ${GLSLC} ${SOURCE} -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders/${SOURCE}.spv
                 WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/projects/${NAME}/shaders"
+                VERBATIM
             )
-            add_dependencies(${NAME} "shader.${SOURCE}")
+            target_sources(${NAME} PUBLIC "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders/${SOURCE}.spv")
             file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders)
 
             list(APPEND "${NAME}_SHADER_OUTPUT" "shader/${SOURCE}")

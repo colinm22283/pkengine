@@ -18,11 +18,11 @@ namespace PKEngine {
         engine_instance::model_allocator_t::Allocation model = engine_instance::model_allocator.template allocate<
             engine_instance::command_pool, engine_instance::graphics_queue
         >({
-            PKEngine::Vulkan::Vertex(Vector3(-0.2f, 0, origin.position.x / 2 + 0.5f)),
-            PKEngine::Vulkan::Vertex(Vector3(0.2, 0, origin.position.x / -2 + 1.5f)),
-            PKEngine::Vulkan::Vertex(Vector3(0, 0.2, origin.position.x / -2 + 1.5f)),
-            PKEngine::Vulkan::Vertex(Vector3(0, -0.2, origin.position.x / 2 + 0.5f)),
-            PKEngine::Vulkan::Vertex(Vector3(-0.5, -0.5, origin.position.x / 2 + 0.5f)),
+            PKEngine::Vulkan::Vertex(Vector3(-0.2f, 0, 0.5f)),
+            PKEngine::Vulkan::Vertex(Vector3(0.2, 0, 1.5f)),
+            PKEngine::Vulkan::Vertex(Vector3(0, 0.2, 1.5f)),
+            PKEngine::Vulkan::Vertex(Vector3(0, -0.2, 0.5f)),
+            PKEngine::Vulkan::Vertex(Vector3(-0.5, -0.5, 0.5f)),
         }, {
             0, 1, 2, 1, 0, 3, 0, 4, 3
         });
@@ -32,11 +32,11 @@ namespace PKEngine {
 
         inline void update() override {
             engine_instance::vertex_buffer.begin_transfer<engine_instance::command_pool, engine_instance::graphics_queue>().add({
-                PKEngine::Vulkan::Vertex(Vector3(-0.2f, 0, origin.position.x / -2 + 1.5f)),
-                PKEngine::Vulkan::Vertex(Vector3(0.2, 0, origin.position.x / -2 + 1.5f)),
-                PKEngine::Vulkan::Vertex(Vector3(0, 0.2, origin.position.x / 2 + 0.5f)),
-                PKEngine::Vulkan::Vertex(Vector3(0, -0.2, origin.position.x / 2 + 0.5f)),
-                PKEngine::Vulkan::Vertex(Vector3(-0.5, -0.5, origin.position.x / 2 + 0.5f)),
+                PKEngine::Vulkan::Vertex(Vector3(-0.2f, 0, 1.5f)),
+                PKEngine::Vulkan::Vertex(Vector3(0.2, 0, 1.5f)),
+                PKEngine::Vulkan::Vertex(Vector3(0, 0.2, 0.5f)),
+                PKEngine::Vulkan::Vertex(Vector3(0, -0.2, 0.5f)),
+                PKEngine::Vulkan::Vertex(Vector3(-0.5, -0.5, 0.5f)),
             }, model.vertex_allocation.offset()).commit();
         }
 
