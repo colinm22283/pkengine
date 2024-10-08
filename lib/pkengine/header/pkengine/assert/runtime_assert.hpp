@@ -4,7 +4,7 @@
 
 #include "pkengine/exception/runtime.hpp"
 
-namespace PKEngine::Assertion {
+namespace PKEngine::Assert {
     template<typename ExceptionType>
     constexpr void runtime_assert(auto && condition) {
         if constexpr (runtime_assert_enable) {

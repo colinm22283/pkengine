@@ -1,5 +1,5 @@
 #pragma once
 
-namespace PKEngine::Assertion {
+namespace PKEngine::Assert {
     constexpr bool runtime_assert_enable = true;
 }

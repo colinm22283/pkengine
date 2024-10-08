@@ -27,6 +27,7 @@ namespace PKEngine {
 
     extern Util::SpinLock _Logger_lock;
     extern Util::TempFile _Logger_temp_file;
+
     constexpr auto _Logger_postfix = Util::ANSIColor::Reset::const_string + "\n";
 
     template<_LoggerLevel level, Util::ConstString name, std::size_t indent_level = 0>
@@ -153,6 +154,8 @@ namespace PKEngine {
     using Logger = _Logger<_LoggerLevel_STATUS, name>;
 
     inline void dump_log_to(const char * path) {
+        _Logger_lock.lock();
+
         _Logger_temp_file.seekg(0, std::ios::beg);
 
         std::ofstream os(path);
@@ -161,5 +164,7 @@ namespace PKEngine {
 
         _Logger_temp_file.clear();
         _Logger_temp_file.seekg(0, std::ios::end);
+
+        _Logger_lock.unlock();
     }
 }

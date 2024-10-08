@@ -2,7 +2,7 @@
 
 #include <pkengine/config/engine_config_type.hpp>
 
-namespace PKEngine {
+namespace PKEngine::Config {
     constexpr engine_config_t engine_config = {
         .application = {
             .name = "PKEngine Template Project",
