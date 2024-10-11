@@ -21,7 +21,7 @@ namespace PKEngine::Util {
             backtrace(call_stack.data(), maximum_length);
             call_stack[maximum_length] = nullptr;
 
-            while (call_stack_length < maximum_length && call_stack[call_stack_length] != nullptr) call_stack_length++;
+            while (call_stack[call_stack_length] != nullptr) call_stack_length++;
         }
 
         struct ResolvedFrame {

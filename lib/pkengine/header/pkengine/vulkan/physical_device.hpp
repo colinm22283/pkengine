@@ -65,5 +65,7 @@ namespace PKEngine::Vulkan {
 
             logger.success() << "Physical device initialized";
         }
+
+        [[nodiscard]] constexpr const VkPhysicalDevice & handle() const noexcept { return physical_device; }
     };
 }

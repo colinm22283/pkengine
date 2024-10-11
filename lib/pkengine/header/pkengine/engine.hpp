@@ -20,7 +20,8 @@ namespace PKEngine {
 
     public:
         inline void add_context(const std::function<void(Context &)> && init_funct) {
-            init_funct(contexts.emplace_front());
+            Context & ctx = contexts.emplace_front();
+            init_funct(ctx);
         }
 
         void start();

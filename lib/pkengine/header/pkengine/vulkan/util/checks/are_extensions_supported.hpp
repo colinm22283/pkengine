@@ -26,7 +26,7 @@ namespace PKEngine::Vulkan {
         for (const auto & extension : required_extensions) {
             bool extension_found = false;
             for (uint32_t i = 0; i < extension_count; i++) {
-                if (extension == available_extensions[i].extensionName) {
+                if (std::strncmp(extension, available_extensions[i].extensionName, VK_MAX_EXTENSION_NAME_SIZE) == 0) {
                     extension_found = true;
                     break;
                 }

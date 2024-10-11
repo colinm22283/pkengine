@@ -22,7 +22,7 @@
 
 namespace PKEngine {
     enum _LoggerLevel {
-        _LoggerLevel_DEBUG, _LoggerLevel_SUCCESS, _LoggerLevel_STATUS, _LoggerLevel_WARNING, _LoggerLevel_ERROR,
+        _LoggerLevel_DEBUG, _LoggerLevel_STATUS, _LoggerLevel_SUCCESS, _LoggerLevel_WARNING, _LoggerLevel_ERROR,
     };
 
     extern Util::SpinLock _Logger_lock;
@@ -154,7 +154,7 @@ namespace PKEngine {
     using Logger = _Logger<_LoggerLevel_STATUS, name>;
 
     inline void dump_log_to(const char * path) {
-        _Logger_lock.lock();
+        std::lock_guard<decltype(_Logger_lock)> lock(_Logger_lock);
 
         _Logger_temp_file.seekg(0, std::ios::beg);
 
@@ -164,7 +164,5 @@ namespace PKEngine {
 
         _Logger_temp_file.clear();
         _Logger_temp_file.seekg(0, std::ios::end);
-
-        _Logger_lock.unlock();
     }
 }

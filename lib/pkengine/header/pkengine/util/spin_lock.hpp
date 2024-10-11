@@ -32,6 +32,6 @@ namespace PKEngine::Util {
                 !_is_locked.exchange(true, std::memory_order_acquire);
         }
 
-        inline bool is_locked() const noexcept { return _is_locked.load(std::memory_order_relaxed); }
+        [[nodiscard]] inline bool is_locked() const noexcept { return _is_locked.load(std::memory_order_relaxed); }
     };
 }
