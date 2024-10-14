@@ -18,7 +18,7 @@ namespace PKEngine::Vulkan::Util::Checks {
         bool swap_chain_adequate = false;
         if (extensions_supported) {
             SwapChainSupport swap_chain_support(surface, device);
-            swap_chain_adequate = !swap_chain_support.formats.empty() && !swap_chain_support.present_modes.empty();
+            swap_chain_adequate = !swap_chain_support.formats().empty() && !swap_chain_support.present_modes().empty();
         }
 
         return indices.is_complete() && extensions_supported && swap_chain_adequate;

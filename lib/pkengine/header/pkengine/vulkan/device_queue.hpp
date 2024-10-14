@@ -24,13 +24,11 @@ namespace PKEngine::Vulkan {
 
         VkQueue queue = VK_NULL_HANDLE;
 
-        Sync::Fence & submit_fence;
         std::vector<VkSemaphore> wait_stages;
         std::vector<VkPipelineStageFlags> wait_flags;
 
     public:
-        inline DeviceQueue(LogicalDevice & logical_device, Sync::Fence & _submit_fence, uint32_t queue_index):
-            submit_fence(_submit_fence) {
+        inline DeviceQueue(LogicalDevice & logical_device, uint32_t queue_index) {
             logger.debug() << "Initialing vulkan queue...";
 
             vkGetDeviceQueue(logical_device.handle(), queue_index, 0, &queue);
@@ -41,13 +39,14 @@ namespace PKEngine::Vulkan {
         inline DeviceQueue(const DeviceQueue &) = delete;
         inline DeviceQueue(DeviceQueue && other) noexcept:
             queue(other.queue),
-            submit_fence(other.submit_fence),
             wait_stages(std::move(other.wait_stages)),
             wait_flags(std::move(other.wait_flags)) {
             other.queue = VK_NULL_HANDLE;
         }
 
-        inline void submit_queue() { // TODO: complete submit_info
+        [[nodiscard]] constexpr const VkQueue & handle() const noexcept { return queue; }
+
+        inline void submit_queue(Sync::Fence & submit_fence) { // TODO: complete submit_info
             VkSubmitInfo submit_info = {
                 .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
                 .waitSemaphoreCount = (uint32_t) wait_stages.size(),

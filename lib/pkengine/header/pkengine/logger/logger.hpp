@@ -134,11 +134,11 @@ namespace PKEngine {
             return SubLogger<true>();
         }
 
-        consteval auto debug() const noexcept { return _Logger<_LoggerLevel_DEBUG, name>(); }
-        consteval auto success() const noexcept { return _Logger<_LoggerLevel_SUCCESS, name>(); }
-        consteval auto status() const noexcept { return _Logger<_LoggerLevel_STATUS, name>(); }
-        consteval auto warning() const noexcept { return _Logger<_LoggerLevel_WARNING, name>(); }
-        consteval auto error() const noexcept { return _Logger<_LoggerLevel_ERROR, name>(); }
+        consteval auto debug() const noexcept { return _Logger<_LoggerLevel_DEBUG, name, indent_level>(); }
+        consteval auto success() const noexcept { return _Logger<_LoggerLevel_SUCCESS, name, indent_level>(); }
+        consteval auto status() const noexcept { return _Logger<_LoggerLevel_STATUS, name, indent_level>(); }
+        consteval auto warning() const noexcept { return _Logger<_LoggerLevel_WARNING, name, indent_level>(); }
+        consteval auto error() const noexcept { return _Logger<_LoggerLevel_ERROR, name, indent_level>(); }
 
         template<std::size_t indent_count = 1>
         consteval auto indent() const noexcept { return _Logger<level, name, indent_level + indent_count>(); }

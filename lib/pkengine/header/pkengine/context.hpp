@@ -10,6 +10,8 @@
 #include <pkengine/vulkan/physical_device.hpp>
 #include <pkengine/vulkan/logical_device.hpp>
 #include <pkengine/vulkan/device_queue.hpp>
+#include <pkengine/vulkan/swap_chain.hpp>
+#include <pkengine/vulkan/image_views.hpp>
 
 namespace PKEngine {
     class Context {
@@ -24,9 +26,17 @@ namespace PKEngine {
         Vulkan::Util::QueueFamilyIndices queue_family_indices = Vulkan::Util::QueueFamilyIndices(surface, physical_device.handle());
         Vulkan::LogicalDevice logical_device = Vulkan::LogicalDevice(physical_device, queue_family_indices);
 
-        Vulkan::Sync::Fence in_flight_fence = Vulkan::Sync::Fence(logical_device, true);
+        Vulkan::DeviceQueue graphics_queue = Vulkan::DeviceQueue(
+            logical_device,
+            queue_family_indices.graphics_family.value()
+        );
+        Vulkan::DeviceQueue present_queue = Vulkan::DeviceQueue(
+            logical_device,
+            queue_family_indices.present_family.value()
+        );
 
-        Vulkan::DeviceQueue device_queue = Vulkan::DeviceQueue(logical_device, in_flight_fence, queue_family_indices.graphics_family.value());
+        Vulkan::SwapChain swap_chain = Vulkan::SwapChain(window, physical_device, logical_device, surface, queue_family_indices);
+        Vulkan::ImageViews image_views = Vulkan::ImageViews(logical_device, swap_chain);
 
     public:
         explicit inline Context() = default;
