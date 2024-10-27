@@ -6,7 +6,7 @@
 
 #include <pkengine/glfw/window.hpp>
 
-#include <pkengine/vulkan/surface.hpp>
+#include <pkengine/vulkan/wrapper/surface.hpp>
 #include <pkengine/vulkan/util/vulkan_exception.hpp>
 
 namespace PKEngine::Vulkan::Util {
@@ -23,7 +23,7 @@ namespace PKEngine::Vulkan::Util {
         std::vector<VkPresentModeKHR> _present_modes;
 
     public:
-        inline SwapChainSupport(Surface & surface, const VkPhysicalDevice & device) {
+        inline SwapChainSupport(Wrapper::Surface & surface, const VkPhysicalDevice & device) {
             Util::throw_on_fail<Exceptions::GetSurfaceCapabilitiesError>(
                 vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
                     device,

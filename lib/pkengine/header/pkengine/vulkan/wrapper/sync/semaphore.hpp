@@ -4,11 +4,10 @@
 
 #include <pkengine/logger/logger.hpp>
 
+#include <pkengine/vulkan/wrapper/logical_device.hpp>
 #include <pkengine/vulkan/util/vulkan_exception.hpp>
 
-#include <pkengine/vulkan/logical_device.hpp>
-
-namespace PKEngine::Vulkan::Sync {
+namespace PKEngine::Vulkan::Wrapper::Sync {
     class Semaphore {
     public:
         struct Exceptions {
@@ -17,12 +16,12 @@ namespace PKEngine::Vulkan::Sync {
     protected:
         static constexpr auto logger = Logger<"Semaphore">();
 
-        LogicalDevice & logical_device;
+        Wrapper::LogicalDevice & logical_device;
 
         VkSemaphore semaphore = VK_NULL_HANDLE;
 
     public:
-        inline Semaphore(LogicalDevice & _logical_device): logical_device(_logical_device) {
+        inline Semaphore(Wrapper::LogicalDevice & _logical_device): logical_device(_logical_device) {
             logger.debug() << "Initialing vulkan semaphore...";
 
             VkSemaphoreCreateInfo create_info {

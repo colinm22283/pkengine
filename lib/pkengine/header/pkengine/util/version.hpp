@@ -24,7 +24,7 @@ namespace PKEngine {
             Version(version, 0) { }
 
         [[nodiscard]] inline uint32_t make_vulkan_version() const { return VK_MAKE_VERSION(major, minor, patch); }
-        inline std::string to_string() const noexcept {
+        [[nodiscard]] inline std::string to_string() const noexcept {
             int length = snprintf(nullptr, 0, "%u.%u.%u", major, minor, patch);
             std::string buf(length, '\0');
             sprintf((char *) buf.c_str(), "%u.%u.%u", major, minor, patch);

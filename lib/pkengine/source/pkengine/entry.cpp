@@ -11,19 +11,18 @@ int main() {
         !__builtin_cpu_supports("sse") ||
         !__builtin_cpu_supports("sse2")
     ) {
-        logger.error() << "SSE is not supported on this architecture!";
+        logger.error() << "SSE is not supported on this CPU!";
         return 3;
     }
 
     using namespace PKEngine;
     using namespace GLFW;
-    using namespace Vulkan;
     using namespace Vulkan::Util;
 
     try {
-        Engine engine;
+        static Engine engine;
 
-        engine.add_context([&engine] (Context & context) { ::init(engine, context); });
+        engine.add_context([](Context & context) { ::init(engine, context); });
 
         engine.start();
     }

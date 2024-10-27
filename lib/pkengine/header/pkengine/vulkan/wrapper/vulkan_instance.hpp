@@ -5,14 +5,14 @@
 
 #include <vulkan/vulkan.h>
 
-#include <pkengine/vulkan/engine_info.hpp>
-
 #include <pkengine/logger/logger.hpp>
+
+#include <pkengine/vulkan/engine_info.hpp>
 #include <pkengine/vulkan/util/vulkan_exception.hpp>
 
 #include <engine_config.hpp>
 
-namespace PKEngine::Vulkan {
+namespace PKEngine::Vulkan::Wrapper {
     class VulkanInstance {
     public:
         struct Exceptions {

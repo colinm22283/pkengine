@@ -79,10 +79,7 @@ namespace PKEngine::GLFW {
             return glfwWindowShouldClose(window);
         }
         inline void close() noexcept {
-            if (window != nullptr) {
-                glfwSetWindowShouldClose(window, GLFW_TRUE);
-                window = nullptr;
-            }
+            glfwSetWindowShouldClose(window, GLFW_TRUE);
         }
     };
 }

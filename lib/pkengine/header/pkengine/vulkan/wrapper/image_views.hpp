@@ -4,10 +4,10 @@
 
 #include <pkengine/logger/logger.hpp>
 
-#include <pkengine/vulkan/logical_device.hpp>
-#include <pkengine/vulkan/swap_chain.hpp>
+#include <pkengine/vulkan/wrapper/logical_device.hpp>
+#include <pkengine/vulkan/wrapper/swap_chain.hpp>
 
-namespace PKEngine::Vulkan {
+namespace PKEngine::Vulkan::Wrapper {
     class ImageViews {
     public:
         struct Exceptions {

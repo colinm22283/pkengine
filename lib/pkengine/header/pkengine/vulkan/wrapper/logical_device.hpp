@@ -5,12 +5,11 @@
 #include <pkengine/logger/logger.hpp>
 
 #include <pkengine/vulkan/required_extensions.hpp>
-#include <pkengine/vulkan/physical_device.hpp>
-
+#include <pkengine/vulkan/wrapper/physical_device.hpp>
 #include <pkengine/vulkan/util/queue_family_indices.hpp>
 #include <pkengine/vulkan/util/vulkan_exception.hpp>
 
-namespace PKEngine::Vulkan {
+namespace PKEngine::Vulkan::Wrapper {
     class LogicalDevice {
     public:
         struct Exceptions {

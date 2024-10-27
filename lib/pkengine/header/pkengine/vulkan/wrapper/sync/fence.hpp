@@ -4,10 +4,10 @@
 
 #include <pkengine/logger/logger.hpp>
 
-#include <pkengine/vulkan/logical_device.hpp>
+#include <pkengine/vulkan/wrapper/logical_device.hpp>
 #include <pkengine/vulkan/util/vulkan_exception.hpp>
 
-namespace PKEngine::Vulkan::Sync {
+namespace PKEngine::Vulkan::Wrapper::Sync {
     class Fence {
     public:
         struct Exceptions {
@@ -16,12 +16,12 @@ namespace PKEngine::Vulkan::Sync {
     protected:
         static constexpr auto logger = Logger<"Fence">();
 
-        LogicalDevice & logical_device;
+        Wrapper::LogicalDevice & logical_device;
 
         VkFence fence = VK_NULL_HANDLE;
 
     public:
-        inline Fence(LogicalDevice & _logical_device, bool start_signaled = false): logical_device(_logical_device) {
+        inline Fence(Wrapper::LogicalDevice & _logical_device, bool start_signaled = false): logical_device(_logical_device) {
             logger.debug() << "Initialing vulkan queue...";
 
             VkFenceCreateInfo create_info {
@@ -53,5 +53,15 @@ namespace PKEngine::Vulkan::Sync {
         }
 
         [[nodiscard]] constexpr const VkFence & handle() const noexcept { return fence; }
+
+        inline void await() {
+            // TODO: check errors
+            vkWaitForFences(logical_device.handle(), 1, &fence, true, 1000000000);
+        }
+
+        inline void reset() {
+            // TODO: check errors
+            vkResetFences(logical_device.handle(), 1, &fence);
+        }
     };
 }

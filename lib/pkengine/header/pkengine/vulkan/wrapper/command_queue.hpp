@@ -7,20 +7,20 @@
 
 #include <pkengine/logger/logger.hpp>
 
-#include <pkengine/vulkan/logical_device.hpp>
-#include <pkengine/vulkan/sync/semaphore.hpp>
-#include <pkengine/vulkan/sync/fence.hpp>
+#include <pkengine/vulkan/wrapper/logical_device.hpp>
+#include <pkengine/vulkan/wrapper/sync/semaphore.hpp>
+#include <pkengine/vulkan/wrapper/sync/fence.hpp>
 #include <pkengine/vulkan/util/vulkan_exception.hpp>
 
-namespace PKEngine::Vulkan {
-    class DeviceQueue {
+namespace PKEngine::Vulkan::Wrapper {
+    class CommandQueue {
     public:
         struct Exceptions {
             PKENGINE_DEFINE_VULKAN_EXCEPTION(SubmitError, "Unable to submit vulkan draw buffer");
         };
 
     protected:
-        static constexpr auto logger = Logger<"Physical Device">();
+        static constexpr auto logger = Logger<"Command Queue">();
 
         VkQueue queue = VK_NULL_HANDLE;
 
@@ -28,16 +28,16 @@ namespace PKEngine::Vulkan {
         std::vector<VkPipelineStageFlags> wait_flags;
 
     public:
-        inline DeviceQueue(LogicalDevice & logical_device, uint32_t queue_index) {
-            logger.debug() << "Initialing vulkan queue...";
+        inline CommandQueue(LogicalDevice & logical_device, uint32_t queue_index) {
+            logger.debug() << "Initialing command queue...";
 
             vkGetDeviceQueue(logical_device.handle(), queue_index, 0, &queue);
 
-            logger.success() << "Vulkan queue initialized";
+            logger.success() << "Command queue initialized";
         }
 
-        inline DeviceQueue(const DeviceQueue &) = delete;
-        inline DeviceQueue(DeviceQueue && other) noexcept:
+        inline CommandQueue(const CommandQueue &) = delete;
+        inline CommandQueue(CommandQueue && other) noexcept:
             queue(other.queue),
             wait_stages(std::move(other.wait_stages)),
             wait_flags(std::move(other.wait_flags)) {

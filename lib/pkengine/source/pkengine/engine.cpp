@@ -8,7 +8,7 @@ void PKEngine::Engine::start() {
 
            auto before_itr = contexts.before_begin();
            for (auto itr = contexts.begin(); itr != contexts.end(); before_itr++, itr++) {
-               if (itr->window.should_close()) {
+               if (itr->should_exit()) {
                    contexts.erase_after(before_itr);
                    recheck_contexts = true;
                    break;
@@ -16,6 +16,8 @@ void PKEngine::Engine::start() {
            }
        }
        while (recheck_contexts);
+
+       for (Context & context : contexts) context.update();
 
        glfw_instance.poll_events();
    }

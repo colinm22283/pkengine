@@ -6,12 +6,12 @@
 
 #include <pkengine/util/exception.hpp>
 
+#include <pkengine/vulkan/wrapper/vulkan_instance.hpp>
+#include <pkengine/vulkan/wrapper/surface.hpp>
 #include <pkengine/vulkan/util/vulkan_exception.hpp>
-#include <pkengine/vulkan/vulkan_instance.hpp>
-
 #include <pkengine/vulkan/util/checks/is_device_suitable.hpp>
 
-namespace PKEngine::Vulkan {
+namespace PKEngine::Vulkan::Wrapper {
     class PhysicalDevice {
     public:
         struct Exceptions {

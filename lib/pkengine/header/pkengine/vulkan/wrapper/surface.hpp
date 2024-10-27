@@ -6,10 +6,10 @@
 
 #include <pkengine/glfw/window.hpp>
 
+#include <pkengine/vulkan/wrapper/vulkan_instance.hpp>
 #include <pkengine/vulkan/util/vulkan_exception.hpp>
-#include <pkengine/vulkan/vulkan_instance.hpp>
 
-namespace PKEngine::Vulkan {
+namespace PKEngine::Vulkan::Wrapper {
     class Surface {
     public:
         struct Exceptions {

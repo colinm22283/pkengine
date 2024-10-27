@@ -4,7 +4,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include <pkengine/vulkan/surface.hpp>
+#include <pkengine/vulkan/wrapper/surface.hpp>
 #include <pkengine/vulkan/util/vulkan_exception.hpp>
 
 namespace PKEngine::Vulkan::Util {
@@ -19,7 +19,7 @@ namespace PKEngine::Vulkan::Util {
 
         [[nodiscard]] inline bool is_complete() const noexcept { return graphics_family.has_value() && present_family.has_value(); }
 
-        inline QueueFamilyIndices(Surface & surface, const VkPhysicalDevice & device) {
+        inline QueueFamilyIndices(Wrapper::Surface & surface, const VkPhysicalDevice & device) {
             uint32_t family_count = 0;
             vkGetPhysicalDeviceQueueFamilyProperties(device, &family_count, nullptr);
 

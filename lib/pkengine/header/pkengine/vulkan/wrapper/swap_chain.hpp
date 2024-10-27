@@ -8,16 +8,16 @@
 
 #include <pkengine/glfw/window.hpp>
 
-#include <pkengine/vulkan/surface.hpp>
-#include <pkengine/vulkan/physical_device.hpp>
-#include <pkengine/vulkan/logical_device.hpp>
-#include <pkengine/vulkan/device_queue.hpp>
+#include <pkengine/vulkan/wrapper/surface.hpp>
+#include <pkengine/vulkan/wrapper/physical_device.hpp>
+#include <pkengine/vulkan/wrapper/logical_device.hpp>
+#include <pkengine/vulkan/wrapper/command_queue.hpp>
+#include <pkengine/vulkan/wrapper/sync/semaphore.hpp>
 #include <pkengine/vulkan/util/swap_chain_support.hpp>
 #include <pkengine/vulkan/util/queue_family_indices.hpp>
 #include <pkengine/vulkan/util/vulkan_exception.hpp>
-#include <pkengine/vulkan/sync/semaphore.hpp>
 
-namespace PKEngine::Vulkan {
+namespace PKEngine::Vulkan::Wrapper {
     class SwapChain {
     public:
         struct Exceptions {
@@ -123,7 +123,7 @@ namespace PKEngine::Vulkan {
         [[nodiscard]] constexpr const std::vector<VkImage> & images() const noexcept { return _images; }
         [[nodiscard]] constexpr const VkFormat & image_format() const noexcept { return _image_format; }
 
-        [[nodiscard]] inline SwapChainIndex get_next_image_index(Sync::Semaphore & image_available_semaphore) {
+        [[nodiscard]] inline SwapChainIndex next_image_index(Sync::Semaphore & image_available_semaphore) {
             SwapChainIndex index;
             Util::throw_on_fail<Exceptions::GetNextImageError>(
                 vkAcquireNextImageKHR(
@@ -138,7 +138,7 @@ namespace PKEngine::Vulkan {
             return index;
         }
 
-        inline void present(DeviceQueue & device_queue, Sync::Semaphore & render_complete_semaphore, SwapChainIndex image_index) {
+        inline void present(CommandQueue & device_queue, Sync::Semaphore & render_complete_semaphore, SwapChainIndex image_index) {
             VkPresentInfoKHR present_info {
                 .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
                 .waitSemaphoreCount = 1,
