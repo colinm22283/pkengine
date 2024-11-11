@@ -51,6 +51,14 @@ namespace PKEngine::Vulkan::Wrapper {
             }
         }
 
+	inline CommandBuffer(const CommandBuffer &) = delete;
+	inline CommandBuffer(CommandBuffer && other) noexcept:
+	    logical_device(other.logical_device),
+	    command_pool(other.command_pool),
+	    command_buffer(other.command_buffer) {
+	    other.command_buffer = VK_NULL_HANDLE;
+	}
+
         [[nodiscard]] constexpr const VkCommandBuffer & handle() const noexcept { return command_buffer; }
 
         inline void reset() {
@@ -67,6 +75,11 @@ namespace PKEngine::Vulkan::Wrapper {
 
             // TODO: handle errors
             vkBeginCommandBuffer(command_buffer, &begin_info);
+        }
+
+        inline void end() {
+            // TODO: handle errors
+            vkEndCommandBuffer(command_buffer);
         }
     };
 }

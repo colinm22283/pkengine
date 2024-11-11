@@ -35,7 +35,7 @@ namespace PKEngine::Vulkan::Wrapper {
 
         std::vector<VkImage> _images;
         VkFormat _image_format;
-        VkExtent2D extent;
+        VkExtent2D _extent;
 
     public:
         using SwapChainIndex = uint32_t;
@@ -56,7 +56,7 @@ namespace PKEngine::Vulkan::Wrapper {
 
             const VkSurfaceFormatKHR & surface_format = swap_chain_support.choose_surface_format();
             const VkPresentModeKHR & present_mode = swap_chain_support.choose_present_mode();
-            extent = swap_chain_support.choose_swap_extent(window);
+            _extent = swap_chain_support.choose_swap_extent(window);
 
             uint32_t image_count = swap_chain_support.capabilities().minImageCount + 1;
             if (swap_chain_support.capabilities().maxImageCount > 0 && image_count > swap_chain_support.capabilities().maxImageCount) {
@@ -71,7 +71,7 @@ namespace PKEngine::Vulkan::Wrapper {
                 .minImageCount = image_count,
                 .imageFormat = surface_format.format,
                 .imageColorSpace = surface_format.colorSpace,
-                .imageExtent = extent,
+                .imageExtent = _extent,
                 .imageArrayLayers = 1,
                 .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
                 .preTransform = swap_chain_support.capabilities().currentTransform,
@@ -119,9 +119,22 @@ namespace PKEngine::Vulkan::Wrapper {
             }
         }
 
+        inline SwapChain(const SwapChain &) = delete;
+        inline SwapChain(SwapChain && other) noexcept:
+            logical_device(other.logical_device),
+            swap_chain(other.swap_chain),
+            _images(std::move(other._images)),
+            _image_format(other._image_format),
+            _extent(other._extent) {
+                other.swap_chain = VK_NULL_HANDLE;
+            }
+
+
+
         [[nodiscard]] constexpr const VkSwapchainKHR & handle() const noexcept { return swap_chain; }
         [[nodiscard]] constexpr const std::vector<VkImage> & images() const noexcept { return _images; }
         [[nodiscard]] constexpr const VkFormat & image_format() const noexcept { return _image_format; }
+        [[nodiscard]] constexpr const VkExtent2D & image_extent() const noexcept { return _extent; }
 
         [[nodiscard]] inline SwapChainIndex next_image_index(Sync::Semaphore & image_available_semaphore) {
             SwapChainIndex index;

@@ -4,6 +4,4 @@
 
 void init(PKEngine::Engine & engine, PKEngine::Context & context) {
     using namespace PKEngine;
-
-
 }

@@ -31,9 +31,6 @@ namespace PKEngine::GLFW {
 
             init_success = true;
 
-            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-            glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-
             if (glfwVulkanSupported() == GLFW_FALSE) throw Exceptions::VulkanUnsupported();
 
             logger.success() << "GLFW instance initialized";

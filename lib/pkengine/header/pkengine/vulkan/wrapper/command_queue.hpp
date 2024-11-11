@@ -8,9 +8,15 @@
 #include <pkengine/logger/logger.hpp>
 
 #include <pkengine/vulkan/wrapper/logical_device.hpp>
+#include <pkengine/vulkan/wrapper/command_buffer.hpp>
 #include <pkengine/vulkan/wrapper/sync/semaphore.hpp>
 #include <pkengine/vulkan/wrapper/sync/fence.hpp>
+
 #include <pkengine/vulkan/util/vulkan_exception.hpp>
+
+#include <pkengine/vulkan/struct/semaphore_submit_info.hpp>
+#include <pkengine/vulkan/struct/command_buffer_submit_info.hpp>
+#include <pkengine/vulkan/struct/submit_info.hpp>
 
 namespace PKEngine::Vulkan::Wrapper {
     class CommandQueue {
@@ -46,16 +52,33 @@ namespace PKEngine::Vulkan::Wrapper {
 
         [[nodiscard]] constexpr const VkQueue & handle() const noexcept { return queue; }
 
-        inline void submit_queue(Sync::Fence & submit_fence) { // TODO: complete submit_info
-            VkSubmitInfo submit_info = {
-                .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-                .waitSemaphoreCount = (uint32_t) wait_stages.size(),
-                .pWaitSemaphores = wait_stages.data(),
-                .pWaitDstStageMask = wait_flags.data(),
-            };
+        inline void submit(
+            CommandBuffer & command_buffer,
+            Sync::Semaphore & swapchain_semaphore,
+            Sync::Semaphore & render_semaphore,
+            Sync::Fence & submit_fence
+        ) {
+            VkCommandBufferSubmitInfo command_buffer_submit_info = Struct::command_buffer_submit_info(
+                command_buffer.handle()
+            );
+
+            VkSemaphoreSubmitInfo wait_info = Struct::semaphore_submit_info(
+                VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
+                swapchain_semaphore.handle()
+            );
+            VkSemaphoreSubmitInfo signal_info = Struct::semaphore_submit_info(
+                VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT,
+                render_semaphore.handle()
+            );
+
+            VkSubmitInfo2 submit_info = Struct::submit_info(
+                command_buffer_submit_info,
+                signal_info,
+                wait_info
+            );
 
             Util::throw_on_fail<Exceptions::SubmitError>(
-                vkQueueSubmit(queue, 1, &submit_info, submit_fence.handle())
+                vkQueueSubmit2(queue, 1, &submit_info, submit_fence.handle())
             );
         }
 

@@ -5,6 +5,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include <pkengine/util/exception.hpp>
+#include <pkengine/util/file_name.hpp>
 
 #include <pkengine/vulkan/util/vkresult_string.hpp>
 
@@ -31,5 +32,6 @@ class VulkanException : public PKEngine::Util::Exception {
     class name : public PKEngine::Vulkan::Util::VulkanException { \
     public: \
         using VulkanException::VulkanException; \
+        [[nodiscard]] inline const char * file() const noexcept override { return PKEngine::Util::const_file_name<__FILE__>(); } \
         [[nodiscard]] inline const char * what() const noexcept override { return message; } \
     }

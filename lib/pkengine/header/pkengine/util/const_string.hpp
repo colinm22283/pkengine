@@ -33,7 +33,9 @@ namespace PKEngine::Util {
 
         [[nodiscard]] inline operator const std::string_view() const noexcept { return string_view(); }
 
-        [[nodiscard]] inline const char * c_str() const noexcept { return _data; }
+        [[nodiscard]] constexpr const char & operator[](std::size_t index) const noexcept { return _data[index]; }
+
+        [[nodiscard]] constexpr const char * c_str() const noexcept { return _data; }
 
         [[nodiscard]] consteval std::size_t size() const noexcept { return n - 1; }
     };

@@ -32,6 +32,9 @@ namespace PKEngine::GLFW {
             _title(Config::engine_config.window.title) {
             logger.debug() << "Initializing window...";
 
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+            glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
             window = glfwCreateWindow(_width, _height, _title.c_str(), nullptr, nullptr);
 
             if (window == nullptr) throw Exceptions::InitFailed();
