@@ -15,8 +15,14 @@ void main() {
         vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
 
         if(gl_LocalInvocationID.x != 0 && gl_LocalInvocationID.y != 0) {
-            color.x = float(texelCoord.x)/(size.x);
-            color.y = float(texelCoord.y)/(size.y);
+            vec2 cpos = vec2(
+                float(texelCoord.x)/(size.x) - 0.5,
+                float(texelCoord.y)/(size.y) - 0.5
+            );
+            float d = sqrt(pow(cpos.x, 2) + pow(cpos.y, 2));
+
+            color.x = (sin(d * 100) + 1) * float(texelCoord.x)/(size.x);
+            color.y = (cos(d * 100) + 1) * float(texelCoord.y)/(size.y);
         }
 
         imageStore(image, texelCoord, color);

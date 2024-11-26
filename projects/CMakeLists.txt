@@ -47,6 +47,7 @@ function(new_project NAME SOURCES)
                 COMMAND ${GLSLC} ${SOURCE} -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders/${SOURCE}.spv
                 WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/projects/${NAME}/shaders"
                 VERBATIM
+                DEPENDS "shaders/${SOURCE}"
             )
             target_sources(${NAME} PUBLIC "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders/${SOURCE}.spv")
             file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders)
