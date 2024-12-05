@@ -84,9 +84,12 @@ namespace PKEngine {
         class SubLogger {
         public:
             inline ~SubLogger() {
-                if constexpr (logger_enabled && is_base) {
-                    std::cout << _Logger_postfix.string_view();
-                    std::cout.flush();
+                if constexpr (is_base) {
+                    if constexpr (logger_enabled) {
+                        std::cout << _Logger_postfix.string_view();
+                        std::cout.flush();
+                    }
+
                     _Logger_temp_file << _Logger_postfix.string_view();
                     _Logger_temp_file.flush();
 
@@ -98,8 +101,10 @@ namespace PKEngine {
             inline auto operator<<(T & v) const noexcept {
                 if constexpr (logger_enabled) {
                     std::cout << v;
-                    _Logger_temp_file << v;
                 }
+
+                _Logger_temp_file << v;
+
                 return SubLogger<false>();
             }
 
@@ -107,8 +112,10 @@ namespace PKEngine {
             inline auto operator<<(T && v) const noexcept {
                 if constexpr (logger_enabled) {
                     std::cout << v;
-                    _Logger_temp_file << v;
                 }
+
+                _Logger_temp_file << v;
+
                 return SubLogger<false>();
             }
         };
@@ -116,21 +123,27 @@ namespace PKEngine {
     public:
         template<typename T>
         inline auto operator<<(T & v) const noexcept {
+            _Logger_lock.lock();
+
             if constexpr (logger_enabled) {
-                _Logger_lock.lock();
                 std::cout << prefix.string_view() << v;
-                _Logger_temp_file << prefix.string_view() << v;
             }
+
+            _Logger_temp_file << prefix.string_view() << v;
+
             return SubLogger<true>();
         }
 
         template<typename T>
         inline auto operator<<(T && v) const noexcept {
+            _Logger_lock.lock();
+
             if constexpr (logger_enabled) {
-                _Logger_lock.lock();
                 std::cout << prefix.string_view() << v;
-                _Logger_temp_file << prefix.string_view() << v;
             }
+
+            _Logger_temp_file << prefix.string_view() << v;
+
             return SubLogger<true>();
         }
 

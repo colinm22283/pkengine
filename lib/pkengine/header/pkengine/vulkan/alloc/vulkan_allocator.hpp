@@ -16,7 +16,7 @@ namespace PKEngine::Vulkan::Alloc {
             PKENGINE_DEFINE_VULKAN_EXCEPTION(InitError, "Unable to initialize VMA Allocator");
         };
     protected:
-        static constexpr auto logger = Logger<"Swap Chain">();
+        static constexpr auto logger = Logger<"Vulkan Allocator">();
 
         VmaAllocator allocator = VK_NULL_HANDLE;
 
@@ -39,7 +39,7 @@ namespace PKEngine::Vulkan::Alloc {
 
             vmaCreateAllocator(&allocator_info, &allocator);
 
-            logger.success() << "Vulkan allocator initialized";
+            logger.debug() << "Vulkan allocator initialized";
         }
 
         inline ~VulkanAllocator() {
@@ -48,7 +48,7 @@ namespace PKEngine::Vulkan::Alloc {
 
                 vmaDestroyAllocator(allocator);
 
-                logger.success() << "Vulkan allocator destroyed";
+                logger.debug() << "Vulkan allocator destroyed";
             }
         }
 

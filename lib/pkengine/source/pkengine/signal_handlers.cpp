@@ -13,6 +13,7 @@
 using namespace PKEngine;
 using namespace Util;
 
+#ifdef ENABLE_SIGSEGV_HANDLER
 const auto seg_fault_handler = SignalHandler(
     SignalHandler::Signal::SEGMENTATION_FAULT,
     [](SignalHandler::Signal) {
@@ -37,10 +38,16 @@ const auto seg_fault_handler = SignalHandler(
         std::ostringstream oss;
         oss << std::put_time(&tm, "logs/%m-%d-%Y--%H-%M-%S.log");
 
+        logger.error() << "";
+        logger.error() << "Dumped debug log to '" << oss.view() << "'";
+
         dump_log_to(oss.str().c_str());
 
         ::kill(getpid(), SIGKILL);
 
+        while (true);
+
 //        std::exit(SignalHandler::Signal::SEGMENTATION_FAULT);
     }
 );
+#endif

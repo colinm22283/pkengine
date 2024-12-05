@@ -33,10 +33,25 @@ namespace PKEngine::Vulkan::Wrapper {
                 .pQueuePriorities = &queuePriority,
             };
 
+            VkPhysicalDeviceVulkan13Features device_13_features = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+
+                .synchronization2 = true,
+                .dynamicRendering = true,
+            };
+            VkPhysicalDeviceVulkan12Features device_12_features = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+                .pNext = &device_13_features,
+
+                .descriptorIndexing = true,
+                .bufferDeviceAddress = true,
+            };
             VkPhysicalDeviceFeatures device_features = { };
 
             VkDeviceCreateInfo create_info = {
                 .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+                .pNext = &device_12_features,
+
                 .queueCreateInfoCount = 1,
                 .pQueueCreateInfos = &queue_create_info,
                 .enabledLayerCount = 0,
@@ -45,11 +60,17 @@ namespace PKEngine::Vulkan::Wrapper {
                 .pEnabledFeatures = &device_features,
             };
 
+            logger.debug() << "Enabled extensions:";
+            auto indented_logger = logger.indent();
+            for (const auto & extension : required_extensions) {
+                indented_logger.debug() << extension;
+            }
+
             Util::throw_on_fail<Exceptions::InitError>(
                 vkCreateDevice(physical_device.handle(), &create_info, nullptr, &logical_device)
             );
 
-            logger.success() << "Logical device initialized";
+            logger.debug() << "Logical device initialized";
         }
         inline ~LogicalDevice() {
             if (logical_device != VK_NULL_HANDLE) {
@@ -57,7 +78,7 @@ namespace PKEngine::Vulkan::Wrapper {
 
                 vkDestroyDevice(logical_device, nullptr);
 
-                logger.success() << "Logical device destroyed";
+                logger.debug() << "Logical device destroyed";
             }
         }
 

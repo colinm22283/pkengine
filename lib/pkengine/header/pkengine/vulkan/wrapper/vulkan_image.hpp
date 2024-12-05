@@ -40,7 +40,7 @@ namespace PKEngine::Vulkan::Wrapper {
                 vkCreateImage(logical_device.handle(), &image_info, nullptr, &image)
             );
 
-            logger.success() << "Vulkan image initialized";
+            logger.debug() << "Vulkan image initialized";
         }
         inline ~VulkanImage() {
             if (image != VK_NULL_HANDLE) {
@@ -48,7 +48,7 @@ namespace PKEngine::Vulkan::Wrapper {
 
                 vkDestroyImage(logical_device.handle(), image, nullptr);
 
-                logger.success() << "Vulkan image destroyed";
+                logger.debug() << "Vulkan image destroyed";
             }
         }
 

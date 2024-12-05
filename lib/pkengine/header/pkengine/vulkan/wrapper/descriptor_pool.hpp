@@ -28,6 +28,8 @@ namespace PKEngine::Vulkan::Wrapper {
 
         inline DescriptorPool(LogicalDevice & _logical_device, uint32_t max_sets, std::vector<PoolRatio> pool_ratios):
             logical_device(_logical_device) {
+            logger.debug() << "Initializing descriptor pool...";
+
             VkDescriptorPoolSize pool_sizes[pool_ratios.size()];
 
             for (std::size_t i = 0; i < pool_ratios.size(); i++) {
@@ -47,14 +49,16 @@ namespace PKEngine::Vulkan::Wrapper {
                 vkCreateDescriptorPool(logical_device.handle(), &pool_info, nullptr, &descriptor_pool)
             );
 
-            logger.debug() << "Initialized descriptor pool";
+            logger.debug() << "Descriptor pool initialized";
         }
 
         inline ~DescriptorPool() {
             if (descriptor_pool != VK_NULL_HANDLE) {
+                logger.debug() << "Destroying descriptor pool...";
+
                 vkDestroyDescriptorPool(logical_device.handle(), descriptor_pool, nullptr);
 
-                logger.debug() << "Destroyed descriptor pool";
+                logger.debug() << "Descriptor pool destroyed";
             }
         }
 

@@ -63,7 +63,7 @@ namespace PKEngine::Vulkan::Wrapper {
 
             if (physical_device == VK_NULL_HANDLE) throw Exceptions::UnableToFindCapableGPU();
 
-            logger.success() << "Physical device initialized";
+            logger.debug() << "Physical device initialized";
         }
 
         [[nodiscard]] constexpr const VkPhysicalDevice & handle() const noexcept { return physical_device; }

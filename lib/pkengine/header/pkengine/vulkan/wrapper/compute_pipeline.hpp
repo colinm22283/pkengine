@@ -31,7 +31,9 @@ namespace PKEngine::Vulkan::Wrapper {
             ShaderModule & shader_module
         ):
             logical_device(_logical_device) {
-            VkPipelineLayoutCreateInfo compute_layout{
+            logger.debug() << "Initializing compute pipeline...";
+
+            VkPipelineLayoutCreateInfo compute_layout = {
                 .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
                 .pNext = nullptr,
                 .setLayoutCount = (uint32_t) descriptor_set_layouts.size(),
@@ -73,15 +75,17 @@ namespace PKEngine::Vulkan::Wrapper {
                 )
             );
 
-            logger.debug() << "Initialized compute pipeline";
+            logger.debug() << "Compute pipeline initialized";
         }
 
         inline ~ComputePipeline() {
             if (pipeline_layout != VK_NULL_HANDLE) vkDestroyPipelineLayout(logical_device.handle(), pipeline_layout, nullptr);
             if (pipeline != VK_NULL_HANDLE) {
+                logger.debug() << "Destroying compute pipeline...";
+
                 vkDestroyPipeline(logical_device.handle(), pipeline, nullptr);
 
-                logger.debug() << "Destroyed compute pipeline";
+                logger.debug() << "Compute pipeline destroyed";
             }
         }
 

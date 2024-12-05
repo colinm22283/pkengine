@@ -35,11 +35,11 @@ namespace PKEngine::Vulkan::Wrapper {
 
     public:
         inline CommandQueue(LogicalDevice & logical_device, uint32_t queue_index) {
-            logger.debug() << "Initialing command queue...";
+            logger.debug() << "Initializing command queue...";
 
             vkGetDeviceQueue(logical_device.handle(), queue_index, 0, &queue);
 
-            logger.success() << "Command queue initialized";
+            logger.debug() << "Command queue initialized";
         }
 
         inline CommandQueue(const CommandQueue &) = delete;
@@ -75,6 +75,23 @@ namespace PKEngine::Vulkan::Wrapper {
                 command_buffer_submit_info,
                 signal_info,
                 wait_info
+            );
+
+            Util::throw_on_fail<Exceptions::SubmitError>(
+                vkQueueSubmit2(queue, 1, &submit_info, submit_fence.handle())
+            );
+        }
+
+        inline void submit(
+            CommandBuffer & command_buffer,
+            Sync::Fence & submit_fence
+        ) {
+            VkCommandBufferSubmitInfo command_buffer_submit_info = Struct::command_buffer_submit_info(
+                command_buffer.handle()
+            );
+
+            VkSubmitInfo2 submit_info = Struct::submit_info(
+                command_buffer_submit_info
             );
 
             Util::throw_on_fail<Exceptions::SubmitError>(

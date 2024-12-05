@@ -44,6 +44,8 @@ namespace PKEngine::Vulkan::Alloc {
             allocator(_allocator),
             image_format(_image_format),
             image_extent(_image_extent) {
+            logger.debug() << "Allocating vulkan image...";
+
             VkImageCreateInfo image_info = Struct::image_create_info(
                 image_format,
                 image_usage_flags,
@@ -65,20 +67,23 @@ namespace PKEngine::Vulkan::Alloc {
 
             vkCreateImageView(logical_device.handle(), &image_view_info, nullptr, &image_view);
 
-            logger.debug() << "Allocated vulkan image";
+            logger.debug() << "Vulkan image allocated";
         }
 
         inline ~AllocatedImage() {
             if (image_view != VK_NULL_HANDLE) vkDestroyImageView(logical_device.handle(), image_view, nullptr);
             if (image != VK_NULL_HANDLE) {
+                logger.debug() << "Deallocating vulkan image...";
+
                 vmaDestroyImage(allocator.handle(), image, allocation);
 
-                logger.debug() << "Deallocated vulkan image";
+                logger.debug() << "Vulkan image deallocated";
             }
         }
 
         [[nodiscard]] inline const VkImage & handle() const noexcept { return image; }
         [[nodiscard]] inline const VkExtent3D & extent() const noexcept { return image_extent; }
         [[nodiscard]] inline const VkImageView & view() const noexcept { return image_view; }
+        [[nodiscard]] inline const VkFormat & format() const noexcept { return image_format; }
     };
 }

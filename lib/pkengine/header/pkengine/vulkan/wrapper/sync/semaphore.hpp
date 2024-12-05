@@ -32,7 +32,7 @@ namespace PKEngine::Vulkan::Wrapper::Sync {
                 vkCreateSemaphore(logical_device.handle(), &create_info, nullptr, &semaphore)
             );
 
-            logger.success() << "Vulkan semaphore initialized";
+            logger.debug() << "Vulkan semaphore initialized";
         }
         inline ~Semaphore() {
             if (semaphore != VK_NULL_HANDLE) {
@@ -40,7 +40,7 @@ namespace PKEngine::Vulkan::Wrapper::Sync {
 
                 vkDestroySemaphore(logical_device.handle(), semaphore, nullptr);
 
-                logger.success() << "Vulkan semaphore destroyed...";
+                logger.debug() << "Vulkan semaphore destroyed...";
             }
         }
 

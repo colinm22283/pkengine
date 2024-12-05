@@ -37,7 +37,7 @@ namespace PKEngine::Vulkan::Wrapper {
                 vkCreateCommandPool(logical_device.handle(), &create_info, nullptr, &command_pool)
             );
 
-            logger.success() << "Command pool initialized";
+            logger.debug() << "Command pool initialized";
         }
 
         inline ~CommandPool() {
@@ -46,7 +46,7 @@ namespace PKEngine::Vulkan::Wrapper {
 
                 vkDestroyCommandPool(logical_device.handle(), command_pool, nullptr);
 
-                logger.success() << "Command pool destroyed";
+                logger.debug() << "Command pool destroyed";
             }
         }
 

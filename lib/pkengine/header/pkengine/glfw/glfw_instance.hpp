@@ -33,7 +33,7 @@ namespace PKEngine::GLFW {
 
             if (glfwVulkanSupported() == GLFW_FALSE) throw Exceptions::VulkanUnsupported();
 
-            logger.success() << "GLFW instance initialized";
+            logger.debug() << "GLFW instance initialized";
         }
         inline ~GLFWInstance() {
             if (init_success) {
@@ -41,7 +41,7 @@ namespace PKEngine::GLFW {
 
                 glfwTerminate();
 
-                logger.success() << "GLFW terminated";
+                logger.debug() << "GLFW terminated";
             }
         }
 

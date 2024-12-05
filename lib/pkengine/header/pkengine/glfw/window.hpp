@@ -39,7 +39,7 @@ namespace PKEngine::GLFW {
 
             if (window == nullptr) throw Exceptions::InitFailed();
 
-            logger.success() << "Window initialized";
+            logger.debug() << "Window initialized";
         }
         inline ~Window() {
             if (window != nullptr) {
@@ -47,7 +47,7 @@ namespace PKEngine::GLFW {
 
                 glfwDestroyWindow(window);
 
-                logger.success() << "Window destroyed";
+                logger.debug() << "Window destroyed";
             }
         }
 

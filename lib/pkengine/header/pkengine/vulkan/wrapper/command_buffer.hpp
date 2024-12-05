@@ -6,6 +6,7 @@
 
 #include <pkengine/vulkan/wrapper/logical_device.hpp>
 #include <pkengine/vulkan/wrapper/command_pool.hpp>
+#include <pkengine/vulkan/wrapper/sync/fence.hpp>
 
 namespace PKEngine::Vulkan::Wrapper {
     class CommandBuffer {
@@ -25,7 +26,7 @@ namespace PKEngine::Vulkan::Wrapper {
         inline CommandBuffer(LogicalDevice & _logical_device, CommandPool & _command_pool):
             logical_device(_logical_device),
             command_pool(_command_pool) {
-            logger.debug() << "Initializing command buffer...";
+            logger.debug() << "Initializing command buffer";
 
             VkCommandBufferAllocateInfo alloc_info {
                 .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
@@ -38,7 +39,7 @@ namespace PKEngine::Vulkan::Wrapper {
                 vkAllocateCommandBuffers(logical_device.handle(), &alloc_info, &command_buffer)
             );
 
-            logger.success() << "Command buffer initialized";
+            logger.debug() << "Command buffer initialized";
         }
 
         inline ~CommandBuffer() {
@@ -47,17 +48,17 @@ namespace PKEngine::Vulkan::Wrapper {
 
                 vkFreeCommandBuffers(logical_device.handle(), command_pool.handle(), 1, &command_buffer);
 
-                logger.success() << "Command buffer destroyed";
+                logger.debug() << "Command buffer destroyed";
             }
         }
 
-	inline CommandBuffer(const CommandBuffer &) = delete;
-	inline CommandBuffer(CommandBuffer && other) noexcept:
-	    logical_device(other.logical_device),
-	    command_pool(other.command_pool),
-	    command_buffer(other.command_buffer) {
-	    other.command_buffer = VK_NULL_HANDLE;
-	}
+        inline CommandBuffer(const CommandBuffer &) = delete;
+        inline CommandBuffer(CommandBuffer && other) noexcept:
+            logical_device(other.logical_device),
+            command_pool(other.command_pool),
+            command_buffer(other.command_buffer) {
+            other.command_buffer = VK_NULL_HANDLE;
+        }
 
         [[nodiscard]] constexpr const VkCommandBuffer & handle() const noexcept { return command_buffer; }
 
@@ -80,6 +81,17 @@ namespace PKEngine::Vulkan::Wrapper {
         inline void end() {
             // TODO: handle errors
             vkEndCommandBuffer(command_buffer);
+        }
+
+        inline void immediate_record(Wrapper::Sync::Fence & imm_fence, auto functor) {
+            imm_fence.reset();
+            reset();
+
+            begin_one_time();
+
+            functor();
+
+            end();
         }
     };
 }

@@ -73,7 +73,7 @@ namespace PKEngine::Vulkan::Wrapper {
                 .imageColorSpace = surface_format.colorSpace,
                 .imageExtent = _extent,
                 .imageArrayLayers = 1,
-                .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+                .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
                 .preTransform = swap_chain_support.capabilities().currentTransform,
                 .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
                 .presentMode = present_mode,
@@ -106,7 +106,7 @@ namespace PKEngine::Vulkan::Wrapper {
 
             _image_format = surface_format.format;
 
-            logger.success() << "Swap chain initialized";
+            logger.debug() << "Swap chain initialized";
         }
 
         inline ~SwapChain() {
@@ -115,7 +115,7 @@ namespace PKEngine::Vulkan::Wrapper {
 
                 vkDestroySwapchainKHR(logical_device.handle(), swap_chain, nullptr);
 
-                logger.success() << "Swap chain destroyed";
+                logger.debug() << "Swap chain destroyed";
             }
         }
 

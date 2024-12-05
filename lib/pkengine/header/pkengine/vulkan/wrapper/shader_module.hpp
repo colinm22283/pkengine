@@ -32,6 +32,10 @@ namespace PKEngine::Vulkan::Wrapper {
             const char * path
         ):
             logical_device(_logical_device) {
+            logger.debug() << "Initializing shader module...";
+
+            logger.debug() << "Loading shader from path \"" << path << "\"";
+
             std::ifstream file(path, std::ios::ate | std::ios::binary);
 
             if (!file.is_open()) throw Exceptions::FileNotFound();
@@ -68,6 +72,8 @@ namespace PKEngine::Vulkan::Wrapper {
 
         inline ~ShaderModule() {
             if (shader_module != VK_NULL_HANDLE) {
+                logger.debug() << "Destroying shader module...";
+
                 vkDestroyShaderModule(logical_device.handle(), shader_module, nullptr);
 
                 logger.debug() << "Destroyed shader module";

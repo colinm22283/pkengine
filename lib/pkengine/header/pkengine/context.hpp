@@ -7,6 +7,7 @@
 #include <pkengine/glfw/window.hpp>
 
 #include <pkengine/vulkan/frame_data.hpp>
+#include <pkengine/vulkan/mesh.hpp>
 
 #include <pkengine/vulkan/wrapper/vulkan_instance.hpp>
 #include <pkengine/vulkan/wrapper/surface.hpp>
@@ -20,6 +21,9 @@
 #include <pkengine/vulkan/wrapper/descriptor_set.hpp>
 #include <pkengine/vulkan/wrapper/shader_module.hpp>
 #include <pkengine/vulkan/wrapper/compute_pipeline.hpp>
+#include <pkengine/vulkan/wrapper/graphics_pipeline.hpp>
+
+#include <pkengine/vulkan/builder/graphics_pipeline_builder.hpp>
 
 #include <pkengine/vulkan/alloc/allocated_image.hpp>
 
@@ -31,13 +35,13 @@ namespace PKEngine {
     using namespace Util;
     using namespace Vulkan;
     using namespace Vulkan::Wrapper;
+    using namespace Vulkan::Builder;
     using namespace Vulkan::Util;
 
     class Context {
         friend class Engine;
 
     protected:
-//    public:
         GLFW::Window window;
 
         VulkanInstance vulkan_instance;
@@ -54,6 +58,16 @@ namespace PKEngine {
             logical_device,
             queue_family_indices.present_family.value()
         );
+
+        CommandPool imm_command_pool = CommandPool(
+            logical_device,
+            queue_family_indices.graphics_family.value()
+        );
+        CommandBuffer imm_command_buffer = CommandBuffer(
+            logical_device,
+            imm_command_pool
+        );
+        Sync::Fence imm_fence = Sync::Fence(logical_device, true);
 
         SwapChain swap_chain = SwapChain(window, physical_device, logical_device, surface, queue_family_indices);
         ImageViews image_views = ImageViews(logical_device, swap_chain);
@@ -108,17 +122,85 @@ namespace PKEngine {
             draw_image_descriptor_set_layout
         );
 
-        ShaderModule draw_image_shader_module = ShaderModule(
-            logical_device,
-            "shaders/gradient.comp.spv"
-        );
+        ShaderModule vert_shader = ShaderModule(logical_device, "shaders/colored_triangle.vert.spv");
+        ShaderModule frag_shader = ShaderModule(logical_device, "shaders/colored_triangle.frag.spv");
 
-        ComputePipeline draw_image_pipeline = ComputePipeline(
+        GraphicsPipeline graphics_pipeline = GraphicsPipelineBuilder()
+            .set_shaders(vert_shader, frag_shader)
+            .set_input_topology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
+            .set_polygon_mode(VK_POLYGON_MODE_FILL)
+            .set_cull_mode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE)
+            .set_multisampling_none()
+            .disable_blending()
+            .disable_depthtest()
+            .set_color_attachment_format(draw_image.format())
+            .set_depth_format(VK_FORMAT_UNDEFINED)
+            .build(logical_device);
+
+        std::vector<uint32_t> indexes = { 0, 1, 2, 1, 2, 3 };
+        std::vector<ShaderStruct::Vertex> vertices = {
+            ShaderStruct::Vertex {
+                .position = {
+                    .x = -0.5f,
+                    .y = -0.5f,
+                    .z =  0.0f,
+                },
+                .color = {
+                    .x = 1,
+                    .y = 0,
+                    .z = 0,
+                    .w = 1,
+                }
+            },
+            ShaderStruct::Vertex {
+                .position = {
+                    .x =  0.5f,
+                    .y = -0.5f,
+                    .z =  0.0f,
+                },
+                .color = {
+                    .x = 0,
+                    .y = 1,
+                    .z = 0,
+                    .w = 1,
+                }
+            },
+            ShaderStruct::Vertex {
+                .position = {
+                    .x = -0.5f,
+                    .y = 0.5f,
+                    .z = 0.0f,
+                },
+                .color = {
+                    .x = 0,
+                    .y = 0,
+                    .z = 1,
+                    .w = 1,
+                }
+            },
+            ShaderStruct::Vertex {
+                .position = {
+                    .x =  0.5f,
+                    .y =  0.5f,
+                    .z =  0.0f,
+                },
+                .color = {
+                    .x = 1,
+                    .y = 0,
+                    .z = 0,
+                    .w = 0,
+                }
+            },
+        };
+
+        Mesh triangle_mesh = Mesh(
             logical_device,
-            std::vector<VkDescriptorSetLayout>({
-                draw_image_descriptor_set_layout.handle()
-            }),
-            draw_image_shader_module
+            graphics_queue,
+            imm_command_buffer,
+            imm_fence,
+            allocator,
+            indexes,
+            vertices
         );
 
         std::size_t current_frame = 0;
@@ -127,9 +209,10 @@ namespace PKEngine {
                 swap_chain,
                 graphics_queue,
                 draw_image,
-                draw_image_pipeline,
+                graphics_pipeline,
                 logical_device,
-                queue_family_indices
+                queue_family_indices,
+                triangle_mesh
             );
 
         [[nodiscard]] FrameData & next_frame() noexcept {
@@ -140,35 +223,35 @@ namespace PKEngine {
             return frame;
         }
 
-    public:
-        inline Context() {
-            VkDescriptorImageInfo image_info {
-                .imageView = draw_image.view(),
-                .imageLayout = VK_IMAGE_LAYOUT_GENERAL,
-            };
-
-            VkWriteDescriptorSet draw_image_write = {
-                .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                .pNext = nullptr,
-
-                .dstSet = draw_image_descriptor_set.handle(),
-                .dstBinding = 0,
-                .descriptorCount = 1,
-                .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
-                .pImageInfo = &image_info,
-            };
-
-            vkUpdateDescriptorSets(logical_device.handle(), 1, &draw_image_write, 0, nullptr);
-        }
-
-        inline Context(const Context &) = delete;
-        inline Context(Context &&) noexcept = default;
-
         inline void update() {
             FrameData & frame = next_frame();
 
             frame.draw(draw_image_descriptor_set);
         }
+
+    public:
+        inline Context() {
+//            VkDescriptorImageInfo image_info {
+//                .imageView = draw_image.view(),
+//                .imageLayout = VK_IMAGE_LAYOUT_GENERAL,
+//            };
+//
+//            VkWriteDescriptorSet draw_image_write = {
+//                .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+//                .pNext = nullptr,
+//
+//                .dstSet = draw_image_descriptor_set.handle(),
+//                .dstBinding = 0,
+//                .descriptorCount = 1,
+//                .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+//                .pImageInfo = &image_info,
+//            };
+//
+//            vkUpdateDescriptorSets(logical_device.handle(), 1, &draw_image_write, 0, nullptr);
+        }
+
+        inline Context(const Context &) = delete;
+        inline Context(Context &&) = delete;
 
         inline void exit() noexcept {
             window.close();

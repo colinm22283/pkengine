@@ -32,6 +32,8 @@ namespace PKEngine::Vulkan::Wrapper {
             VkDescriptorSetLayoutCreateFlags create_flags
         ):
             logical_device(_logical_device) {
+            logger.debug() << "Initializing descriptor set layout...";
+
             for (VkDescriptorSetLayoutBinding & binding : layout_bindings) {
                 binding.stageFlags |= stage_flags;
             }
@@ -50,14 +52,16 @@ namespace PKEngine::Vulkan::Wrapper {
                 vkCreateDescriptorSetLayout(logical_device.handle(), &layout_info, nullptr, &desc_set_layout)
             );
 
-            logger.debug() << "Initialized descriptor set layout";
+            logger.debug() << "Descriptor set layout initialized";
         }
 
         inline ~DescriptorSetLayout() {
             if (desc_set_layout != VK_NULL_HANDLE) {
+                logger.debug() << "Destroying descriptor set layout...";
+
                 vkDestroyDescriptorSetLayout(logical_device.handle(), desc_set_layout, nullptr);
 
-                logger.debug() << "Destroyed descriptor set layout";
+                logger.debug() << "Descriptor set layout destroyed";
             }
         }
 

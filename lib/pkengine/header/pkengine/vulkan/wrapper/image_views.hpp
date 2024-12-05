@@ -54,7 +54,7 @@ namespace PKEngine::Vulkan::Wrapper {
                 );
             }
 
-            logger.success() << "Image views initialized";
+            logger.debug() << "Image views initialized";
         }
 
         inline ~ImageViews() {
@@ -66,7 +66,7 @@ namespace PKEngine::Vulkan::Wrapper {
                 }
             }
 
-            logger.success() << "Image view destroyed";
+            logger.debug() << "Image view destroyed";
         }
 
         [[nodiscard]] constexpr const VkImageView & handle(std::size_t index) const noexcept { return image_views[index]; }

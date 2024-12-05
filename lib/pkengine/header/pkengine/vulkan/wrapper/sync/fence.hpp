@@ -22,7 +22,7 @@ namespace PKEngine::Vulkan::Wrapper::Sync {
 
     public:
         inline Fence(Wrapper::LogicalDevice & _logical_device, bool start_signaled = false): logical_device(_logical_device) {
-            logger.debug() << "Initialing vulkan queue...";
+            logger.debug() << "Initialing vulkan fence...";
 
             VkFenceCreateInfo create_info {
                 .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
@@ -33,15 +33,16 @@ namespace PKEngine::Vulkan::Wrapper::Sync {
                 vkCreateFence(logical_device.handle(), &create_info, nullptr, &fence)
             );
 
-            logger.success() << "Vulkan queue initialized";
+            logger.debug() << "Vulkan fence initialized";
         }
         inline ~Fence() {
             if (fence != VK_NULL_HANDLE) {
                 logger.debug() << "Destroying vulkan fence...";
 
+                await();
                 vkDestroyFence(logical_device.handle(), fence, nullptr);
 
-                logger.success() << "Vulkan semaphore destroyed...";
+                logger.debug() << "Vulkan fence destroyed";
             }
         }
 

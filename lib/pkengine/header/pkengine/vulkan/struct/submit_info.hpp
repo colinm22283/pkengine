@@ -23,4 +23,23 @@ namespace PKEngine::Vulkan::Struct {
 
         };
     }
+
+    inline VkSubmitInfo2 submit_info(
+        VkCommandBufferSubmitInfo & command_buffer_submit_info
+    ) {
+        return VkSubmitInfo2 {
+            .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2,
+            .pNext = nullptr,
+
+            .waitSemaphoreInfoCount = 0,
+            .pWaitSemaphoreInfos = nullptr,
+
+            .commandBufferInfoCount = 1,
+            .pCommandBufferInfos = &command_buffer_submit_info,
+
+            .signalSemaphoreInfoCount = 0,
+            .pSignalSemaphoreInfos = nullptr,
+
+        };
+    }
 }

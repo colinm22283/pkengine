@@ -8,6 +8,7 @@
 #include <pkengine/logger/logger.hpp>
 
 #include <pkengine/vulkan/engine_info.hpp>
+#include <pkengine/vulkan/validation_layers.hpp>
 #include <pkengine/vulkan/util/vulkan_exception.hpp>
 
 #include <engine_config.hpp>
@@ -38,7 +39,8 @@ namespace PKEngine::Vulkan::Wrapper {
             VkInstanceCreateInfo create_info = {
                 .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
                 .pApplicationInfo = &application_info,
-                .enabledLayerCount = 0,
+                .enabledLayerCount = PKEngine::Vulkan::validation_layers.size(),
+                .ppEnabledLayerNames = PKEngine::Vulkan::validation_layers.data(),
             };
 
             uint32_t glfwExtensionCount = 0;
@@ -56,13 +58,19 @@ namespace PKEngine::Vulkan::Wrapper {
             std::vector<VkExtensionProperties> extensions(extension_count);
             vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, extensions.data());
 
-            logger.debug() << "Available Extensions:";
             auto indented_logger = logger.indent();
+
+            logger.debug() << "Available Extensions:";
             for (const auto & extension : extensions) {
                 indented_logger.debug() << extension.extensionName;
             }
 
-            logger.success() << "Vulkan instance initialized";
+            logger.debug() << "Enabled layers:";
+            for (const auto & layer : validation_layers) {
+                indented_logger.debug() << layer;
+            }
+
+            logger.debug() << "Vulkan instance initialized";
         }
 
         inline ~VulkanInstance() {
@@ -71,7 +79,7 @@ namespace PKEngine::Vulkan::Wrapper {
 
                 vkDestroyInstance(instance, nullptr);
 
-                logger.success() << "Vulkan instance destroyed";
+                logger.debug() << "Vulkan instance destroyed";
             }
         }
 

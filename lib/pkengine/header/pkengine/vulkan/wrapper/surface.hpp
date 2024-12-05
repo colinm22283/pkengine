@@ -32,7 +32,7 @@ namespace PKEngine::Vulkan::Wrapper {
                 glfwCreateWindowSurface(vulkan_instance.handle(), window.handle(), nullptr, &surface)
             );
 
-            logger.success() << "Vulkan surface initialized";
+            logger.debug() << "Vulkan surface initialized";
         }
         inline ~Surface() {
             if (surface != VK_NULL_HANDLE) {
@@ -40,7 +40,7 @@ namespace PKEngine::Vulkan::Wrapper {
 
                 vkDestroySurfaceKHR(vulkan_instance.handle(), surface, nullptr);
 
-                logger.success() << "Vulkan surface destroyed";
+                logger.debug() << "Vulkan surface destroyed";
             }
         }
 

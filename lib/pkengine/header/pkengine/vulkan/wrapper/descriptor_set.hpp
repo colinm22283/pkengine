@@ -20,11 +20,13 @@ namespace PKEngine::Vulkan::Wrapper {
 
         LogicalDevice & logical_device;
 
-        VkDescriptorSet descriptor_set;
+        VkDescriptorSet descriptor_set = VK_NULL_HANDLE;
 
     public:
         inline DescriptorSet(LogicalDevice & _logical_device, DescriptorPool & descriptor_pool, DescriptorSetLayout & set_layout):
             logical_device(_logical_device) {
+            logger.debug() << "Initializing descriptor set...";
+
             VkDescriptorSetAllocateInfo allocInfo = {
                 .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
                 .pNext = nullptr,
@@ -36,6 +38,8 @@ namespace PKEngine::Vulkan::Wrapper {
             Util::throw_on_fail<Exceptions::InitError>(
                 vkAllocateDescriptorSets(logical_device.handle(), &allocInfo, &descriptor_set)
             );
+
+            logger.debug() << "Descriptor set initialized";
         }
 
         [[nodiscard]] inline const VkDescriptorSet & handle() const noexcept { return descriptor_set; }
