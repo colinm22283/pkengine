@@ -3,11 +3,14 @@
 #include <thread>
 #include <vector>
 
+#include <pkengine/math/deg_rad.hpp>
+
 #include <pkengine/glfw/glfw_instance.hpp>
 #include <pkengine/glfw/window.hpp>
 
 #include <pkengine/vulkan/frame_data.hpp>
 #include <pkengine/vulkan/mesh.hpp>
+#include <pkengine/vulkan/camera_data.hpp>
 
 #include <pkengine/vulkan/wrapper/vulkan_instance.hpp>
 #include <pkengine/vulkan/wrapper/surface.hpp>
@@ -42,6 +45,8 @@ namespace PKEngine {
         friend class Engine;
 
     protected:
+        static constexpr auto logger = Logger<"Context">();
+
         GLFW::Window window;
 
         VulkanInstance vulkan_instance;
@@ -137,70 +142,17 @@ namespace PKEngine {
             .set_depth_format(VK_FORMAT_UNDEFINED)
             .build(logical_device);
 
-        std::vector<uint32_t> indexes = { 0, 1, 2, 1, 2, 3 };
-        std::vector<ShaderStruct::Vertex> vertices = {
-            ShaderStruct::Vertex {
-                .position = {
-                    .x = -0.5f,
-                    .y = -0.5f,
-                    .z =  0.0f,
-                },
-                .color = {
-                    .x = 1,
-                    .y = 0,
-                    .z = 0,
-                    .w = 1,
-                }
+        std::forward_list<Mesh> meshes;
+        CameraData camera_data = CameraData(
+            ShaderStruct::Vec3 {
+                .x = 0,
+                .y = 0,
+                .z = -5
             },
-            ShaderStruct::Vertex {
-                .position = {
-                    .x =  0.5f,
-                    .y = -0.5f,
-                    .z =  0.0f,
-                },
-                .color = {
-                    .x = 0,
-                    .y = 1,
-                    .z = 0,
-                    .w = 1,
-                }
-            },
-            ShaderStruct::Vertex {
-                .position = {
-                    .x = -0.5f,
-                    .y = 0.5f,
-                    .z = 0.0f,
-                },
-                .color = {
-                    .x = 0,
-                    .y = 0,
-                    .z = 1,
-                    .w = 1,
-                }
-            },
-            ShaderStruct::Vertex {
-                .position = {
-                    .x =  0.5f,
-                    .y =  0.5f,
-                    .z =  0.0f,
-                },
-                .color = {
-                    .x = 1,
-                    .y = 0,
-                    .z = 0,
-                    .w = 0,
-                }
-            },
-        };
-
-        Mesh triangle_mesh = Mesh(
-            logical_device,
-            graphics_queue,
-            imm_command_buffer,
-            imm_fence,
-            allocator,
-            indexes,
-            vertices
+            PKEngine::Math::deg_to_rad(70.0f),
+            (float) draw_image.extent().width / (float) draw_image.extent().height,
+            10000.0f,
+            0.1f
         );
 
         std::size_t current_frame = 0;
@@ -212,7 +164,8 @@ namespace PKEngine {
                 graphics_pipeline,
                 logical_device,
                 queue_family_indices,
-                triangle_mesh
+                meshes,
+                camera_data
             );
 
         [[nodiscard]] FrameData & next_frame() noexcept {
@@ -248,6 +201,125 @@ namespace PKEngine {
 //            };
 //
 //            vkUpdateDescriptorSets(logical_device.handle(), 1, &draw_image_write, 0, nullptr);
+
+            std::vector<uint32_t> indexes1 = { 0, 1, 2, 1, 2, 3 };
+            std::vector<ShaderStruct::Vertex> vertices1 = {
+                ShaderStruct::Vertex {
+                    .position = {
+                        .x = -0.5f,
+                        .y = -0.5f,
+                        .z =  0.0f,
+                    },
+                    .color = {
+                        .x = 1,
+                        .y = 0,
+                        .z = 0,
+                        .w = 1,
+                    }
+                },
+                ShaderStruct::Vertex {
+                    .position = {
+                        .x =  0.5f,
+                        .y = -0.5f,
+                        .z =  0.0f,
+                    },
+                    .color = {
+                        .x = 0,
+                        .y = 1,
+                        .z = 0,
+                        .w = 1,
+                    }
+                },
+                ShaderStruct::Vertex {
+                    .position = {
+                        .x = -0.5f,
+                        .y = 0.5f,
+                        .z = 0.0f,
+                    },
+                    .color = {
+                        .x = 0,
+                        .y = 0,
+                        .z = 1,
+                        .w = 1,
+                    }
+                },
+                ShaderStruct::Vertex {
+                    .position = {
+                        .x =  0.5f,
+                        .y =  0.5f,
+                        .z =  0.0f,
+                    },
+                    .color = {
+                        .x = 1,
+                        .y = 0,
+                        .z = 0,
+                        .w = 0,
+                    }
+                },
+            };
+
+            std::vector<uint32_t> indexes2 = { 0, 1, 2 };
+            std::vector<ShaderStruct::Vertex> vertices2 = {
+                ShaderStruct::Vertex {
+                    .position = {
+                        .x = -1.0f,
+                        .y = -1.0f,
+                        .z =  0.0f,
+                    },
+                    .color = {
+                        .x = 1,
+                        .y = 0,
+                        .z = 0,
+                        .w = 1,
+                    }
+                },
+                ShaderStruct::Vertex {
+                    .position = {
+                        .x =  1.0f,
+                        .y = -1.0f,
+                        .z =  0.0f,
+                    },
+                    .color = {
+                        .x = 0,
+                        .y = 1,
+                        .z = 0,
+                        .w = 1,
+                    }
+                },
+                ShaderStruct::Vertex {
+                    .position = {
+                        .x = 0.0f,
+                        .y = 1.0f,
+                        .z = 0.0f,
+                    },
+                    .color = {
+                        .x = 0,
+                        .y = 0,
+                        .z = 1,
+                        .w = 1,
+                    }
+                }
+            };
+
+            meshes.emplace_front(
+                logical_device,
+                graphics_queue,
+                imm_command_buffer,
+                imm_fence,
+                allocator,
+                indexes1,
+                vertices1
+            );
+
+            meshes.emplace_front(
+                logical_device,
+                graphics_queue,
+                imm_command_buffer,
+                imm_fence,
+                allocator,
+                indexes2,
+                vertices2
+            );
         }
 
         inline Context(const Context &) = delete;

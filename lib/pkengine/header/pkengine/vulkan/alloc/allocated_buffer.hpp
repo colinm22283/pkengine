@@ -21,23 +21,23 @@ namespace PKEngine::Vulkan::Alloc {
 
         VulkanAllocator & allocator;
 
-        std::size_t size;
+        std::size_t _size;
 
         VkBuffer buffer = VK_NULL_HANDLE;
         VmaAllocation allocation = VK_NULL_HANDLE;
-        VmaAllocationInfo info;
+        VmaAllocationInfo info = { };
 
     public:
-        inline AllocatedBuffer(VulkanAllocator & _allocator, std::size_t _size, VkBufferUsageFlags usage, VmaMemoryUsage memory_usage):
+        inline AllocatedBuffer(VulkanAllocator & _allocator, std::size_t _size_, VkBufferUsageFlags usage, VmaMemoryUsage memory_usage):
             allocator(_allocator),
-            size(_size) {
+            _size(_size_) {
             logger.debug() << "Allocating vulkan buffer";
 
             VkBufferCreateInfo bufferInfo = {
                 .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
                 .pNext = nullptr,
 
-                .size = size * sizeof(T),
+                .size = _size * sizeof(T),
 
                 .usage = usage,
             };
@@ -76,5 +76,6 @@ namespace PKEngine::Vulkan::Alloc {
         [[nodiscard]] constexpr const VkBuffer & handle() const noexcept { return buffer; }
 
         [[nodiscard]] inline void * get_mapped_data() const noexcept { return info.pMappedData; }
+        [[nodiscard]] constexpr const std::size_t & size() const noexcept { return _size; }
     };
 }

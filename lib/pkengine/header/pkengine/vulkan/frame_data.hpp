@@ -4,6 +4,7 @@
 #include <cmath>
 
 #include <pkengine/vulkan/mesh.hpp>
+#include <pkengine/vulkan/camera_data.hpp>
 
 #include <pkengine/vulkan/wrapper/swap_chain.hpp>
 #include <pkengine/vulkan/wrapper/command_pool.hpp>
@@ -25,13 +26,16 @@
 #include <pkengine/vulkan/util/transition_image.hpp>
 #include <pkengine/vulkan/util/copy_image.hpp>
 
+#include <render_config.hpp>
+
 namespace PKEngine::Vulkan {
     struct FrameData {
         Wrapper::SwapChain & swap_chain;
         Wrapper::CommandQueue & graphics_queue;
         Alloc::AllocatedImage & draw_image;
         Wrapper::GraphicsPipeline & draw_pipeline;
-        Mesh & triangle_mesh;
+        std::forward_list<Mesh> & meshes;
+        CameraData & camera_data;
 
         Wrapper::CommandPool command_pool;
         Wrapper::CommandBuffer command_buffer;
@@ -46,21 +50,28 @@ namespace PKEngine::Vulkan {
             Wrapper::GraphicsPipeline & _draw_pipeline,
             Wrapper::LogicalDevice & logical_device,
             Util::QueueFamilyIndices & queue_family_indices,
-            Mesh & _triangle_mesh
+            std::forward_list<Mesh> & _meshes,
+            CameraData & _camera_data
         ):
             swap_chain(_swap_chain),
             graphics_queue(_graphics_queue),
             draw_image(_draw_image),
             draw_pipeline(_draw_pipeline),
-            triangle_mesh(_triangle_mesh),
+            meshes(_meshes),
+            camera_data(_camera_data),
             command_pool(logical_device, queue_family_indices.graphics_family.value()),
             command_buffer(logical_device, command_pool),
             swapchain_semaphore(logical_device),
             render_semaphore(logical_device),
-            render_fence(logical_device) { }
+            render_fence(logical_device, true) { }
 
         inline void clear_background() const {
-            VkClearColorValue clear_value = { { 0.0f, 0.0f, 1.0f, 1.0f } };
+            VkClearColorValue clear_value = { {
+                Config::render_config.background_color.x,
+                Config::render_config.background_color.y,
+                Config::render_config.background_color.z,
+                Config::render_config.background_color.w
+            } };
             VkImageSubresourceRange clear_range = Struct::image_subresource_range(VK_IMAGE_ASPECT_COLOR_BIT);
 
             vkCmdClearColorImage(
@@ -100,25 +111,6 @@ namespace PKEngine::Vulkan {
                 draw_pipeline.handle()
             );
 
-            ShaderStruct::GraphicalPushConstants push_constants = {
-                .world_matrix = ShaderStruct::mat4_identity,
-                .vertex_buffer = triangle_mesh.vertex_buffer_address(),
-            };
-            vkCmdPushConstants(
-                command_buffer.handle(),
-                draw_pipeline.layout(),
-                VK_SHADER_STAGE_VERTEX_BIT,
-                0,
-                sizeof(ShaderStruct::GraphicalPushConstants),
-                &push_constants
-            );
-            vkCmdBindIndexBuffer(
-                command_buffer.handle(),
-                triangle_mesh.index_buffer().handle(),
-                0,
-                VK_INDEX_TYPE_UINT32
-            );
-
             VkViewport viewport = {
                 .x = 0,
                 .y = 0,
@@ -143,14 +135,35 @@ namespace PKEngine::Vulkan {
 
             vkCmdSetScissor(command_buffer.handle(), 0, 1, &scissor);
 
-            vkCmdDrawIndexed(
-                command_buffer.handle(),
-                6,
-                1,
-                0,
-                0,
-                0
-            );
+            for (Mesh & mesh : meshes) {
+                ShaderStruct::GraphicalPushConstants push_constants = {
+                    .world_matrix = camera_data.world_mat(),
+                    .vertex_buffer = mesh.vertex_buffer_address(),
+                };
+                vkCmdPushConstants(
+                    command_buffer.handle(),
+                    draw_pipeline.layout(),
+                    VK_SHADER_STAGE_VERTEX_BIT,
+                    0,
+                    sizeof(ShaderStruct::GraphicalPushConstants),
+                    &push_constants
+                );
+                vkCmdBindIndexBuffer(
+                    command_buffer.handle(),
+                    mesh.index_buffer().handle(),
+                    0,
+                    VK_INDEX_TYPE_UINT32
+                );
+
+                vkCmdDrawIndexed(
+                    command_buffer.handle(),
+                    mesh.index_buffer().size(),
+                    1,
+                    0,
+                    0,
+                    0
+                );
+            }
 
             vkCmdEndRendering(command_buffer.handle());
         }
