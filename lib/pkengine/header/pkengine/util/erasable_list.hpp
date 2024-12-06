@@ -7,7 +7,7 @@ namespace PKEngine::Util {
 /**
  * An erasable list
  *
- * Every item created will recieve a Deleter object which
+ * Every item created will receive a Deleter object which
  * will automatically delete the node upon leaving scope
  *
  * This class is move-only.
@@ -42,9 +42,10 @@ namespace PKEngine::Util {
             Type value;
 
         public:
-            DataNode(EmptyNode * _next, EmptyNode * _prev, Type && _value) :
+            template<typename... Args>
+            inline DataNode(EmptyNode * _next, EmptyNode * _prev, Args &&... args) :
                 EmptyNode(_next, _prev),
-                value(std::move(_value)) { }
+                value(std::forward<Args>(args)...) { }
         };
 
     public:
@@ -58,7 +59,7 @@ namespace PKEngine::Util {
             EmptyNode *
             node;
 
-            Iterator(EmptyNode * _node) :
+            inline explicit Iterator(EmptyNode * _node) :
                 node(_node) { }
 
         public:
@@ -118,7 +119,7 @@ namespace PKEngine::Util {
                 delete node;
             }
 
-            Eraser(DataNode * _node) :
+            inline explicit Eraser(DataNode * _node) :
                 node(_node) { }
 
             /**
@@ -141,11 +142,11 @@ namespace PKEngine::Util {
             root.prev->next = root.next;
         }
 
-        ErasableList(ErasableList && old) {
+        inline explicit ErasableList(ErasableList && old) {
             *this = std::move(old);
         }
 
-        ErasableList & operator=(ErasableList && old) {
+        inline ErasableList & operator=(ErasableList && old) noexcept {
             root.next = old.root.next;
             root.prev = old.root.prev;
             return *this;
@@ -159,7 +160,7 @@ namespace PKEngine::Util {
          */
         template<typename... Args>
         [[nodiscard]] Eraser emplace_front(Args && ... args) {
-            DataNode * node = new DataNode(root.next, &root, Type(std::forward<Args>(args)...));
+            DataNode * node = new DataNode(root.next, &root, std::forward<Args>(args)...);
             root.next->prev = node;
             root.next = node;
 

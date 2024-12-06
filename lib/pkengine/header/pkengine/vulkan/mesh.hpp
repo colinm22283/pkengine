@@ -96,6 +96,9 @@ namespace PKEngine::Vulkan {
             imm_fence.await();
         }
 
+        inline Mesh(const Mesh &) = delete;
+        inline Mesh(Mesh && other) noexcept = default;
+
         [[nodiscard]] constexpr const Alloc::AllocatedBuffer<uint32_t> & index_buffer() const noexcept { return _index_buffer; }
         [[nodiscard]] constexpr const Alloc::AllocatedBuffer<ShaderStruct::Vertex> & vertex_buffer() const noexcept { return _vertex_buffer; }
         [[nodiscard]] constexpr const VkDeviceAddress & vertex_buffer_address() const noexcept { return _vertex_buffer_address; }

@@ -73,6 +73,17 @@ namespace PKEngine::Vulkan::Alloc {
             }
         }
 
+        inline AllocatedBuffer(const AllocatedBuffer &) = delete;
+        inline AllocatedBuffer(AllocatedBuffer && other) noexcept:
+            allocator(other.allocator),
+            _size(other._size),
+            buffer(other.buffer),
+            allocation(other.allocation),
+            info(other.info) {
+            other.allocation = VK_NULL_HANDLE;
+            other.buffer = VK_NULL_HANDLE;
+        }
+
         [[nodiscard]] constexpr const VkBuffer & handle() const noexcept { return buffer; }
 
         [[nodiscard]] inline void * get_mapped_data() const noexcept { return info.pMappedData; }

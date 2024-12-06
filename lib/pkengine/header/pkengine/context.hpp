@@ -31,6 +31,7 @@
 #include <pkengine/vulkan/alloc/allocated_image.hpp>
 
 #include <pkengine/util/make_array.hpp>
+#include <pkengine/util/erasable_list.hpp>
 
 #include <render_config.hpp>
 
@@ -43,6 +44,9 @@ namespace PKEngine {
 
     class Context {
         friend class Engine;
+
+    public:
+        using MeshList = PKEngine::Util::ErasableList<Mesh>;
 
     protected:
         static constexpr auto logger = Logger<"Context">();
@@ -142,7 +146,7 @@ namespace PKEngine {
             .set_depth_format(VK_FORMAT_UNDEFINED)
             .build(logical_device);
 
-        std::forward_list<Mesh> meshes;
+        MeshList meshes;
         CameraData camera_data = CameraData(
             ShaderStruct::Vec3 {
                 .x = 0,
@@ -182,6 +186,124 @@ namespace PKEngine {
             frame.draw(draw_image_descriptor_set);
         }
 
+        std::vector<uint32_t> indexes1 = { 0, 1, 2, 1, 2, 3 };
+        std::vector<ShaderStruct::Vertex> vertices1 = {
+            ShaderStruct::Vertex {
+                .position = {
+                    .x = -0.5f,
+                    .y = -0.5f,
+                    .z =  0.0f,
+                },
+                .color = {
+                    .x = 1,
+                    .y = 0,
+                    .z = 0,
+                    .w = 1,
+                }
+            },
+            ShaderStruct::Vertex {
+                .position = {
+                    .x =  0.5f,
+                    .y = -0.5f,
+                    .z =  0.0f,
+                },
+                .color = {
+                    .x = 0,
+                    .y = 1,
+                    .z = 0,
+                    .w = 1,
+                }
+            },
+            ShaderStruct::Vertex {
+                .position = {
+                    .x = -0.5f,
+                    .y = 0.5f,
+                    .z = 0.0f,
+                },
+                .color = {
+                    .x = 0,
+                    .y = 0,
+                    .z = 1,
+                    .w = 1,
+                }
+            },
+            ShaderStruct::Vertex {
+                .position = {
+                    .x =  0.5f,
+                    .y =  0.5f,
+                    .z =  0.0f,
+                },
+                .color = {
+                    .x = 1,
+                    .y = 0,
+                    .z = 0,
+                    .w = 0,
+                }
+            },
+        };
+
+        std::vector<uint32_t> indexes2 = { 0, 1, 2 };
+        std::vector<ShaderStruct::Vertex> vertices2 = {
+            ShaderStruct::Vertex {
+                .position = {
+                    .x = -1.0f,
+                    .y = -1.0f,
+                    .z =  0.0f,
+                },
+                .color = {
+                    .x = 1,
+                    .y = 0,
+                    .z = 0,
+                    .w = 1,
+                }
+            },
+            ShaderStruct::Vertex {
+                .position = {
+                    .x =  1.0f,
+                    .y = -1.0f,
+                    .z =  0.0f,
+                },
+                .color = {
+                    .x = 0,
+                    .y = 1,
+                    .z = 0,
+                    .w = 1,
+                }
+            },
+            ShaderStruct::Vertex {
+                .position = {
+                    .x = 0.0f,
+                    .y = 1.0f,
+                    .z = 0.0f,
+                },
+                .color = {
+                    .x = 0,
+                    .y = 0,
+                    .z = 1,
+                    .w = 1,
+                }
+            }
+        };
+        MeshList::Eraser mesh1 = meshes.emplace_front(
+            logical_device,
+            graphics_queue,
+            imm_command_buffer,
+            imm_fence,
+            allocator,
+            indexes1,
+            vertices1
+        );
+
+        MeshList::Eraser mesh2 = meshes.emplace_front(
+            logical_device,
+            graphics_queue,
+            imm_command_buffer,
+            imm_fence,
+            allocator,
+            indexes2,
+            vertices2
+        );
+
     public:
         inline Context() {
 //            VkDescriptorImageInfo image_info {
@@ -201,125 +323,12 @@ namespace PKEngine {
 //            };
 //
 //            vkUpdateDescriptorSets(logical_device.handle(), 1, &draw_image_write, 0, nullptr);
+        }
 
-            std::vector<uint32_t> indexes1 = { 0, 1, 2, 1, 2, 3 };
-            std::vector<ShaderStruct::Vertex> vertices1 = {
-                ShaderStruct::Vertex {
-                    .position = {
-                        .x = -0.5f,
-                        .y = -0.5f,
-                        .z =  0.0f,
-                    },
-                    .color = {
-                        .x = 1,
-                        .y = 0,
-                        .z = 0,
-                        .w = 1,
-                    }
-                },
-                ShaderStruct::Vertex {
-                    .position = {
-                        .x =  0.5f,
-                        .y = -0.5f,
-                        .z =  0.0f,
-                    },
-                    .color = {
-                        .x = 0,
-                        .y = 1,
-                        .z = 0,
-                        .w = 1,
-                    }
-                },
-                ShaderStruct::Vertex {
-                    .position = {
-                        .x = -0.5f,
-                        .y = 0.5f,
-                        .z = 0.0f,
-                    },
-                    .color = {
-                        .x = 0,
-                        .y = 0,
-                        .z = 1,
-                        .w = 1,
-                    }
-                },
-                ShaderStruct::Vertex {
-                    .position = {
-                        .x =  0.5f,
-                        .y =  0.5f,
-                        .z =  0.0f,
-                    },
-                    .color = {
-                        .x = 1,
-                        .y = 0,
-                        .z = 0,
-                        .w = 0,
-                    }
-                },
-            };
-
-            std::vector<uint32_t> indexes2 = { 0, 1, 2 };
-            std::vector<ShaderStruct::Vertex> vertices2 = {
-                ShaderStruct::Vertex {
-                    .position = {
-                        .x = -1.0f,
-                        .y = -1.0f,
-                        .z =  0.0f,
-                    },
-                    .color = {
-                        .x = 1,
-                        .y = 0,
-                        .z = 0,
-                        .w = 1,
-                    }
-                },
-                ShaderStruct::Vertex {
-                    .position = {
-                        .x =  1.0f,
-                        .y = -1.0f,
-                        .z =  0.0f,
-                    },
-                    .color = {
-                        .x = 0,
-                        .y = 1,
-                        .z = 0,
-                        .w = 1,
-                    }
-                },
-                ShaderStruct::Vertex {
-                    .position = {
-                        .x = 0.0f,
-                        .y = 1.0f,
-                        .z = 0.0f,
-                    },
-                    .color = {
-                        .x = 0,
-                        .y = 0,
-                        .z = 1,
-                        .w = 1,
-                    }
-                }
-            };
-
-            meshes.emplace_front(
-                logical_device,
-                graphics_queue,
-                imm_command_buffer,
-                imm_fence,
-                allocator,
-                indexes1,
-                vertices1
-            );
-
-            meshes.emplace_front(
-                logical_device,
-                graphics_queue,
-                imm_command_buffer,
-                imm_fence,
-                allocator,
-                indexes2,
-                vertices2
-            );
+        inline ~Context() {
+            for (FrameData & frame : frames) {
+                frame.await_complete();
+            }
         }
 
         inline Context(const Context &) = delete;

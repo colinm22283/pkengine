@@ -26,6 +26,8 @@
 #include <pkengine/vulkan/util/transition_image.hpp>
 #include <pkengine/vulkan/util/copy_image.hpp>
 
+#include <pkengine/util/erasable_list.hpp>
+
 #include <render_config.hpp>
 
 namespace PKEngine::Vulkan {
@@ -34,7 +36,7 @@ namespace PKEngine::Vulkan {
         Wrapper::CommandQueue & graphics_queue;
         Alloc::AllocatedImage & draw_image;
         Wrapper::GraphicsPipeline & draw_pipeline;
-        std::forward_list<Mesh> & meshes;
+        PKEngine::Util::ErasableList<Mesh> & meshes;
         CameraData & camera_data;
 
         Wrapper::CommandPool command_pool;
@@ -50,7 +52,7 @@ namespace PKEngine::Vulkan {
             Wrapper::GraphicsPipeline & _draw_pipeline,
             Wrapper::LogicalDevice & logical_device,
             Util::QueueFamilyIndices & queue_family_indices,
-            std::forward_list<Mesh> & _meshes,
+            PKEngine::Util::ErasableList<Mesh> & _meshes,
             CameraData & _camera_data
         ):
             swap_chain(_swap_chain),
@@ -202,6 +204,10 @@ namespace PKEngine::Vulkan {
             graphics_queue.submit(command_buffer, swapchain_semaphore, render_semaphore, render_fence);
 
             swap_chain.present(graphics_queue, render_semaphore, swap_chain_image_index);
+        }
+
+        inline void await_complete() {
+            render_fence.await();
         }
     };
 }
