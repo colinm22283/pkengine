@@ -60,6 +60,17 @@ namespace PKEngine::Vulkan::Wrapper {
             other.command_buffer = VK_NULL_HANDLE;
         }
 
+        inline CommandBuffer & operator=(CommandBuffer && other) noexcept {
+            logical_device.wait_idle();
+            vkFreeCommandBuffers(logical_device.handle(), command_pool.handle(), 1, &command_buffer);
+
+            command_buffer = other.command_buffer;
+
+            other.command_buffer = VK_NULL_HANDLE;
+
+            return *this;
+        }
+
         [[nodiscard]] constexpr const VkCommandBuffer & handle() const noexcept { return command_buffer; }
 
         inline void reset() {

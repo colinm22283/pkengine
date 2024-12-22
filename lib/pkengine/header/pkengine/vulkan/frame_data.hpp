@@ -16,6 +16,7 @@
 #include <pkengine/vulkan/struct/rendering_info.hpp>
 #include <pkengine/vulkan/struct/rendering_attachment_info.hpp>
 #include <pkengine/vulkan/struct/image_subresource_range.hpp>
+#include <pkengine/vulkan/struct/depth_attachment_info.hpp>
 
 #include <pkengine/vulkan/wrapper/sync/semaphore.hpp>
 #include <pkengine/vulkan/wrapper/sync/fence.hpp>
@@ -34,7 +35,9 @@ namespace PKEngine::Vulkan {
     struct FrameData {
         Wrapper::SwapChain & swap_chain;
         Wrapper::CommandQueue & graphics_queue;
+        float & render_scale;
         Alloc::AllocatedImage & draw_image;
+        Alloc::AllocatedImage & depth_image;
         Wrapper::GraphicsPipeline & draw_pipeline;
         PKEngine::Util::ErasableList<Mesh> & meshes;
         CameraData & camera_data;
@@ -48,7 +51,9 @@ namespace PKEngine::Vulkan {
         inline FrameData(
             Wrapper::SwapChain & _swap_chain,
             Wrapper::CommandQueue & _graphics_queue,
+            float & _render_scale,
             Alloc::AllocatedImage & _draw_image,
+            Alloc::AllocatedImage & _depth_image,
             Wrapper::GraphicsPipeline & _draw_pipeline,
             Wrapper::LogicalDevice & logical_device,
             Util::QueueFamilyIndices & queue_family_indices,
@@ -57,7 +62,9 @@ namespace PKEngine::Vulkan {
         ):
             swap_chain(_swap_chain),
             graphics_queue(_graphics_queue),
+            render_scale(_render_scale),
             draw_image(_draw_image),
+            depth_image(_depth_image),
             draw_pipeline(_draw_pipeline),
             meshes(_meshes),
             camera_data(_camera_data),
@@ -66,6 +73,31 @@ namespace PKEngine::Vulkan {
             swapchain_semaphore(logical_device),
             render_semaphore(logical_device),
             render_fence(logical_device, true) { }
+
+        inline FrameData(FrameData && other) noexcept:
+            swap_chain(other.swap_chain),
+            graphics_queue(other.graphics_queue),
+            render_scale(other.render_scale),
+            draw_image(other.draw_image),
+            depth_image(other.depth_image),
+            draw_pipeline(other.draw_pipeline),
+            meshes(other.meshes),
+            camera_data(other.camera_data),
+            command_pool(std::move(other.command_pool)),
+            command_buffer(std::move(other.command_buffer)),
+            swapchain_semaphore(std::move(other.swapchain_semaphore)),
+            render_semaphore(std::move(other.render_semaphore)),
+            render_fence(std::move(other.render_fence)) { }
+
+        inline FrameData & operator=(FrameData && other) noexcept {
+            command_pool = std::move(other.command_pool);
+            command_buffer = std::move(other.command_buffer);
+            swapchain_semaphore = std::move(other.swapchain_semaphore);
+            render_semaphore = std::move(other.render_semaphore);
+            render_fence = std::move(other.render_fence);
+
+            return *this;
+        }
 
         inline void clear_background() const {
             VkClearColorValue clear_value = { {
@@ -88,19 +120,23 @@ namespace PKEngine::Vulkan {
 
         inline void draw_geometry() const {
             VkExtent2D draw_extent = {
-                .width = draw_image.extent().width,
-                .height = draw_image.extent().height,
+                .width = (uint32_t) ((float) std::min(swap_chain.image_extent().width, draw_image.extent().width) * render_scale),
+                .height = (uint32_t) ((float) std::min(swap_chain.image_extent().height, draw_image.extent().height) * render_scale),
             };
             VkRenderingAttachmentInfo color_attachment = Struct::rendering_attachment_info(
                 draw_image.view(),
                 nullptr,
                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
             );
+            VkRenderingAttachmentInfo depth_attachment = Struct::depth_attachment_info(
+                depth_image.view(),
+                VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL
+            );
 
             VkRenderingInfo renderInfo = Struct::rendering_info(
                 draw_extent,
                 &color_attachment,
-                nullptr
+                &depth_attachment
             );
             vkCmdBeginRendering(
                 command_buffer.handle(),
@@ -116,8 +152,8 @@ namespace PKEngine::Vulkan {
             VkViewport viewport = {
                 .x = 0,
                 .y = 0,
-                .width = (float) draw_image.extent().width,
-                .height = (float) draw_image.extent().height,
+                .width = (float) draw_extent.width,
+                .height = (float) draw_extent.height,
                 .minDepth = 0.f,
                 .maxDepth = 1.f,
             };
@@ -130,8 +166,8 @@ namespace PKEngine::Vulkan {
                     .y = 0,
                 },
                 .extent = {
-                    .width = draw_image.extent().width,
-                    .height = draw_image.extent().height,
+                    .width = draw_extent.width,
+                    .height = draw_extent.height,
                 },
             };
 
@@ -140,7 +176,7 @@ namespace PKEngine::Vulkan {
             for (Mesh & mesh : meshes) {
                 ShaderStruct::GraphicalPushConstants push_constants = {
                     .world_matrix = camera_data.world_mat(),
-                    .vertex_buffer = mesh.vertex_buffer_address(),
+                    .vertex_buffer = mesh.mesh_buffer().vertex_buffer_address(),
                 };
                 vkCmdPushConstants(
                     command_buffer.handle(),
@@ -150,21 +186,24 @@ namespace PKEngine::Vulkan {
                     sizeof(ShaderStruct::GraphicalPushConstants),
                     &push_constants
                 );
+
                 vkCmdBindIndexBuffer(
                     command_buffer.handle(),
-                    mesh.index_buffer().handle(),
+                    mesh.mesh_buffer().index_buffer().handle(),
                     0,
                     VK_INDEX_TYPE_UINT32
                 );
 
-                vkCmdDrawIndexed(
-                    command_buffer.handle(),
-                    mesh.index_buffer().size(),
-                    1,
-                    0,
-                    0,
-                    0
-                );
+                for (const Mesh::SubmeshRange & submesh_range : mesh.submesh_ranges()) {
+                    vkCmdDrawIndexed(
+                        command_buffer.handle(),
+                        submesh_range.count,
+                        1,
+                        submesh_range.start_index,
+                        0,
+                        0
+                    );
+                }
             }
 
             vkCmdEndRendering(command_buffer.handle());
@@ -183,6 +222,7 @@ namespace PKEngine::Vulkan {
             clear_background();
 
             Util::transition_image(command_buffer, draw_image.handle(), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+            Util::transition_image(command_buffer, depth_image.handle(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
 
             draw_geometry();
 

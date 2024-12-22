@@ -96,7 +96,7 @@ namespace PKEngine::Vulkan::Util {
 
         [[nodiscard]] inline VkPresentModeKHR choose_present_mode() const noexcept {
             for (const auto & available_present_mode : _present_modes) {
-                if (available_present_mode == VK_PRESENT_MODE_MAILBOX_KHR) {
+                if (available_present_mode == VK_PRESENT_MODE_MAILBOX_KHR) { // TODO: maybe switch back to MODE_MAILBOX_KHR
                     return available_present_mode;
                 }
             }
@@ -105,29 +105,35 @@ namespace PKEngine::Vulkan::Util {
         }
 
         [[nodiscard]] inline VkExtent2D choose_swap_extent(GLFW::Window & window) const noexcept {
-            if (_capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
-                return _capabilities.currentExtent;
-            } else {
-                int width, height;
-                glfwGetFramebufferSize(window.handle(), &width, &height);
+            return {
+                .width = (uint32_t) window.width(),
+                .height = (uint32_t) window.height(),
+            };
 
-                VkExtent2D actualExtent = {
-                    static_cast<uint32_t>(width),
-                    static_cast<uint32_t>(height)
-                };
-
-                actualExtent.width = std::clamp(
-                    actualExtent.width,
-                    _capabilities.minImageExtent.width,
-                    _capabilities.maxImageExtent.width
-                );
-                actualExtent.height = std::clamp(
-                    actualExtent.height,
-                    _capabilities.minImageExtent.height,
-                    _capabilities.maxImageExtent.height);
-
-                return actualExtent;
-            }
+//            if (_capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
+//                return _capabilities.currentExtent;
+//            } else {
+//                int width, height;
+//                glfwGetFramebufferSize(window.handle(), &width, &height);
+//
+//                VkExtent2D actualExtent = {
+//                    static_cast<uint32_t>(width),
+//                    static_cast<uint32_t>(height)
+//                };
+//
+//                actualExtent.width = std::clamp(
+//                    actualExtent.width,
+//                    _capabilities.minImageExtent.width,
+//                    _capabilities.maxImageExtent.width
+//                );
+//                actualExtent.height = std::clamp(
+//                    actualExtent.height,
+//                    _capabilities.minImageExtent.height,
+//                    _capabilities.maxImageExtent.height
+//                );
+//
+//                return actualExtent;
+//            }
         }
     };
 }

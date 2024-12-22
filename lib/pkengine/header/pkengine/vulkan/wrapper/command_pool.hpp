@@ -57,6 +57,16 @@ namespace PKEngine::Vulkan::Wrapper {
             other.command_pool = VK_NULL_HANDLE;
         }
 
+        inline CommandPool & operator=(CommandPool && other) noexcept {
+            vkDestroyCommandPool(logical_device.handle(), command_pool, nullptr);
+
+            command_pool = other.command_pool;
+
+            other.command_pool = VK_NULL_HANDLE;
+
+            return *this;
+        }
+
         [[nodiscard]] constexpr const VkCommandPool & handle() const noexcept { return command_pool; }
     };
 }

@@ -69,6 +69,18 @@ namespace PKEngine::Vulkan::Wrapper {
             logger.debug() << "Image view destroyed";
         }
 
+        inline ImageViews & operator=(ImageViews && other) noexcept {
+            for (VkImageView & image_view : image_views) {
+                vkDestroyImageView(logical_device.handle(), image_view, nullptr);
+            }
+
+            image_views = std::move(other.image_views);
+
+            for (VkImageView & image_view : other.image_views) image_view = nullptr;
+
+            return *this;
+        }
+
         [[nodiscard]] constexpr const VkImageView & handle(std::size_t index) const noexcept { return image_views[index]; }
     };
 }

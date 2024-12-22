@@ -82,6 +82,10 @@ namespace PKEngine::Vulkan::Wrapper {
             }
         }
 
+        inline void wait_idle() {
+            vkDeviceWaitIdle(logical_device);
+        }
+
         inline LogicalDevice(const LogicalDevice &) = delete;
         inline LogicalDevice(LogicalDevice && other) noexcept:
             logical_device(other.logical_device) {

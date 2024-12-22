@@ -53,6 +53,17 @@ namespace PKEngine::Vulkan::Wrapper::Sync {
             other.fence = VK_NULL_HANDLE;
         }
 
+        inline Fence & operator=(Fence && other) noexcept {
+            await();
+            vkDestroyFence(logical_device.handle(), fence, nullptr);
+
+            fence = other.fence;
+
+            other.fence = VK_NULL_HANDLE;
+
+            return *this;
+        }
+
         [[nodiscard]] constexpr const VkFence & handle() const noexcept { return fence; }
 
         inline void await() {

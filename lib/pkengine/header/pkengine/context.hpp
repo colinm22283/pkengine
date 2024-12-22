@@ -51,6 +51,11 @@ namespace PKEngine {
     protected:
         static constexpr auto logger = Logger<"Context">();
 
+        volatile struct {
+            bool ready = false;
+            int target_width = 0, target_height = 0;
+        } resize_info;
+
         GLFW::Window window;
 
         VulkanInstance vulkan_instance;
@@ -83,6 +88,7 @@ namespace PKEngine {
 
         Alloc::VulkanAllocator allocator = Alloc::VulkanAllocator(vulkan_instance, physical_device, logical_device);
 
+        float render_scale = 1.0f;
         Alloc::AllocatedImage draw_image = Alloc::AllocatedImage(
             logical_device,
             allocator,
@@ -99,7 +105,18 @@ namespace PKEngine {
                 VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
             ),
             VMA_MEMORY_USAGE_GPU_ONLY,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            VK_IMAGE_ASPECT_COLOR_BIT
+        );
+        Alloc::AllocatedImage depth_image = Alloc::AllocatedImage(
+            logical_device,
+            allocator,
+            VK_FORMAT_D32_SFLOAT,
+            draw_image.extent(),
+            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+            VMA_MEMORY_USAGE_GPU_ONLY,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            VK_IMAGE_ASPECT_DEPTH_BIT
         );
 
         DescriptorPool global_descriptor_pool = DescriptorPool(
@@ -140,10 +157,10 @@ namespace PKEngine {
             .set_polygon_mode(VK_POLYGON_MODE_FILL)
             .set_cull_mode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE)
             .set_multisampling_none()
-            .disable_blending()
-            .disable_depthtest()
+            .enable_blending_alphablend()
+            .enable_depthtest(true, VK_COMPARE_OP_LESS_OR_EQUAL)
             .set_color_attachment_format(draw_image.format())
-            .set_depth_format(VK_FORMAT_UNDEFINED)
+            .set_depth_format(depth_image.format())
             .build(logical_device);
 
         MeshList meshes;
@@ -151,7 +168,7 @@ namespace PKEngine {
             ShaderStruct::Vec3 {
                 .x = 0,
                 .y = 0,
-                .z = -5
+                .z = 5
             },
             PKEngine::Math::deg_to_rad(70.0f),
             (float) draw_image.extent().width / (float) draw_image.extent().height,
@@ -164,7 +181,9 @@ namespace PKEngine {
             make_array<FrameData, Config::render_config.max_frames_in_flight>(
                 swap_chain,
                 graphics_queue,
+                render_scale,
                 draw_image,
+                depth_image,
                 graphics_pipeline,
                 logical_device,
                 queue_family_indices,
@@ -181,10 +200,19 @@ namespace PKEngine {
         }
 
         inline void update() {
+            if (resize_info.ready) {
+                resize_info.ready = false;
+
+                swap_chain.resize_window(resize_info.target_width, resize_info.target_height);
+            }
+
             FrameData & frame = next_frame();
 
             frame.draw(draw_image_descriptor_set);
         }
+
+        static constexpr float z1 = -1.0f;
+        static constexpr float z2 = -0.f;
 
         std::vector<uint32_t> indexes1 = { 0, 1, 2, 1, 2, 3 };
         std::vector<ShaderStruct::Vertex> vertices1 = {
@@ -192,7 +220,7 @@ namespace PKEngine {
                 .position = {
                     .x = -0.5f,
                     .y = -0.5f,
-                    .z =  0.0f,
+                    .z =  z1,
                 },
                 .color = {
                     .x = 1,
@@ -205,7 +233,7 @@ namespace PKEngine {
                 .position = {
                     .x =  0.5f,
                     .y = -0.5f,
-                    .z =  0.0f,
+                    .z =  z1,
                 },
                 .color = {
                     .x = 0,
@@ -218,7 +246,7 @@ namespace PKEngine {
                 .position = {
                     .x = -0.5f,
                     .y = 0.5f,
-                    .z = 0.0f,
+                    .z = z1,
                 },
                 .color = {
                     .x = 0,
@@ -231,15 +259,18 @@ namespace PKEngine {
                 .position = {
                     .x =  0.5f,
                     .y =  0.5f,
-                    .z =  0.0f,
+                    .z =  z1,
                 },
                 .color = {
                     .x = 1,
                     .y = 0,
                     .z = 0,
-                    .w = 0,
+                    .w = 1,
                 }
             },
+        };
+        std::vector<Mesh::SubmeshRange> submesh_ranges1 = {
+            Mesh::SubmeshRange { 0, (uint32_t) indexes1.size(), },
         };
 
         std::vector<uint32_t> indexes2 = { 0, 1, 2 };
@@ -248,41 +279,44 @@ namespace PKEngine {
                 .position = {
                     .x = -1.0f,
                     .y = -1.0f,
-                    .z =  0.0f,
+                    .z =  z2,
                 },
                 .color = {
                     .x = 1,
                     .y = 0,
                     .z = 0,
-                    .w = 1,
+                    .w = 0.2,
                 }
             },
             ShaderStruct::Vertex {
                 .position = {
                     .x =  1.0f,
                     .y = -1.0f,
-                    .z =  0.0f,
+                    .z =  z2,
                 },
                 .color = {
                     .x = 0,
                     .y = 1,
                     .z = 0,
-                    .w = 1,
+                    .w = 0.2,
                 }
             },
             ShaderStruct::Vertex {
                 .position = {
                     .x = 0.0f,
                     .y = 1.0f,
-                    .z = 0.0f,
+                    .z = z2,
                 },
                 .color = {
                     .x = 0,
                     .y = 0,
                     .z = 1,
-                    .w = 1,
+                    .w = 0.2,
                 }
             }
+        };
+        std::vector<Mesh::SubmeshRange> submesh_ranges2 = {
+            Mesh::SubmeshRange { 0, (uint32_t) indexes2.size(), },
         };
         MeshList::Eraser mesh1 = meshes.emplace_front(
             logical_device,
@@ -291,7 +325,8 @@ namespace PKEngine {
             imm_fence,
             allocator,
             indexes1,
-            vertices1
+            vertices1,
+            submesh_ranges1
         );
 
         MeshList::Eraser mesh2 = meshes.emplace_front(
@@ -301,7 +336,8 @@ namespace PKEngine {
             imm_fence,
             allocator,
             indexes2,
-            vertices2
+            vertices2,
+            submesh_ranges2
         );
 
     public:
@@ -340,6 +376,12 @@ namespace PKEngine {
 
         [[nodiscard]] inline bool should_exit() const noexcept {
             return window.should_close();
+        }
+
+        inline void resize_window(int width, int height) {
+            resize_info.target_width = width;
+            resize_info.target_height = height;
+            resize_info.ready = true;
         }
     };
 }

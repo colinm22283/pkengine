@@ -9,8 +9,8 @@ namespace PKEngine::Config {
             .version = 0.1,
         },
         .window = {
-            .title = "PKEngine Template Project",
-            .width = 800,
+            .title  = "PKEngine Template Project",
+            .width  = 800,
             .height = 800,
         }
     };

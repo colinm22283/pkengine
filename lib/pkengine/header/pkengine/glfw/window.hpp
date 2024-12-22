@@ -70,19 +70,21 @@ namespace PKEngine::GLFW {
                 glfwSetWindowTitle(window, _title.c_str());
             }
         }
+
+        [[nodiscard]] inline bool should_close() const noexcept {
+            return glfwWindowShouldClose(window);
+        }
+        inline void close() noexcept {
+            glfwSetWindowShouldClose(window, GLFW_TRUE);
+        }
+
         inline void resize(int __width, int __height) noexcept {
             if (window != nullptr) {
                 _width = __width;
                 _height = __height;
                 glfwSetWindowSize(window, _width, _height);
+                glfwWaitEvents();
             }
-        }
-
-        inline bool should_close() const noexcept {
-            return glfwWindowShouldClose(window);
-        }
-        inline void close() noexcept {
-            glfwSetWindowShouldClose(window, GLFW_TRUE);
         }
     };
 }

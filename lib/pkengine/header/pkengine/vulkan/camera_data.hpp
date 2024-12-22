@@ -19,7 +19,7 @@ namespace PKEngine::Vulkan {
         }
 
         [[nodiscard]] inline ShaderStruct::Mat4 world_mat() const {
-            return perspective * ShaderStruct::mat4_translation(position);
+            return perspective * ShaderStruct::mat4_translation(-position);
         }
     };
 }

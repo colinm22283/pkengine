@@ -17,8 +17,11 @@
 #include <pkengine/vulkan/util/queue_family_indices.hpp>
 #include <pkengine/vulkan/util/vulkan_exception.hpp>
 
+namespace PKEngine { class Context; }
+
 namespace PKEngine::Vulkan::Wrapper {
     class SwapChain {
+        friend class PKEngine::Context;
     public:
         struct Exceptions {
             PKENGINE_DEFINE_VULKAN_EXCEPTION(InitError, "Unable to initialize swap chain");
@@ -29,25 +32,19 @@ namespace PKEngine::Vulkan::Wrapper {
     protected:
         static constexpr auto logger = Logger<"Swap Chain">();
 
+        GLFW::Window & window;
+        PhysicalDevice & physical_device;
         LogicalDevice & logical_device;
+        Surface & surface;
+        Util::QueueFamilyIndices & queue_family_indices;
 
         VkSwapchainKHR swap_chain = VK_NULL_HANDLE;
 
         std::vector<VkImage> _images;
-        VkFormat _image_format;
-        VkExtent2D _extent;
+        VkFormat _image_format = VK_FORMAT_UNDEFINED;
+        VkExtent2D _extent = { };
 
-    public:
-        using SwapChainIndex = uint32_t;
-
-        inline SwapChain(
-            GLFW::Window & window,
-            PhysicalDevice & physical_device,
-            LogicalDevice & _logical_device,
-            Surface & surface,
-            Util::QueueFamilyIndices & queue_family_indices
-        ):
-            logical_device(_logical_device) {
+        inline void init() {
             logger.debug() << "Initializing swap chain...";
 
             auto indented_logger = logger.indent();
@@ -58,6 +55,8 @@ namespace PKEngine::Vulkan::Wrapper {
             const VkPresentModeKHR & present_mode = swap_chain_support.choose_present_mode();
             _extent = swap_chain_support.choose_swap_extent(window);
 
+            logger.status() << "WINDOW: " << _extent.width << ", " << _extent.height;
+
             uint32_t image_count = swap_chain_support.capabilities().minImageCount + 1;
             if (swap_chain_support.capabilities().maxImageCount > 0 && image_count > swap_chain_support.capabilities().maxImageCount) {
                 image_count = swap_chain_support.capabilities().maxImageCount;
@@ -67,6 +66,9 @@ namespace PKEngine::Vulkan::Wrapper {
 
             VkSwapchainCreateInfoKHR create_info {
                 .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+
+                .pNext = nullptr,
+
                 .surface = surface.handle(),
                 .minImageCount = image_count,
                 .imageFormat = surface_format.format,
@@ -109,6 +111,34 @@ namespace PKEngine::Vulkan::Wrapper {
             logger.debug() << "Swap chain initialized";
         }
 
+        inline void resize_window(int width, int height) {
+            logical_device.wait_idle();
+
+            vkDestroySwapchainKHR(logical_device.handle(), swap_chain, nullptr);
+
+            window.resize(width, height);
+
+            init();
+        }
+
+    public:
+        using SwapChainIndex = uint32_t;
+
+        inline SwapChain(
+            GLFW::Window & _window,
+            PhysicalDevice & _physical_device,
+            LogicalDevice & _logical_device,
+            Surface & _surface,
+            Util::QueueFamilyIndices & _queue_family_indices
+        ):
+            window(_window),
+            physical_device(_physical_device),
+            logical_device(_logical_device),
+            surface(_surface),
+            queue_family_indices(_queue_family_indices) {
+            init();
+        }
+
         inline ~SwapChain() {
             if (swap_chain != VK_NULL_HANDLE) {
                 logger.debug() << "Destroying swap chain...";
@@ -121,7 +151,11 @@ namespace PKEngine::Vulkan::Wrapper {
 
         inline SwapChain(const SwapChain &) = delete;
         inline SwapChain(SwapChain && other) noexcept:
+            window(other.window),
+            physical_device(other.physical_device),
             logical_device(other.logical_device),
+            surface(other.surface),
+            queue_family_indices(other.queue_family_indices),
             swap_chain(other.swap_chain),
             _images(std::move(other._images)),
             _image_format(other._image_format),
@@ -129,6 +163,17 @@ namespace PKEngine::Vulkan::Wrapper {
                 other.swap_chain = VK_NULL_HANDLE;
             }
 
+        inline SwapChain & operator=(SwapChain && other) noexcept {
+            vkDestroySwapchainKHR(logical_device.handle(), swap_chain, nullptr);
+
+            swap_chain = other.swap_chain;
+            _images = std::move(other._images);
+            _image_format = other._image_format;
+            _extent = other._extent;
+            other.swap_chain = VK_NULL_HANDLE;
+
+            return *this;
+        }
 
 
         [[nodiscard]] constexpr const VkSwapchainKHR & handle() const noexcept { return swap_chain; }
@@ -138,16 +183,20 @@ namespace PKEngine::Vulkan::Wrapper {
 
         [[nodiscard]] inline SwapChainIndex next_image_index(Sync::Semaphore & image_available_semaphore) {
             SwapChainIndex index;
-            Util::throw_on_fail<Exceptions::GetNextImageError>(
-                vkAcquireNextImageKHR(
-                    logical_device.handle(),
-                    swap_chain,
-                    UINT64_MAX,
-                    image_available_semaphore.handle(),
-                    VK_NULL_HANDLE,
-                    &index
-                )
+            VkResult result = vkAcquireNextImageKHR(
+                logical_device.handle(),
+                swap_chain,
+                UINT64_MAX,
+                image_available_semaphore.handle(),
+                VK_NULL_HANDLE,
+                &index
             );
+
+            if (result == VK_SUBOPTIMAL_KHR) {
+                logger.warning() << "Suboptimal KHR encountered during next image fetch";
+            }
+            else Util::throw_on_fail<Exceptions::GetNextImageError>(result);
+
             return index;
         }
 
@@ -162,9 +211,12 @@ namespace PKEngine::Vulkan::Wrapper {
                 .pResults = nullptr,
             };
 
-            Util::throw_on_fail<Exceptions::PresentQueueError>(
-                vkQueuePresentKHR(device_queue.handle(), &present_info)
-            );
+            VkResult result = vkQueuePresentKHR(device_queue.handle(), &present_info);
+
+            if (result == VK_SUBOPTIMAL_KHR) {
+                logger.warning() << "Suboptimal KHR encountered during present";
+            }
+            else Util::throw_on_fail<Exceptions::PresentQueueError>(result);
         }
     };
 }

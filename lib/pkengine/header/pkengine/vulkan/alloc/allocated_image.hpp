@@ -38,7 +38,8 @@ namespace PKEngine::Vulkan::Alloc {
             VkExtent3D _image_extent,
             VkImageUsageFlags image_usage_flags,
             VmaMemoryUsage memory_usage,
-            VkMemoryPropertyFlags memory_properties
+            VkMemoryPropertyFlags memory_properties,
+            VkImageAspectFlags image_aspect
         ):
             logical_device(_logical_device),
             allocator(_allocator),
@@ -62,7 +63,7 @@ namespace PKEngine::Vulkan::Alloc {
             VkImageViewCreateInfo image_view_info = Struct::image_view_create_info(
                 image_format,
                 image,
-                VK_IMAGE_ASPECT_COLOR_BIT
+                image_aspect
             );
 
             vkCreateImageView(logical_device.handle(), &image_view_info, nullptr, &image_view);

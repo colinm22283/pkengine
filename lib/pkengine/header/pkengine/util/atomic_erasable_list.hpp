@@ -1,8 +1,1 @@
-//
-// Created by colin on 12/6/24.
-//
-
-#ifndef PKENGINE_ATOMIC_ERASABLE_LIST_HPP
-#define PKENGINE_ATOMIC_ERASABLE_LIST_HPP
-
-#endif //PKENGINE_ATOMIC_ERASABLE_LIST_HPP
+#pragma once

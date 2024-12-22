@@ -51,7 +51,7 @@ namespace PKEngine::Vulkan::ShaderStruct {
                     values[1], values[5], values[9],  values[13],
                     values[2], values[6], values[10], values[14],
                     values[3], values[7], values[11], values[15],
-                }
+                },
             };
         }
     };
@@ -93,7 +93,7 @@ namespace PKEngine::Vulkan::ShaderStruct {
         return Mat4 {
             .values = {
                 1.0f / (aspect * std::tan(fov / 2.0f)), 0, 0, 0,
-                0, 1.0f / std::tan(fov / 2.0f), 0, 0,
+                0, -1.0f / std::tan(fov / 2.0f), 0, 0,
                 0, 0, -(far + near) / (far - near), -(2 * far * near) / (far - near),
                 0, 0, -1, 0,
             },
