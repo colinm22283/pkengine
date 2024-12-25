@@ -27,6 +27,8 @@ namespace PKEngine::Vulkan::Wrapper {
             PKENGINE_DEFINE_VULKAN_EXCEPTION(InitError, "Unable to initialize swap chain");
             PKENGINE_DEFINE_VULKAN_EXCEPTION(GetNextImageError, "Unable to get next swap chain image");
             PKENGINE_DEFINE_VULKAN_EXCEPTION(PresentQueueError, "Unable to present swap chain queue");
+
+            PKENGINE_DEFINE_VULKAN_EXCEPTION(OutOfDateError, "The current swapchain is out of date");
         };
 
     protected:
@@ -55,14 +57,12 @@ namespace PKEngine::Vulkan::Wrapper {
             const VkPresentModeKHR & present_mode = swap_chain_support.choose_present_mode();
             _extent = swap_chain_support.choose_swap_extent(window);
 
-            logger.status() << "WINDOW: " << _extent.width << ", " << _extent.height;
+            indented_logger.debug() << "Initializing swapchain for context of size: " << _extent.width << "px by " << _extent.height << "px";
 
             uint32_t image_count = swap_chain_support.capabilities().minImageCount + 1;
             if (swap_chain_support.capabilities().maxImageCount > 0 && image_count > swap_chain_support.capabilities().maxImageCount) {
                 image_count = swap_chain_support.capabilities().maxImageCount;
             }
-
-            indented_logger.debug() << "Image count: " << image_count;
 
             VkSwapchainCreateInfoKHR create_info {
                 .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
@@ -111,13 +111,10 @@ namespace PKEngine::Vulkan::Wrapper {
             logger.debug() << "Swap chain initialized";
         }
 
-        inline void resize_window(int width, int height) {
+        inline void reset() {
             logical_device.wait_idle();
 
             vkDestroySwapchainKHR(logical_device.handle(), swap_chain, nullptr);
-
-            window.resize(width, height);
-
             init();
         }
 
@@ -192,8 +189,8 @@ namespace PKEngine::Vulkan::Wrapper {
                 &index
             );
 
-            if (result == VK_SUBOPTIMAL_KHR) {
-                logger.warning() << "Suboptimal KHR encountered during next image fetch";
+            if (result == VK_SUBOPTIMAL_KHR || result == VK_ERROR_OUT_OF_DATE_KHR) {
+                throw Exceptions::OutOfDateError(result);
             }
             else Util::throw_on_fail<Exceptions::GetNextImageError>(result);
 
@@ -213,8 +210,8 @@ namespace PKEngine::Vulkan::Wrapper {
 
             VkResult result = vkQueuePresentKHR(device_queue.handle(), &present_info);
 
-            if (result == VK_SUBOPTIMAL_KHR) {
-                logger.warning() << "Suboptimal KHR encountered during present";
+            if (result == VK_SUBOPTIMAL_KHR || result == VK_ERROR_OUT_OF_DATE_KHR) {
+                throw Exceptions::OutOfDateError(result);
             }
             else Util::throw_on_fail<Exceptions::PresentQueueError>(result);
         }

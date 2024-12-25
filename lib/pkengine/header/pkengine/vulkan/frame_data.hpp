@@ -228,16 +228,20 @@ namespace PKEngine::Vulkan {
 
             uint32_t swap_chain_image_index = swap_chain.next_image_index(swapchain_semaphore);
 
-            Util::transition_image(command_buffer, draw_image.handle(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-            Util::transition_image(command_buffer, swap_chain.images()[swap_chain_image_index], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+            Util::transition_image(command_buffer, draw_image.handle(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                   VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+            Util::transition_image(command_buffer, swap_chain.images()[swap_chain_image_index],
+                                   VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
             VkExtent2D draw_extent = {
                 .width = draw_image.extent().width,
                 .height = draw_image.extent().height,
             };
-            Util::copy_image(command_buffer, draw_image.handle(), swap_chain.images()[swap_chain_image_index], draw_extent, swap_chain.image_extent());
+            Util::copy_image(command_buffer, draw_image.handle(), swap_chain.images()[swap_chain_image_index],
+                             draw_extent, swap_chain.image_extent());
 
-            Util::transition_image(command_buffer, swap_chain.images()[swap_chain_image_index], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+            Util::transition_image(command_buffer, swap_chain.images()[swap_chain_image_index],
+                                   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
             command_buffer.end();
 

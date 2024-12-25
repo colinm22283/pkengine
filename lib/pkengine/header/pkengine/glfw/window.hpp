@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_map>
+
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
@@ -24,6 +26,13 @@ namespace PKEngine::GLFW {
         int _width, _height;
         std::string _title;
 
+        static inline void framebuffer_resize_cb(GLFWwindow * glfw_window, int width, int height) {
+            Window & window = *(Window *) glfwGetWindowUserPointer(glfw_window);
+
+            window._width = width;
+            window._height = height;
+        }
+
     public:
         inline Window():
             window(nullptr),
@@ -33,11 +42,15 @@ namespace PKEngine::GLFW {
             logger.debug() << "Initializing window...";
 
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-            glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+            glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
             window = glfwCreateWindow(_width, _height, _title.c_str(), nullptr, nullptr);
 
             if (window == nullptr) throw Exceptions::InitFailed();
+
+            glfwSetWindowUserPointer(window, this);
+
+            glfwSetFramebufferSizeCallback(window, framebuffer_resize_cb);
 
             logger.debug() << "Window initialized";
         }

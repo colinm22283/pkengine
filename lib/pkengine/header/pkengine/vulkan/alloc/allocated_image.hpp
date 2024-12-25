@@ -81,6 +81,21 @@ namespace PKEngine::Vulkan::Alloc {
                 logger.debug() << "Vulkan image deallocated";
             }
         }
+        inline AllocatedImage & operator=(AllocatedImage && other) {
+            vkDestroyImageView(logical_device.handle(), image_view, nullptr);
+            vmaDestroyImage(allocator.handle(), image, allocation);
+
+            image_format = other.image_format;
+            image_extent = other.image_extent;
+            image = other.image;
+            image_view = other.image_view;
+            allocation = other.allocation;
+
+            other.image_view = VK_NULL_HANDLE;
+            other.image = VK_NULL_HANDLE;
+
+            return *this;
+        }
 
         [[nodiscard]] inline const VkImage & handle() const noexcept { return image; }
         [[nodiscard]] inline const VkExtent3D & extent() const noexcept { return image_extent; }
