@@ -35,7 +35,6 @@ namespace PKEngine::Vulkan {
     struct FrameData {
         Wrapper::SwapChain & swap_chain;
         Wrapper::CommandQueue & graphics_queue;
-        float & render_scale;
         Alloc::AllocatedImage & draw_image;
         Alloc::AllocatedImage & depth_image;
         Wrapper::GraphicsPipeline & draw_pipeline;
@@ -51,7 +50,6 @@ namespace PKEngine::Vulkan {
         inline FrameData(
             Wrapper::SwapChain & _swap_chain,
             Wrapper::CommandQueue & _graphics_queue,
-            float & _render_scale,
             Alloc::AllocatedImage & _draw_image,
             Alloc::AllocatedImage & _depth_image,
             Wrapper::GraphicsPipeline & _draw_pipeline,
@@ -62,7 +60,6 @@ namespace PKEngine::Vulkan {
         ):
             swap_chain(_swap_chain),
             graphics_queue(_graphics_queue),
-            render_scale(_render_scale),
             draw_image(_draw_image),
             depth_image(_depth_image),
             draw_pipeline(_draw_pipeline),
@@ -77,7 +74,6 @@ namespace PKEngine::Vulkan {
         inline FrameData(FrameData && other) noexcept:
             swap_chain(other.swap_chain),
             graphics_queue(other.graphics_queue),
-            render_scale(other.render_scale),
             draw_image(other.draw_image),
             depth_image(other.depth_image),
             draw_pipeline(other.draw_pipeline),
@@ -120,8 +116,8 @@ namespace PKEngine::Vulkan {
 
         inline void draw_geometry() const {
             VkExtent2D draw_extent = {
-                .width = (uint32_t) ((float) std::min(swap_chain.image_extent().width, draw_image.extent().width) * render_scale),
-                .height = (uint32_t) ((float) std::min(swap_chain.image_extent().height, draw_image.extent().height) * render_scale),
+                .width = (uint32_t) draw_image.extent().width,
+                .height = (uint32_t) draw_image.extent().height,
             };
             VkRenderingAttachmentInfo color_attachment = Struct::rendering_attachment_info(
                 draw_image.view(),
@@ -209,9 +205,7 @@ namespace PKEngine::Vulkan {
             vkCmdEndRendering(command_buffer.handle());
         }
 
-        inline void draw(
-            Wrapper::DescriptorSet & draw_descriptor_set
-        ) {
+        inline void draw() {
             render_fence.await();
             render_fence.reset();
 

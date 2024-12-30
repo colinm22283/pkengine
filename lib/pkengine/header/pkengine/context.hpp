@@ -11,6 +11,7 @@
 #include <pkengine/vulkan/frame_data.hpp>
 #include <pkengine/vulkan/mesh.hpp>
 #include <pkengine/vulkan/camera_data.hpp>
+#include <pkengine/vulkan/descriptor_allocator.hpp>
 
 #include <pkengine/vulkan/wrapper/vulkan_instance.hpp>
 #include <pkengine/vulkan/wrapper/surface.hpp>
@@ -51,11 +52,6 @@ namespace PKEngine {
     protected:
         static constexpr auto logger = Logger<"Context">();
 
-        volatile struct {
-            bool ready = false;
-            int target_width = 0, target_height = 0;
-        } resize_info;
-
         GLFW::Window window;
 
         VulkanInstance vulkan_instance;
@@ -88,7 +84,6 @@ namespace PKEngine {
 
         Alloc::VulkanAllocator allocator = Alloc::VulkanAllocator(vulkan_instance, physical_device, logical_device);
 
-        float render_scale = 1.0f;
         Alloc::AllocatedImage draw_image = Alloc::AllocatedImage(
             logical_device,
             allocator,
@@ -119,34 +114,34 @@ namespace PKEngine {
             VK_IMAGE_ASPECT_DEPTH_BIT
         );
 
-        DescriptorPool global_descriptor_pool = DescriptorPool(
-            logical_device,
-            100,
-            std::vector<DescriptorPool::PoolRatio>({
-                DescriptorPool::PoolRatio {
-                    .type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
-                    .ratio = 1.0f,
-                },
-            })
-        );
-        DescriptorSetLayout draw_image_descriptor_set_layout = DescriptorSetLayout(
-            logical_device,
-            std::vector<VkDescriptorSetLayoutBinding>({
-                VkDescriptorSetLayoutBinding {
-                    .binding = 0,
-                    .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
-                    .descriptorCount = 1,
-                },
-            }),
-            VK_SHADER_STAGE_COMPUTE_BIT,
-            0
-        );
-
-        DescriptorSet draw_image_descriptor_set = DescriptorSet(
-            logical_device,
-            global_descriptor_pool,
-            draw_image_descriptor_set_layout
-        );
+//        DescriptorPool global_descriptor_pool = DescriptorPool(
+//            logical_device,
+//            100,
+//            std::vector<DescriptorPool::PoolRatio>({
+//                DescriptorPool::PoolRatio {
+//                    .type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+//                    .ratio = 1.0f,
+//                },
+//            })
+//        );
+//        DescriptorSetLayout draw_image_descriptor_set_layout = DescriptorSetLayout(
+//            logical_device,
+//            std::vector<VkDescriptorSetLayoutBinding>({
+//                VkDescriptorSetLayoutBinding {
+//                    .binding = 0,
+//                    .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+//                    .descriptorCount = 1,
+//                },
+//            }),
+//            VK_SHADER_STAGE_COMPUTE_BIT,
+//            0
+//        );
+//
+//        DescriptorSet draw_image_descriptor_set = DescriptorSet(
+//            logical_device,
+//            global_descriptor_pool,
+//            draw_image_descriptor_set_layout
+//        );
 
         ShaderModule vert_shader = ShaderModule(logical_device, "shaders/colored_triangle.vert.spv");
         ShaderModule frag_shader = ShaderModule(logical_device, "shaders/colored_triangle.frag.spv");
@@ -181,7 +176,6 @@ namespace PKEngine {
             make_array<FrameData, Config::render_config.max_frames_in_flight>(
                 swap_chain,
                 graphics_queue,
-                render_scale,
                 draw_image,
                 depth_image,
                 graphics_pipeline,
@@ -203,7 +197,7 @@ namespace PKEngine {
             FrameData & frame = next_frame();
 
             try {
-                frame.draw(draw_image_descriptor_set);
+                frame.draw();
             }
             catch (const Wrapper::SwapChain::Exceptions::OutOfDateError & ex) {
                 logical_device.wait_idle();
@@ -416,10 +410,6 @@ namespace PKEngine {
             return window.should_close();
         }
 
-        inline void resize_window(int width, int height) {
-            resize_info.target_width = width;
-            resize_info.target_height = height;
-            resize_info.ready = true;
-        }
+        inline void resize_window(int width, int height) { window.resize(width, height); }
     };
 }

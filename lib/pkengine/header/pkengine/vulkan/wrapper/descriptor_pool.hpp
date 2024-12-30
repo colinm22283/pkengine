@@ -18,7 +18,7 @@ namespace PKEngine::Vulkan::Wrapper {
 
         LogicalDevice & logical_device;
 
-        VkDescriptorPool descriptor_pool;
+        VkDescriptorPool descriptor_pool = VK_NULL_HANDLE;
 
     public:
         struct PoolRatio {
@@ -26,7 +26,7 @@ namespace PKEngine::Vulkan::Wrapper {
             float ratio;
         };
 
-        inline DescriptorPool(LogicalDevice & _logical_device, uint32_t max_sets, std::vector<PoolRatio> pool_ratios):
+        inline DescriptorPool(LogicalDevice & _logical_device, uint32_t max_sets, std::span<PoolRatio> pool_ratios):
             logical_device(_logical_device) {
             logger.debug() << "Initializing descriptor pool...";
 
@@ -62,6 +62,17 @@ namespace PKEngine::Vulkan::Wrapper {
             }
         }
 
+        inline DescriptorPool(const DescriptorPool &) = delete;
+        inline DescriptorPool(DescriptorPool && other) noexcept:
+            logical_device(other.logical_device),
+            descriptor_pool(other.descriptor_pool) {
+            other.descriptor_pool = VK_NULL_HANDLE;
+        }
+
         [[nodiscard]] inline const VkDescriptorPool & handle() const noexcept { return descriptor_pool; }
+
+        inline void clear() {
+            vkResetDescriptorPool(logical_device.handle(), descriptor_pool, 0);
+        }
     };
 }

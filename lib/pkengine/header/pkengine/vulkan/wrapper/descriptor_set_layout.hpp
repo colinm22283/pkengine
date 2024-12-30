@@ -65,6 +65,13 @@ namespace PKEngine::Vulkan::Wrapper {
             }
         }
 
+        inline DescriptorSetLayout(const DescriptorSetLayout &) = delete;
+        inline DescriptorSetLayout(DescriptorSetLayout && other) noexcept:
+            logical_device(other.logical_device),
+            desc_set_layout(other.desc_set_layout) {
+            other.desc_set_layout = VK_NULL_HANDLE;
+        }
+
         [[nodiscard]] inline const VkDescriptorSetLayout & handle() const noexcept { return desc_set_layout; }
     };
 }

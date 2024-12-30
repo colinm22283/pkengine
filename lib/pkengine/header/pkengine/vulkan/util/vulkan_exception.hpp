@@ -18,7 +18,7 @@ class VulkanException : public PKEngine::Util::Exception {
         explicit inline VulkanException(VkResult _result) noexcept: result(_result) { }
 
         [[nodiscard]] inline const char * what() const noexcept override = 0;
-        [[nodiscard]] consteval const VkResult & vulkan_result() const noexcept { return result; }
+        [[nodiscard]] constexpr const VkResult & vulkan_result() const noexcept { return result; }
         [[nodiscard]] inline const std::string_view vulkan_error() const noexcept { return result_to_string(result); }
     };
 
