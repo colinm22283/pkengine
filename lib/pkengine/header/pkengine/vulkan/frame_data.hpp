@@ -5,6 +5,8 @@
 
 #include <pkengine/vulkan/mesh.hpp>
 #include <pkengine/vulkan/camera_data.hpp>
+#include <pkengine/vulkan/descriptor_allocator.hpp>
+#include <pkengine/vulkan/descriptor_writer.hpp>
 
 #include <pkengine/vulkan/wrapper/swap_chain.hpp>
 #include <pkengine/vulkan/wrapper/command_pool.hpp>
@@ -47,6 +49,14 @@ namespace PKEngine::Vulkan {
         Wrapper::Sync::Semaphore swapchain_semaphore, render_semaphore;
         Wrapper::Sync::Fence render_fence;
 
+        std::array<DescriptorAllocator::PoolRatio, 4> descriptor_frame_sizes = std::array<DescriptorAllocator::PoolRatio, 4>({
+            { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 3 },
+            { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 3 },
+            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3 },
+            { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4 },
+        });
+        DescriptorAllocator descriptor_allocator;
+
         inline FrameData(
             Wrapper::SwapChain & _swap_chain,
             Wrapper::CommandQueue & _graphics_queue,
@@ -69,7 +79,10 @@ namespace PKEngine::Vulkan {
             command_buffer(logical_device, command_pool),
             swapchain_semaphore(logical_device),
             render_semaphore(logical_device),
-            render_fence(logical_device, true) { }
+            render_fence(logical_device, true),
+            descriptor_allocator(logical_device, 1000, descriptor_frame_sizes) {
+
+        }
 
         inline FrameData(FrameData && other) noexcept:
             swap_chain(other.swap_chain),
@@ -83,17 +96,19 @@ namespace PKEngine::Vulkan {
             command_buffer(std::move(other.command_buffer)),
             swapchain_semaphore(std::move(other.swapchain_semaphore)),
             render_semaphore(std::move(other.render_semaphore)),
-            render_fence(std::move(other.render_fence)) { }
+            render_fence(std::move(other.render_fence)),
+            descriptor_allocator(std::move(other.descriptor_allocator)) { }
 
-        inline FrameData & operator=(FrameData && other) noexcept {
-            command_pool = std::move(other.command_pool);
-            command_buffer = std::move(other.command_buffer);
-            swapchain_semaphore = std::move(other.swapchain_semaphore);
-            render_semaphore = std::move(other.render_semaphore);
-            render_fence = std::move(other.render_fence);
-
-            return *this;
-        }
+//        inline FrameData & operator=(FrameData && other) noexcept {
+//            command_pool = std::move(other.command_pool);
+//            command_buffer = std::move(other.command_buffer);
+//            swapchain_semaphore = std::move(other.swapchain_semaphore);
+//            render_semaphore = std::move(other.render_semaphore);
+//            render_fence = std::move(other.render_fence);
+//            descriptor_allocator = std::move(other.descriptor_allocator);
+//
+//            return *this;
+//        }
 
         inline void clear_background() const {
             VkClearColorValue clear_value = { {

@@ -114,35 +114,6 @@ namespace PKEngine {
             VK_IMAGE_ASPECT_DEPTH_BIT
         );
 
-//        DescriptorPool global_descriptor_pool = DescriptorPool(
-//            logical_device,
-//            100,
-//            std::vector<DescriptorPool::PoolRatio>({
-//                DescriptorPool::PoolRatio {
-//                    .type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
-//                    .ratio = 1.0f,
-//                },
-//            })
-//        );
-//        DescriptorSetLayout draw_image_descriptor_set_layout = DescriptorSetLayout(
-//            logical_device,
-//            std::vector<VkDescriptorSetLayoutBinding>({
-//                VkDescriptorSetLayoutBinding {
-//                    .binding = 0,
-//                    .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
-//                    .descriptorCount = 1,
-//                },
-//            }),
-//            VK_SHADER_STAGE_COMPUTE_BIT,
-//            0
-//        );
-//
-//        DescriptorSet draw_image_descriptor_set = DescriptorSet(
-//            logical_device,
-//            global_descriptor_pool,
-//            draw_image_descriptor_set_layout
-//        );
-
         ShaderModule vert_shader = ShaderModule(logical_device, "shaders/colored_triangle.vert.spv");
         ShaderModule frag_shader = ShaderModule(logical_device, "shaders/colored_triangle.frag.spv");
 
@@ -197,7 +168,7 @@ namespace PKEngine {
             FrameData & frame = next_frame();
 
             try {
-                frame.draw();
+                frame.draw(;
             }
             catch (const Wrapper::SwapChain::Exceptions::OutOfDateError & ex) {
                 logical_device.wait_idle();
@@ -373,30 +344,12 @@ namespace PKEngine {
         );
 
     public:
-        inline Context() {
-//            VkDescriptorImageInfo image_info {
-//                .imageView = draw_image.view(),
-//                .imageLayout = VK_IMAGE_LAYOUT_GENERAL,
-//            };
-//
-//            VkWriteDescriptorSet draw_image_write = {
-//                .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-//                .pNext = nullptr,
-//
-//                .dstSet = draw_image_descriptor_set.handle(),
-//                .dstBinding = 0,
-//                .descriptorCount = 1,
-//                .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
-//                .pImageInfo = &image_info,
-//            };
-//
-//            vkUpdateDescriptorSets(logical_device.handle(), 1, &draw_image_write, 0, nullptr);
-        }
-
         inline ~Context() {
             for (FrameData & frame : frames) {
                 frame.await_complete();
             }
+
+            logical_device.wait_idle();
         }
 
         inline Context(const Context &) = delete;
