@@ -19,6 +19,7 @@ namespace PKEngine::Vulkan::Wrapper {
 
             PKENGINE_DEFINE_VULKAN_EXCEPTION(UnableToEnumerateDevices, "Unable to enumerate physical devices");
         };
+
     protected:
         static constexpr auto logger = Logger<"Physical Device">();
 

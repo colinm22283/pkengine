@@ -36,7 +36,8 @@ namespace PKEngine::Vulkan::Wrapper {
             VkPipelineColorBlendAttachmentState color_blend_attachment,
             VkPipelineMultisampleStateCreateInfo multisampling,
             VkPipelineDepthStencilStateCreateInfo depth_stencil,
-            VkPipelineRenderingCreateInfo render_info
+            VkPipelineRenderingCreateInfo render_info,
+            std::span<VkDescriptorSetLayout> descriptor_set_layouts
         ):
             logical_device(_logical_device) {
             logger.debug() << "Initializing graphics pipeline...";
@@ -79,7 +80,9 @@ namespace PKEngine::Vulkan::Wrapper {
             VkPipelineLayoutCreateInfo layout_info = {
                 .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
                 .pNext = nullptr,
-                .setLayoutCount = (uint32_t) 0,
+
+                .setLayoutCount = (uint32_t) descriptor_set_layouts.size(),
+                .pSetLayouts = descriptor_set_layouts.data(),
 
                 .pushConstantRangeCount = 1,
                 .pPushConstantRanges = &push_constant_range,

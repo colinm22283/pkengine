@@ -14,6 +14,7 @@
 #include <pkengine/vulkan/wrapper/logical_device.hpp>
 #include <pkengine/vulkan/wrapper/graphics_pipeline.hpp>
 #include <pkengine/vulkan/wrapper/descriptor_set.hpp>
+#include <pkengine/vulkan/wrapper/sampler.hpp>
 
 #include <pkengine/vulkan/struct/rendering_info.hpp>
 #include <pkengine/vulkan/struct/rendering_attachment_info.hpp>
@@ -35,6 +36,7 @@
 
 namespace PKEngine::Vulkan {
     struct FrameData {
+        Wrapper::LogicalDevice & logical_device;
         Wrapper::SwapChain & swap_chain;
         Wrapper::CommandQueue & graphics_queue;
         Alloc::AllocatedImage & draw_image;
@@ -56,6 +58,9 @@ namespace PKEngine::Vulkan {
             { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4 },
         });
         DescriptorAllocator descriptor_allocator;
+        Wrapper::DescriptorSetLayout & dsl;
+        Alloc::AllocatedImage & image;
+        Wrapper::Sampler & sampler;
 
         inline FrameData(
             Wrapper::SwapChain & _swap_chain,
@@ -63,11 +68,15 @@ namespace PKEngine::Vulkan {
             Alloc::AllocatedImage & _draw_image,
             Alloc::AllocatedImage & _depth_image,
             Wrapper::GraphicsPipeline & _draw_pipeline,
-            Wrapper::LogicalDevice & logical_device,
+            Wrapper::LogicalDevice & _logical_device,
             Util::QueueFamilyIndices & queue_family_indices,
             PKEngine::Util::ErasableList<Mesh> & _meshes,
-            CameraData & _camera_data
+            CameraData & _camera_data,
+            Wrapper::DescriptorSetLayout & _dsl,
+            Alloc::AllocatedImage & _image,
+            Wrapper::Sampler & _sampler
         ):
+            logical_device(_logical_device),
             swap_chain(_swap_chain),
             graphics_queue(_graphics_queue),
             draw_image(_draw_image),
@@ -80,11 +89,15 @@ namespace PKEngine::Vulkan {
             swapchain_semaphore(logical_device),
             render_semaphore(logical_device),
             render_fence(logical_device, true),
-            descriptor_allocator(logical_device, 1000, descriptor_frame_sizes) {
+            descriptor_allocator(logical_device, 1000, descriptor_frame_sizes),
+            dsl(_dsl),
+            image(_image),
+            sampler(_sampler) {
 
         }
 
         inline FrameData(FrameData && other) noexcept:
+            logical_device(other.logical_device),
             swap_chain(other.swap_chain),
             graphics_queue(other.graphics_queue),
             draw_image(other.draw_image),
@@ -97,7 +110,10 @@ namespace PKEngine::Vulkan {
             swapchain_semaphore(std::move(other.swapchain_semaphore)),
             render_semaphore(std::move(other.render_semaphore)),
             render_fence(std::move(other.render_fence)),
-            descriptor_allocator(std::move(other.descriptor_allocator)) { }
+            descriptor_allocator(std::move(other.descriptor_allocator)),
+            dsl(other.dsl),
+            image(other.image),
+            sampler(other.sampler) { }
 
 //        inline FrameData & operator=(FrameData && other) noexcept {
 //            command_pool = std::move(other.command_pool);
@@ -129,7 +145,7 @@ namespace PKEngine::Vulkan {
             );
         }
 
-        inline void draw_geometry() const {
+        inline void draw_geometry() {
             VkExtent2D draw_extent = {
                 .width = (uint32_t) draw_image.extent().width,
                 .height = (uint32_t) draw_image.extent().height,
@@ -158,6 +174,30 @@ namespace PKEngine::Vulkan {
                 command_buffer.handle(),
                 VK_PIPELINE_BIND_POINT_GRAPHICS,
                 draw_pipeline.handle()
+            );
+
+            DescriptorAllocator::Allocation image_set_alloc = descriptor_allocator.allocate(dsl, nullptr);
+            {
+                DescriptorWriter writer(logical_device);
+                writer.write_image(
+                    0,
+                    image.view(),
+                    sampler.handle(),
+                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+                );
+
+                writer.update_set(image_set_alloc.set);
+            }
+            vkCmdBindDescriptorSets(
+                command_buffer.handle(),
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                draw_pipeline.layout(),
+                0,
+                1,
+                &image_set_alloc.set.handle(),
+                0,
+                nullptr
             );
 
             VkViewport viewport = {
@@ -223,6 +263,8 @@ namespace PKEngine::Vulkan {
         inline void draw() {
             render_fence.await();
             render_fence.reset();
+
+            descriptor_allocator.clear_pools();
 
             command_buffer.reset();
             command_buffer.begin_one_time();

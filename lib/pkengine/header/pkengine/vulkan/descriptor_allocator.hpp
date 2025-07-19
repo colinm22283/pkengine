@@ -17,7 +17,7 @@ namespace PKEngine::Vulkan {
         using PoolRatio = Wrapper::DescriptorPool::PoolRatio;
 
         struct Allocation {
-            Wrapper::DescriptorSetLayout layout;
+            Wrapper::DescriptorSetLayout & layout;
             Wrapper::DescriptorSet set;
         };
 
@@ -30,18 +30,20 @@ namespace PKEngine::Vulkan {
         std::vector<Wrapper::DescriptorPool> full_pools;
         std::vector<Wrapper::DescriptorPool> ready_pools;
 
-        inline Wrapper::DescriptorPool & create_pool(uint32_t set_count, std::span<PoolRatio> pool_ratios) {
-            return ready_pools.emplace_back(logical_device, set_count, pool_ratios);
-        }
+//        inline Wrapper::DescriptorPool & create_pool(uint32_t set_count, std::span<PoolRatio> pool_ratios) {
+//            return ready_pools.emplace_back(logical_device, set_count, pool_ratios);
+//        }
 
-        inline Wrapper::DescriptorPool & get_pool() {
+        inline Wrapper::DescriptorPool get_pool() {
             if (!ready_pools.empty()) {
-                Wrapper::DescriptorPool & pool = ready_pools.back();
+                Wrapper::DescriptorPool pool = std::move(ready_pools.back());
+
                 ready_pools.pop_back();
+
                 return pool;
             }
             else {
-                Wrapper::DescriptorPool & pool = create_pool(sets_per_pool, ratios);
+                Wrapper::DescriptorPool pool(logical_device, sets_per_pool, ratios);
 
                 sets_per_pool = expansion_function(sets_per_pool);
 
@@ -58,7 +60,7 @@ namespace PKEngine::Vulkan {
             logical_device(_logical_device) {
             ratios.assign(pool_ratios.begin(), pool_ratios.end());
 
-            create_pool(max_sets, ratios);
+            ready_pools.emplace_back(logical_device, max_sets, pool_ratios);
 
             sets_per_pool = expansion_function(max_sets);
         }
@@ -74,14 +76,14 @@ namespace PKEngine::Vulkan {
             }
         }
 
-        inline Allocation allocate(Wrapper::DescriptorSetLayout && layout, void * next_pointer = nullptr) {
-            Wrapper::DescriptorPool & pool = get_pool();
+        inline Allocation allocate(Wrapper::DescriptorSetLayout & layout, void * next_pointer = nullptr) {
+            Wrapper::DescriptorPool pool = get_pool();
 
             try { // TODO: maybe try to avoid exceptions here
                 Wrapper::DescriptorSet set(logical_device, pool, layout, next_pointer);
 
                 Allocation allocation = {
-                    .layout = std::move(layout),
+                    .layout = layout,
                     .set = std::move(set),
                 };
 
@@ -93,10 +95,10 @@ namespace PKEngine::Vulkan {
                 if (ex.vulkan_result() == VK_ERROR_OUT_OF_POOL_MEMORY || ex.vulkan_result() == VK_ERROR_FRAGMENTED_POOL) {
                     full_pools.push_back(std::move(pool));
 
-                    Wrapper::DescriptorPool & new_pool = get_pool();
+                    Wrapper::DescriptorPool new_pool = get_pool();
 
                     Allocation allocation = {
-                        .layout = std::move(layout),
+                        .layout = layout,
                         .set = Wrapper::DescriptorSet(logical_device, new_pool, allocation.layout, next_pointer),
                     };
 

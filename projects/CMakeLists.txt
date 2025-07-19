@@ -1,5 +1,5 @@
 if (NOT WIN32)
-    set(ENABLE_ASAN "Enable address sanitization" ON)
+    set(ENABLE_ASAN "Enable address sanitization" On)
 endif ()
 
 function(new_project NAME SOURCES)

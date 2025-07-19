@@ -26,13 +26,20 @@
 #include <pkengine/vulkan/wrapper/shader_module.hpp>
 #include <pkengine/vulkan/wrapper/compute_pipeline.hpp>
 #include <pkengine/vulkan/wrapper/graphics_pipeline.hpp>
+#include <pkengine/vulkan/wrapper/sampler.hpp>
 
 #include <pkengine/vulkan/builder/graphics_pipeline_builder.hpp>
 
 #include <pkengine/vulkan/alloc/allocated_image.hpp>
 
+#include <pkengine/vulkan/util/copy_buffer_image.hpp>
+
+#include <pkengine/vulkan/struct/descriptor_set_layout_binding.hpp>
+
 #include <pkengine/util/make_array.hpp>
 #include <pkengine/util/erasable_list.hpp>
+
+#include <pkengine/scene.hpp>
 
 #include <render_config.hpp>
 
@@ -117,6 +124,28 @@ namespace PKEngine {
         ShaderModule vert_shader = ShaderModule(logical_device, "shaders/colored_triangle.vert.spv");
         ShaderModule frag_shader = ShaderModule(logical_device, "shaders/colored_triangle.frag.spv");
 
+        Alloc::AllocatedImage test_image = Alloc::AllocatedImage(
+            logical_device,
+            allocator,
+            VK_FORMAT_R8G8B8A8_UNORM,
+            VkExtent3D(2, 2, 1),
+            VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+            VMA_MEMORY_USAGE_GPU_ONLY,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            VK_IMAGE_ASPECT_COLOR_BIT
+        );
+
+        Wrapper::Sampler test_sampler = Wrapper::Sampler(logical_device, VK_FILTER_NEAREST, VK_FILTER_NEAREST);
+
+        Wrapper::DescriptorSetLayout test_sampler_layout = Wrapper::DescriptorSetLayout(
+            logical_device,
+            std::vector<VkDescriptorSetLayoutBinding>({
+                Struct::descriptor_set_layout_binding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER),
+            }),
+            VK_SHADER_STAGE_FRAGMENT_BIT,
+            0
+        );
+
         GraphicsPipeline graphics_pipeline = GraphicsPipelineBuilder()
             .set_shaders(vert_shader, frag_shader)
             .set_input_topology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
@@ -127,9 +156,12 @@ namespace PKEngine {
             .enable_depthtest(true, VK_COMPARE_OP_LESS_OR_EQUAL)
             .set_color_attachment_format(draw_image.format())
             .set_depth_format(depth_image.format())
+            .add_descriptor_set_layout(test_sampler_layout)
             .build(logical_device);
 
         MeshList meshes;
+        Scene scene;
+
         CameraData camera_data = CameraData(
             ShaderStruct::Vec3 {
                 .x = 0,
@@ -153,7 +185,10 @@ namespace PKEngine {
                 logical_device,
                 queue_family_indices,
                 meshes,
-                camera_data
+                camera_data,
+                test_sampler_layout,
+                test_image,
+                test_sampler
             );
 
         [[nodiscard]] FrameData & next_frame() noexcept {
@@ -168,7 +203,7 @@ namespace PKEngine {
             FrameData & frame = next_frame();
 
             try {
-                frame.draw(;
+                frame.draw();
             }
             catch (const Wrapper::SwapChain::Exceptions::OutOfDateError & ex) {
                 logical_device.wait_idle();
@@ -214,7 +249,7 @@ namespace PKEngine {
             }
         }
 
-        static constexpr float z1 = -1.0f;
+        static constexpr float z1 = 1.0f;
         static constexpr float z2 = -0.f;
 
         std::vector<uint32_t> indexes1 = { 0, 1, 2, 1, 2, 3 };
@@ -225,12 +260,14 @@ namespace PKEngine {
                     .y = -0.5f,
                     .z =  z1,
                 },
+                .uv_x = 0,
+                .uv_y = 0,
                 .color = {
                     .x = 1,
                     .y = 0,
                     .z = 0,
                     .w = 1,
-                }
+                },
             },
             ShaderStruct::Vertex {
                 .position = {
@@ -238,6 +275,8 @@ namespace PKEngine {
                     .y = -0.5f,
                     .z =  z1,
                 },
+                .uv_x = 1,
+                .uv_y = 0,
                 .color = {
                     .x = 0,
                     .y = 1,
@@ -251,6 +290,8 @@ namespace PKEngine {
                     .y = 0.5f,
                     .z = z1,
                 },
+                .uv_x = 0,
+                .uv_y = 1,
                 .color = {
                     .x = 0,
                     .y = 0,
@@ -264,6 +305,8 @@ namespace PKEngine {
                     .y =  0.5f,
                     .z =  z1,
                 },
+                .uv_x = 1,
+                .uv_y = 1,
                 .color = {
                     .x = 1,
                     .y = 0,
@@ -280,7 +323,7 @@ namespace PKEngine {
         std::vector<ShaderStruct::Vertex> vertices2 = {
             ShaderStruct::Vertex {
                 .position = {
-                    .x = -1.0f,
+                    .x = -1.0f + 3,
                     .y = -1.0f,
                     .z =  z2,
                 },
@@ -293,7 +336,7 @@ namespace PKEngine {
             },
             ShaderStruct::Vertex {
                 .position = {
-                    .x =  1.0f,
+                    .x =  1.0f + 3,
                     .y = -1.0f,
                     .z =  z2,
                 },
@@ -306,7 +349,7 @@ namespace PKEngine {
             },
             ShaderStruct::Vertex {
                 .position = {
-                    .x = 0.0f,
+                    .x = 0.0f + 3,
                     .y = 1.0f,
                     .z = z2,
                 },
@@ -344,6 +387,54 @@ namespace PKEngine {
         );
 
     public:
+        inline Context() {
+            VkExtent3D size = test_image.extent();
+
+            Alloc::AllocatedBuffer<uint32_t> temp_buffer(
+                allocator,
+                size.width * size.height * size.depth * 4,
+                VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                VMA_MEMORY_USAGE_CPU_TO_GPU
+            );
+
+            uint32_t temp1 = 0x80000080;
+            uint32_t temp2 = 0xFF00FF00;
+            uint32_t * buf = (uint32_t *) temp_buffer.get_mapped_data();
+
+            buf[0] = temp1;
+            buf[1] = temp2;
+            buf[2] = temp2;
+            buf[3] = temp1;
+
+            imm_command_buffer.immediate_record(
+                imm_fence,
+                [this, &temp_buffer, &size]() {
+                    transition_image(
+                        imm_command_buffer,
+                        test_image.handle(),
+                        VK_IMAGE_LAYOUT_UNDEFINED,
+                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+                    );
+
+                    copy_buffer_image(
+                        imm_command_buffer,
+                        temp_buffer.handle(),
+                        test_image.handle(),
+                        size
+                    );
+
+                    transition_image(
+                        imm_command_buffer,
+                        test_image.handle(),
+                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+                    );
+                }
+            );
+
+            graphics_queue.submit(imm_command_buffer, imm_fence);
+        };
+
         inline ~Context() {
             for (FrameData & frame : frames) {
                 frame.await_complete();
@@ -364,5 +455,8 @@ namespace PKEngine {
         }
 
         inline void resize_window(int width, int height) { window.resize(width, height); }
+
+        [[nodiscard]] inline Scene & get_scene() noexcept { return scene; }
+        [[nodiscard]] inline MeshList & get_meshes() noexcept { return meshes; }
     };
 }

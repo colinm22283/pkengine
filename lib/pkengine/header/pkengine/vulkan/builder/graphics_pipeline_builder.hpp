@@ -23,6 +23,8 @@ namespace PKEngine::Vulkan::Builder {
         VkPipelineRenderingCreateInfo render_info = { .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO };
         VkFormat color_attachment_format;
 
+        std::vector<VkDescriptorSetLayout> descriptor_set_layouts;
+
     public:
         inline GraphicsPipelineBuilder & set_shaders(
             Wrapper::ShaderModule & vertex_shader,
@@ -148,6 +150,12 @@ namespace PKEngine::Vulkan::Builder {
             return *this;
         }
 
+        inline GraphicsPipelineBuilder & add_descriptor_set_layout(Wrapper::DescriptorSetLayout & dsl) {
+            descriptor_set_layouts.push_back(dsl.handle());
+
+            return *this;
+        }
+
         inline auto build(Wrapper::LogicalDevice & logical_device) {
             return Wrapper::GraphicsPipeline(
                 logical_device,
@@ -157,7 +165,8 @@ namespace PKEngine::Vulkan::Builder {
                 color_blend_attachment,
                 multisampling,
                 depth_stencil,
-                render_info
+                render_info,
+                descriptor_set_layouts
             );
         }
     };
