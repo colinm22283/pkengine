@@ -13,7 +13,7 @@ namespace PKEngine::Component {
         explicit inline RelativeTransform(SceneNode & _parent):
             Transform(_parent),
             parent_transform([this]() -> Transform & {
-                auto & transform = parent.get_component_of_type<Transform>();
+                auto & transform = parent.parent_node().get_component_of_type<Transform>();
 
                 return transform;
             }()) { }

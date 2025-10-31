@@ -4,22 +4,34 @@
 
 #include <pkengine/component/component.hpp>
 
+#include "scene.hpp"
+
 namespace PKEngine::Component { class Component; }
 
 namespace PKEngine {
     class SceneNode {
+        friend class Scene;
+
     public:
         struct Exceptions {
             PKENGINE_DEFINE_EXCEPTION(ComponentNotFoundWithType, "Unable to find component with requested type");
+            PKENGINE_DEFINE_EXCEPTION(NoParent, "Component is the top level component");
         };
 
+    protected:
+        std::optional<std::reference_wrapper<SceneNode>> parent;
+
+        inline SceneNode() = default;
+
     public:
+        inline SceneNode(SceneNode & _parent) : parent(std::ref(_parent)) {}
+
         std::list<SceneNode> children;
 
         std::list<std::unique_ptr<Component::Component>> components;
 
         inline SceneNode & add_child() {
-            return children.emplace_back();
+            return children.emplace_back(*this);
         }
 
         template<typename T, typename... Args>
@@ -38,6 +50,11 @@ namespace PKEngine {
             }
 
             throw Exceptions::ComponentNotFoundWithType();
+        }
+
+        [[nodiscard]] inline SceneNode & parent_node() noexcept {
+            if (parent.has_value()) return *parent;
+            else throw Exceptions::NoParent();
         }
     };
 }

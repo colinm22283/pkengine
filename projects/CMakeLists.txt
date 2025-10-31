@@ -1,5 +1,5 @@
 if (NOT WIN32)
-    set(ENABLE_ASAN "Enable address sanitization" On)
+    set(ENABLE_ASAN ON)
 endif ()
 
 function(new_project NAME SOURCES)
@@ -20,7 +20,7 @@ function(new_project NAME SOURCES)
 
     if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
         message(STATUS "Building for Debug")
-        target_compile_options(${NAME} PUBLIC -O0)
+        target_compile_options(${NAME} PUBLIC -O0 -g)
         if (ENABLE_ASAN)
             message(STATUS "Address sanitation enabled")
             target_compile_options(${NAME} PUBLIC -fsanitize=address)
