@@ -4,6 +4,11 @@ use vulkano::VulkanLibrary;
 use vulkano::instance::{Instance, InstanceCreateInfo, InstanceCreateFlags};
 use vulkano::device::physical::PhysicalDevice;
 use vulkano::device::{Queue, QueueFlags, Device, DeviceCreateInfo, QueueCreateInfo};
+use vulkano::memory::allocator::{StandardMemoryAllocator, GenericMemoryAllocator, FreeListAllocator};
+
+use crate::buffer::GPUBuffer;
+
+pub (crate) type EngineAllocator = Arc<GenericMemoryAllocator<FreeListAllocator>>;
 
 pub struct Engine {
     vk_lib: Arc<VulkanLibrary>,
@@ -11,6 +16,7 @@ pub struct Engine {
     phys_dev: Arc<PhysicalDevice>,
     dev: Arc<Device>,
     queue: Arc<Queue>,
+    allocator: EngineAllocator,
 }
 
 impl Engine {
@@ -44,7 +50,7 @@ impl Engine {
             })
             .expect("couldn't find a graphical queue family") as u32;
 
-        let (device, mut queues) = Device::new(
+        let (dev, mut queues) = Device::new(
                 phys_dev.clone(),
                 DeviceCreateInfo {
                     // here we pass the desired queue family to use by index
@@ -59,13 +65,23 @@ impl Engine {
 
         let queue = queues.next().unwrap();
 
+        let allocator = Arc::new(StandardMemoryAllocator::new_default(dev.clone()));
+
         Self {
             vk_lib: lib.clone(),
             vk_inst: inst.clone(),
             phys_dev: phys_dev.clone(),
-            dev: device.clone(),
+            dev: dev.clone(),
             queue: queue.clone(),
+            allocator: allocator.clone(),
         }
+    }
+
+    pub fn buffer_from_data<T: std::marker::Sync + std::marker::Send + bytemuck::Pod>(self, data: &T) -> GPUBuffer<T> {
+        GPUBuffer::<T>::from_data(self.allocator, data)
+    }
+    pub fn buffer_from_iter<T: std::marker::Sync + std::marker::Send + bytemuck::Pod>(self, iter: (impl Iterator<Item = T> + ExactSizeIterator + Clone)) -> GPUBuffer<T> {
+        GPUBuffer::<T>::from_iter(self.allocator, iter.clone())
     }
 }
 
